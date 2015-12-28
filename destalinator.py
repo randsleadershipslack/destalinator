@@ -73,7 +73,7 @@ class Destalinator(object):
         get 'all' messages for the given channel name in the slack
         name from the last DAYS days
         By default, Slack only returns 100 messages, so if more than 100
-        messages were sent, we'll only bget a subset of messages.  Since
+        messages were sent, we'll only get a subset of messages.  Since
         this code is used for stale channel handling, that's considered
         acceptable.
         """
