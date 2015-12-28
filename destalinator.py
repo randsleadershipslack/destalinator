@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import datetime
 import sys
 import time
 
@@ -13,6 +14,7 @@ class Destalinator(object):
 
     closure = "closure.txt"
     warning = "warning.txt"
+    earliest_archive_date = "2016-01-28"  # Do not archive channels prior to this date
 
     ignore_users = ["USLACKBOT"]
 
@@ -67,6 +69,20 @@ class Destalinator(object):
         Given a channel name, returns the ID of the channel
         """
         return self.channels[channel_name]
+
+    def safe_archive(self, channel_name):
+        """
+        Arhives channel if today's date is after self.earliest_archive_date
+        """
+        today = datetime.date.today()
+        year, month, day = [int(x) for x in self.earliest_archive_date.split("-")]
+        earliest = datetime.date(year, month, day)
+        if today > earliest:
+            self.archive(channel_name)
+        else:
+            message = "Just FYI, I would have archived this channel but it's not yet "
+            message += self.earliest_archive_date
+            self.slackbot.say(channel_name, message)
 
     def archive(self, channel_name):
         """
@@ -129,6 +145,15 @@ class Destalinator(object):
             return
         self.slackbot.say(channel_name, self.warning_text)
         print "Warned {}".format(channel_name)
+
+    def safe_archive_all(self, days):
+        """
+        Safe-archives all channels stale longer than DAYS days
+        """
+        for channel in sorted(self.channels.keys()):
+            if self.stale(channel, days):
+                print "Attempting to safe-archive {}".format(channel)
+                self.safe_archive(channel)
 
     def warn_all(self, days):
         """
