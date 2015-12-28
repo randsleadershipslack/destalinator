@@ -55,3 +55,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Where to store your personal API token
+token.txt
