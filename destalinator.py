@@ -115,7 +115,7 @@ class Destalinator(object):
             # nothing to do
             print "Not warning {} because we already have".format(channel_name)
             return
-        # self.slackbot.say(channel_name, self.warning_text)
+        self.slackbot.say(channel_name, self.warning_text)
         print "Warned {}".format(channel_name)
 
     def warn_all(self, days):
@@ -123,7 +123,6 @@ class Destalinator(object):
         warns all channels which are DAYS idle
         """
         for channel in sorted(self.channels.keys()):
-        # for channel in ["ama"]:
             if self.stale(channel, days):
                 self.warn(channel, days)
             else:
@@ -135,13 +134,3 @@ class Destalinator(object):
             if self.stale(channel, days):
                 ret.append(channel)
         return ret
-
-sb = slackbot.Slackbot("rands-leadership", slackbot_token_file="sb_token.txt")
-
-ds = Destalinator("rands-leadership", slackbot=sb, api_token_file="api_token.txt")
-# stale30 = ds.get_stale_channels(30)
-# print "{} channels are stale for 30 days: {}".format(len(stale30), ", ".join(stale30))
-# stale60 = ds.get_stale_channels(60)
-# print "{} channels are stale for 60 days: {}".format(len(stale60), ", ".join(stale60))
-
-ds.warn_all(30)
