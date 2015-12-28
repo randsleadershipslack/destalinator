@@ -27,7 +27,7 @@ def get_channels(slack_name, api_token, exclude_archived=True):
     channels = {x['name']: x['id'] for x in payload['channels']}
     return channels
 
-channels = get_channels("rands-leadership", api_token)
+channels = get_channels(sname, api_token)
 
 def get_channelid(channel_name):
     """
