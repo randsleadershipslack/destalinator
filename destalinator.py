@@ -5,6 +5,7 @@ import time
 
 import requests
 
+import slackbot
 import util
 
 
@@ -13,9 +14,12 @@ class Destalinator(object):
     closure = "closure.txt"
     warning = "warning.txt"
 
-    def __init__(self, slack_name, api_token=None, api_token_file=None):
+    ignore_users = ["USLACKBOT"]
+
+    def __init__(self, slack_name, slackbot, api_token=None, api_token_file=None):
         """
         slack name is the short name of the slack (preceding '.slack.com')
+        slackbot should be an initialized slackbot.Slackbot() object
         api_token should be a Slack API Token.  However, it can also
         be None, and api_token_file be the file name containing a
         Slack API Token instead
@@ -26,13 +30,14 @@ class Destalinator(object):
         self.channels = self.get_channels()
         self.closure_text = self.get_content(self.closure)
         self.warning_text = self.get_content(self.warning)
+        self.slackbot = slackbot
 
     def get_content(self, fname):
         """
         read fname into text blob, return text blob
         """
         f = open(fname)
-        ret = f.read()
+        ret = f.read().strip()
         f.close()
         return ret
 
@@ -90,22 +95,39 @@ class Destalinator(object):
     def stale(self, channel_name, days):
         """
         returns True/False whether the channel is stale.  Definition of stale is
-        no messages in the last DAYS days which do not contain either
-        self.warning_text or self.closure_text
+        no messages in the last DAYS days which are not from self.ignore_users
         """
-        magic_tokens = [self.warning_text, self.closure_text]
         messages = self.get_messages(channel_name, days)
-        texts = [x['text'] for x in messages]
-        texts_from_humans = []
-        for text in texts:
-            for magic_token in magic_tokens:
-                if text.find(magic_token) != -1:  # found it -- discard
-                    continue
-            texts_from_humans.append(text)
-        if texts_from_humans:
+        messages = [x for x in messages if x.get("user") not in self.ignore_users]
+        if messages:
             return False
         else:
             return True
+
+    def warn(self, channel_name, days):
+        """
+        send warning text to channel_name, if it has not been sent already
+        in the last DAYS days
+        """
+        messages = self.get_messages(channel_name, days)
+        texts = [x['text'].strip() for x in messages]
+        if self.warning_text in texts:
+            # nothing to do
+            print "Not warning {} because we already have".format(channel_name)
+            return
+        # self.slackbot.say(channel_name, self.warning_text)
+        print "Warned {}".format(channel_name)
+
+    def warn_all(self, days):
+        """
+        warns all channels which are DAYS idle
+        """
+        for channel in sorted(self.channels.keys()):
+        # for channel in ["ama"]:
+            if self.stale(channel, days):
+                self.warn(channel, days)
+            else:
+                print "{} is not stale".format(channel)
 
     def get_stale_channels(self, days):
         ret = []
@@ -114,8 +136,12 @@ class Destalinator(object):
                 ret.append(channel)
         return ret
 
-ds = Destalinator("rands-leadership", api_token_file="api_token.txt")
-stale30 = ds.get_stale_channels(30)
-print "{} channels are stale for 30 days: {}".format(len(stale30), ", ".join(stale30))
-stale60 = ds.get_stale_channels(60)
-print "{} channels are stale for 60 days: {}".format(len(stale60), ", ".join(stale60))
+sb = slackbot.Slackbot("rands-leadership", slackbot_token_file="sb_token.txt")
+
+ds = Destalinator("rands-leadership", slackbot=sb, api_token_file="api_token.txt")
+# stale30 = ds.get_stale_channels(30)
+# print "{} channels are stale for 30 days: {}".format(len(stale30), ", ".join(stale30))
+# stale60 = ds.get_stale_channels(60)
+# print "{} channels are stale for 60 days: {}".format(len(stale60), ", ".join(stale60))
+
+ds.warn_all(30)
