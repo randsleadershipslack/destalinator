@@ -68,6 +68,18 @@ class Destalinator(object):
         """
         return self.channels[channel_name]
 
+    def archive(self, channel_name):
+        """
+        Archives the given channel name.  Returns the response content
+        """
+        url_template = self.url + "channels.archive?token={}&channel={}"
+        cid = self.get_channelid(channel_name)
+        url = url_template.format(self.api_token, cid)
+        self.slackbot.say(channel_name, self.closure_text)
+        request = requests.get(url)
+        payload = request.json()
+        return payload
+
     def get_messages(self, channel_name, days):
         """
         get 'all' messages for the given channel name in the slack
