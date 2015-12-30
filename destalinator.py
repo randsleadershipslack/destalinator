@@ -19,17 +19,14 @@ class Destalinator(object):
 
     ignore_users = ["USLACKBOT"]
 
-    def __init__(self, slack_name, slackbot, api_token=None, api_token_file=None, api_token_env_variable=None):
+    def __init__(self, slack_name, slackbot, token):
         """
         slack name is the short name of the slack (preceding '.slack.com')
         slackbot should be an initialized slackbot.Slackbot() object
-        api_token should be a Slack API Token.  However, it can also
-        be None, and api_token_file be the file name containing a
-        Slack API Token instead.  Lastly, if both are None you can specify
-        api_token_env_variable as the environment variable to read for the value
+        token should be a Slack API Token.
         """
         self.slack_name = slack_name
-        self.api_token = util.get_token(api_token, api_token_file, api_token_env_variable)
+        self.token = token
         self.url = self.api_url()
         self.channels = self.get_channels()
         self.closure_text = self.get_content(self.closure_text_fname)
@@ -59,7 +56,7 @@ class Destalinator(object):
             exclude_archived = 1
         else:
             exclude_archived = 0
-        url = url_template.format(exclude_archived, self.api_token)
+        url = url_template.format(exclude_archived, self.token)
         request = requests.get(url)
         payload = request.json()
         assert 'channels' in payload
@@ -92,7 +89,7 @@ class Destalinator(object):
         """
         url_template = self.url + "channels.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
-        url = url_template.format(self.api_token, cid)
+        url = url_template.format(self.token, cid)
         self.slackbot.say(channel_name, self.closure_text)
         request = requests.get(url)
         payload = request.json()
@@ -111,7 +108,7 @@ class Destalinator(object):
         url_template = self.url + "channels.history?oldest={}&token={}&channel={}"
         cid = self.get_channelid(channel_name)
         ago = time.time() - (days * 86400)
-        url = url_template.format(ago, self.api_token, cid)
+        url = url_template.format(ago, self.token, cid)
         payload = requests.get(url).json()
         assert 'messages' in payload
         # Why filter out subtype? Because Slack marks *everything* as
@@ -129,7 +126,7 @@ class Destalinator(object):
         url_template = self.url + "channels.info?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         now = time.time()
-        url = url_template.format(self.api_token, cid)
+        url = url_template.format(self.token, cid)
         ret = requests.get(url).json()
         if ret['ok'] != True:
             m = "Attempted to get channel info for {}, but return was {}"

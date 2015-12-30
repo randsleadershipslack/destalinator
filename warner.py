@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import sys
 
 import slackbot
@@ -9,10 +10,10 @@ import destalinator
 class Warner(object):
 
     def __init__(self):
-        self.sb = slackbot.Slackbot("rands-leadership", sb_token_env_variable="SB_TOKEN")
+        self.sb = slackbot.Slackbot("rands-leadership", token=os.getenv("SB_TOKEN"))
         self.ds = destalinator.Destalinator("rands-leadership",
                                             slackbot=self.sb,
-                                            api_token_env_variable="API_TOKEN")
+                                            token=os.getenv("API_TOKEN"))
 
     def warn(self, force_warn=False):
         self.ds.warn_all(30, force_warn)
