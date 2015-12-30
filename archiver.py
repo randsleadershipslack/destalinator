@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import os
+
 import slackbot
 import destalinator
 
