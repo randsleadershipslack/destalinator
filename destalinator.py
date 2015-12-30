@@ -155,7 +155,7 @@ class Destalinator(object):
         """
         minimum_age = self.channel_minimum_age(channel_name, days)
         if not minimum_age:
-            self.debug("Not checking if {} is stale -- it's too new".format(channel_name))
+            # self.debug("Not checking if {} is stale -- it's too new".format(channel_name))
             return False
         messages = self.get_messages(channel_name, days)
         messages = [x for x in messages if x.get("user") not in self.ignore_users]
