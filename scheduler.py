@@ -5,7 +5,7 @@ import os
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job("cron", hour=17)
+@sched.scheduled_job("cron", minute=30)
 def destalinate_daily():
     print("Destalinating")
     if not os.environ["SLACK_SLACKBOT_TOKEN"] or not os.environ["SLACK_API_TOKEN"]:
