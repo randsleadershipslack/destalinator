@@ -79,9 +79,9 @@ class Destalinator(object):
         if today > earliest:
             self.archive(channel_name)
         else:
-            message = "Just FYI, I would have archived this channel but it's not yet "
-            message += self.earliest_archive_date
-            self.slackbot.say(channel_name, message)
+            message = "Would have archived {} but it's not yet {}"
+            message = message.format(channel_name, self.earliest_archive_date)
+            self.debug(message)
 
     def archive(self, channel_name):
         """
@@ -93,6 +93,7 @@ class Destalinator(object):
         self.slackbot.say(channel_name, self.closure_text)
         request = requests.get(url)
         payload = request.json()
+        self.debug("Archived {}".format(channel_name))
         return payload
 
     def get_messages(self, channel_name, days):
@@ -197,7 +198,7 @@ class Destalinator(object):
         """
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
-                self.log("Attempting to safe-archive {}".format(channel))
+                self.debug("Attempting to safe-archive {}".format(channel))
                 self.safe_archive(channel)
 
     def warn_all(self, days, force_warn=False):
