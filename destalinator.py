@@ -18,16 +18,17 @@ class Destalinator(object):
 
     ignore_users = ["USLACKBOT"]
 
-    def __init__(self, slack_name, slackbot, api_token=None, api_token_file=None):
+    def __init__(self, slack_name, slackbot, api_token=None, api_token_file=None, api_token_env_variable=None):
         """
         slack name is the short name of the slack (preceding '.slack.com')
         slackbot should be an initialized slackbot.Slackbot() object
         api_token should be a Slack API Token.  However, it can also
         be None, and api_token_file be the file name containing a
-        Slack API Token instead
+        Slack API Token instead.  Lastly, if both are None you can specify
+        api_token_env_variable as the environment variable to read for the value
         """
         self.slack_name = slack_name
-        self.api_token = util.get_token(api_token, api_token_file)
+        self.api_token = util.get_token(api_token, api_token_file, api_token_env_variable)
         self.url = self.api_url()
         self.channels = self.get_channels()
         self.closure_text = self.get_content(self.closure)
@@ -132,14 +133,15 @@ class Destalinator(object):
         else:
             return True
 
-    def warn(self, channel_name, days):
+    def warn(self, channel_name, days, force_warn=False):
         """
         send warning text to channel_name, if it has not been sent already
         in the last DAYS days
+        if force_warn, will warn even if we have before
         """
         messages = self.get_messages(channel_name, days)
         texts = [x['text'].strip() for x in messages]
-        if self.warning_text in texts:
+        if self.warning_text in texts and not force_warn:
             # nothing to do
             print "Not warning {} because we already have".format(channel_name)
             return
@@ -155,13 +157,14 @@ class Destalinator(object):
                 print "Attempting to safe-archive {}".format(channel)
                 self.safe_archive(channel)
 
-    def warn_all(self, days):
+    def warn_all(self, days, force_warn=False):
         """
         warns all channels which are DAYS idle
+        if force_warn, will warn even if we already have
         """
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
-                self.warn(channel, days)
+                self.warn(channel, days, force_warn)
             else:
                 print "{} is not stale".format(channel)
 
