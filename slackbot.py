@@ -7,9 +7,9 @@ import util
 
 class Slackbot(object):
 
-    def __init__(self, slack_name, slackbot_token=None, slackbot_token_file=None):
+    def __init__(self, slack_name, token):
         self.slack_name = slack_name
-        self.sb_token = util.get_token(slackbot_token, slackbot_token_file)
+        self.token = token
         self.url = self.sb_url()
 
     def sb_url(self):
@@ -24,6 +24,6 @@ class Slackbot(object):
         assert channel  # not blank
         if channel[0] == '#':
             channel = channel[1:]
-        nurl = self.url + "?token={}&channel=%23{}".format(self.sb_token, channel)
+        nurl = self.url + "?token={}&channel=%23{}".format(self.token, channel)
         p = requests.post(nurl, statement)
         return p.status_code
