@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 
-import warn
-import archive
+from warner import Warner
+from archiver import Archiver
 
 if __name__ == "__main__":
-    warn.warn()
-    archive.archive()
+    warner = Warner()
+    archiver = Archiver()
+    warner.warn()
+    archiver.archive()
