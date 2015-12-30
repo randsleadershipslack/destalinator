@@ -12,9 +12,10 @@ import util
 
 class Destalinator(object):
 
-    closure = "closure.txt"
-    warning = "warning.txt"
+    closure_text_fname = "closure.txt"
+    warning_text_fname = "warning.txt"
     earliest_archive_date = "2016-01-28"  # Do not archive channels prior to this date
+    log_channel = "destalinator-log"
 
     ignore_users = ["USLACKBOT"]
 
@@ -31,8 +32,8 @@ class Destalinator(object):
         self.api_token = util.get_token(api_token, api_token_file, api_token_env_variable)
         self.url = self.api_url()
         self.channels = self.get_channels()
-        self.closure_text = self.get_content(self.closure)
-        self.warning_text = self.get_content(self.warning)
+        self.closure_text = self.get_content(self.closure_text_fname)
+        self.warning_text = self.get_content(self.warning_text_fname)
         self.slackbot = slackbot
 
     def get_content(self, fname):
@@ -121,11 +122,43 @@ class Destalinator(object):
         # 'X has joined the channel' have a subtype, so we'll filter that out.
         return [x for x in payload['messages'] if x.get("subtype") is None]
 
+    def get_channel_info(self, channel_name):
+        """
+        returns JSON with channel information.  Adds 'age' in seconds to JSON
+        """
+        url_template = self.url + "channels.info?token={}&channel={}"
+        cid = self.get_channelid(channel_name)
+        now = time.time()
+        url = url_template.format(self.api_token, cid)
+        ret = requests.get(url).json()
+        if ret['ok'] != True:
+            m = "Attempted to get channel info for {}, but return was {}"
+            m = m.format(channel_name, ret)
+            self.warning(m)
+            raise RuntimeError(m)
+        created = ret['channel']['created']
+        age = now - created
+        ret['channel']['age'] = age
+        return ret['channel']
+
+    def channel_minimum_age(self, channel_name, days):
+        """
+        returns True/False depending on whether channel_name is at least DAYS old
+        """
+        info = self.get_channel_info(channel_name)
+        age = info['age']
+        age = age / 86400
+        return age > days
+
     def stale(self, channel_name, days):
         """
         returns True/False whether the channel is stale.  Definition of stale is
         no messages in the last DAYS days which are not from self.ignore_users
         """
+        minimum_age = self.channel_minimum_age(channel_name, days)
+        if not minimum_age:
+            self.debug("Not checking if {} is stale -- it's too new".format(channel_name))
+            return False
         messages = self.get_messages(channel_name, days)
         messages = [x for x in messages if x.get("user") not in self.ignore_users]
         if messages:
@@ -143,10 +176,23 @@ class Destalinator(object):
         texts = [x['text'].strip() for x in messages]
         if self.warning_text in texts and not force_warn:
             # nothing to do
-            print "Not warning {} because we already have".format(channel_name)
+            self.debug("Not warning {} because we found a prior warning".format(channel_name))
             return
         self.slackbot.say(channel_name, self.warning_text)
-        print "Warned {}".format(channel_name)
+        self.debug("Warned {}".format(channel_name))
+
+    def log(self, message):
+        timestamp = time.strftime("%H:%M:%S: ", time.localtime())
+        message = timestamp + message
+        self.slackbot.say(self.log_channel, message)
+
+    def debug(self, message):
+        message = "DEBUG: " + message
+        self.log(message)
+
+    def warning(self, message):
+        message = "WARNING: " + message
+        self.log(message)
 
     def safe_archive_all(self, days):
         """
@@ -154,7 +200,7 @@ class Destalinator(object):
         """
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
-                print "Attempting to safe-archive {}".format(channel)
+                self.log("Attempting to safe-archive {}".format(channel))
                 self.safe_archive(channel)
 
     def warn_all(self, days, force_warn=False):
@@ -165,12 +211,11 @@ class Destalinator(object):
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
                 self.warn(channel, days, force_warn)
-            else:
-                print "{} is not stale".format(channel)
 
     def get_stale_channels(self, days):
         ret = []
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
                 ret.append(channel)
+        self.debug("{} channels quiet for {} days: {}".format(len(ret), days, ret))
         return ret
