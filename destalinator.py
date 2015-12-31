@@ -76,7 +76,8 @@ class Destalinator(object):
         today = datetime.date.today()
         year, month, day = [int(x) for x in self.earliest_archive_date.split("-")]
         earliest = datetime.date(year, month, day)
-        if today > earliest:
+        if today >= earliest:
+            self.debug("Archiving channel {}".format(channel_name))
             self.archive(channel_name)
         else:
             message = "Would have archived {} but it's not yet {}"
@@ -198,7 +199,7 @@ class Destalinator(object):
         """
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
-                self.debug("Attempting to safe-archive {}".format(channel))
+                # self.debug("Attempting to safe-archive {}".format(channel))
                 self.safe_archive(channel)
 
     def warn_all(self, days, force_warn=False):
