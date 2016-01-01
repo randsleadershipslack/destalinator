@@ -27,6 +27,7 @@ class Destalinator(object):
         """
         self.slack_name = slack_name
         self.token = token
+        assert self.token, "Token should not be blank"
         self.url = self.api_url()
         self.channels = self.get_channels()
         self.closure_text = self.get_content(self.closure_text_fname)
