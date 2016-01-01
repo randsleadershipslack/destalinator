@@ -27,6 +27,7 @@ class Destalinator(object):
         """
         self.slack_name = slack_name
         self.token = token
+        assert self.token, "Token should not be blank"
         self.url = self.api_url()
         self.channels = self.get_channels()
         self.closure_text = self.get_content(self.closure_text_fname)
@@ -77,7 +78,7 @@ class Destalinator(object):
         year, month, day = [int(x) for x in self.earliest_archive_date.split("-")]
         earliest = datetime.date(year, month, day)
         if today >= earliest:
-            self.debug("Archiving channel {}".format(channel_name))
+            self.action("Archiving channel {}".format(channel_name))
             self.archive(channel_name)
         else:
             message = "Would have archived {} but it's not yet {}"
@@ -178,12 +179,16 @@ class Destalinator(object):
             self.debug("Not warning {} because we found a prior warning".format(channel_name))
             return
         self.slackbot.say(channel_name, self.warning_text)
-        self.debug("Warned {}".format(channel_name))
+        self.action("Warned {}".format(channel_name))
 
     def log(self, message):
         timestamp = time.strftime("%H:%M:%S: ", time.localtime())
         message = timestamp + message
         self.slackbot.say(self.log_channel, message)
+
+    def action(self, message):
+        message = "*ACTION: " + message + "*"
+        self.log(message)
 
     def debug(self, message):
         message = "DEBUG: " + message
