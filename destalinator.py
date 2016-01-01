@@ -186,7 +186,7 @@ class Destalinator(object):
         self.slackbot.say(self.log_channel, message)
 
     def action(self, message):
-        message = "ACTION: " + message
+        message = "*ACTION: " + message + "*"
         self.log(message)
 
     def debug(self, message):
