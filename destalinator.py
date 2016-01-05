@@ -17,7 +17,7 @@ class Destalinator(object):
     warning_text_fname = "warning.txt"
     earliest_archive_date = "2016-01-28"  # Do not archive channels prior to this date
     log_channel = "destalinator-log"
-    debug_environment_variable = "DESTALINATOR_DEBUG"
+    output_debug_to_slack = "DESTALINATOR_SLACK_VERBOSE"
 
     ignore_users = ["USLACKBOT"]
 
@@ -35,7 +35,11 @@ class Destalinator(object):
         self.closure_text = self.get_content(self.closure_text_fname)
         self.warning_text = self.get_content(self.warning_text_fname)
         self.slackbot = slackbot
-        self.debug_flag = os.getenv(self.debug_environment_variable)
+        self.output_debug_to_slack_flag = False
+        if os.getenv(self.output_debug_to_slack):
+            self.output_debug_to_slack_flag = True
+        print "output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag)
+        # sys.exit(0)
 
     def get_content(self, fname):
         """
@@ -195,10 +199,10 @@ class Destalinator(object):
 
     def debug(self, message):
         message = "DEBUG: " + message
-        if self.debug_flag:
-            print message
-        else:
+        if self.output_debug_to_slack_flag:
             self.log(message)
+        else:
+            print message
 
     def warning(self, message):
         message = "WARNING: " + message
