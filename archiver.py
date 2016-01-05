@@ -2,21 +2,13 @@
 
 import os
 
-import slackbot
-import destalinator
+import executor
 
 
-class Archiver(object):
-
-    def __init__(self):
-        self.sb = slackbot.Slackbot("rands-leadership",
-                                    token=os.getenv("SB_TOKEN"))
-        self.ds = destalinator.Destalinator("rands-leadership",
-                                            slackbot=self.sb,
-                                            token=os.getenv("API_TOKEN"))
+class Archiver(executor.Executor):
 
     def archive(self):
-        self.ds.safe_archive_all(60)
+        self.ds.safe_archive_all(self.config.archive_threshold)
 
 if __name__ == "__main__":
     archiver = Archiver()
