@@ -3,20 +3,13 @@
 import os
 import sys
 
-import slackbot
-import destalinator
+import executor
 
 
-class Warner(object):
-
-    def __init__(self):
-        self.sb = slackbot.Slackbot("rands-leadership", token=os.getenv("SB_TOKEN"))
-        self.ds = destalinator.Destalinator("rands-leadership",
-                                            slackbot=self.sb,
-                                            token=os.getenv("API_TOKEN"))
+class Warner(executor.Executor):
 
     def warn(self, force_warn=False):
-        self.ds.warn_all(30, force_warn)
+        self.ds.warn_all(self.config.warn_threshold, force_warn)
 
 if __name__ == "__main__":
     warner = Warner()
