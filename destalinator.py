@@ -39,7 +39,7 @@ class Destalinator(object):
         if os.getenv(self.output_debug_to_slack):
             self.output_debug_to_slack_flag = True
         print "output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag)
-        # sys.exit(0)
+        self.user = os.getenv("USER")
 
     def get_content(self, fname):
         """
@@ -212,7 +212,7 @@ class Destalinator(object):
         """
         Safe-archives all channels stale longer than DAYS days
         """
-        self.action("Safe-archiving all appropriate channels stale for more than {} days".format(days))
+        self.action("{} safe-archiving all appropriate channels stale for more than {} days".format(self.user, days))
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
                 # self.debug("Attempting to safe-archive {}".format(channel))
@@ -223,7 +223,7 @@ class Destalinator(object):
         warns all channels which are DAYS idle
         if force_warn, will warn even if we already have
         """
-        self.action("Warning all appropriate channels stale for more than {} days".format(days))
+        self.action("{} warning all appropriate channels stale for more than {} days".format(self.user, days))
         for channel in sorted(self.channels.keys()):
             if self.stale(channel, days):
                 self.warn(channel, days, force_warn)
