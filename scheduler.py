@@ -5,7 +5,7 @@ import os
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job("cron", hour=1)
+@sched.scheduled_job("cron", hour=3)
 def destalinate_job():
     print("Destalinating")
     if "SB_TOKEN" not in os.environ or "API_TOKEN" not in os.environ:
