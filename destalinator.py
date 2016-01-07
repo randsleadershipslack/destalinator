@@ -7,18 +7,16 @@ import time
 
 import requests
 
+import config
 import slackbot
-import util
 
 
 class Destalinator(object):
 
     closure_text_fname = "closure.txt"
     warning_text_fname = "warning.txt"
-    earliest_archive_date = "2016-01-28"  # Do not archive channels prior to this date
     log_channel = "destalinator-log"
     output_debug_to_slack = "DESTALINATOR_SLACK_VERBOSE"
-
     ignore_users = ["USLACKBOT"]
 
     def __init__(self, slack_name, slackbot, token):
@@ -40,6 +38,8 @@ class Destalinator(object):
             self.output_debug_to_slack_flag = True
         print "output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag)
         self.user = os.getenv("USER")
+        self.config = config.Config()
+        self.earliest_archive_date = self.config.earliest_archive_date
 
     def get_content(self, fname):
         """
@@ -86,7 +86,7 @@ class Destalinator(object):
         earliest = datetime.date(year, month, day)
         if today >= earliest:
             self.action("Archiving channel {}".format(channel_name))
-            self.archive(channel_name)
+            # self.archive(channel_name)
         else:
             message = "Would have archived {} but it's not yet {}"
             message = message.format(channel_name, self.earliest_archive_date)
