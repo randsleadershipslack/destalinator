@@ -8,3 +8,4 @@ api_token_env_varname: API_TOKEN
 warn_threshold: 30
 # Days of silence before we auto-archive a channel
 archive_threshold: 60
+earliest_archive_date: "2016-01-28"  # Do not archive before this date
