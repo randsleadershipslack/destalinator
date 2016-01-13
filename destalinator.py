@@ -217,7 +217,7 @@ class Destalinator(object):
         """
         Safe-archives all channels stale longer than DAYS days
         """
-        self.action("{} safe-archiving all appropriate channels stale for more than {} days".format(self.user, days))
+        self.action("({}) safe-archiving all appropriate channels stale for more than {} days".format(self.user, days))
         for channel in sorted(self.channels.keys()):
             if channel in self.ignore_channels:
                 self.debug("Not archiving {} because it's in ignore_channels".format(channel))
@@ -231,7 +231,7 @@ class Destalinator(object):
         warns all channels which are DAYS idle
         if force_warn, will warn even if we already have
         """
-        self.action("{} warning all appropriate channels stale for more than {} days".format(self.user, days))
+        self.action("({}) warning all appropriate channels stale for more than {} days".format(self.user, days))
         for channel in sorted(self.channels.keys()):
             if channel in self.ignore_channels:
                 self.debug("Not warning {} because it's in ignore_channels".format(channel))
