@@ -18,6 +18,7 @@ class Destalinator(object):
     log_channel = "destalinator-log"
     output_debug_to_slack = "DESTALINATOR_SLACK_VERBOSE"
     ignore_users = ["USLACKBOT"]
+    ignore_channels = ["destalinator-log"]
 
     def __init__(self, slack_name, slackbot, token):
         """
@@ -96,6 +97,8 @@ class Destalinator(object):
         """
         Archives the given channel name.  Returns the response content
         """
+        if channel_name in self.ignore_channels:
+            self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
         url_template = self.url + "channels.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
@@ -179,6 +182,8 @@ class Destalinator(object):
         in the last DAYS days
         if force_warn, will warn even if we have before
         """
+        if channel_name in self.ignore_channels:
+            self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
         messages = self.get_messages(channel_name, days)
         texts = [x['text'].strip() for x in messages]
         if self.warning_text in texts and not force_warn:
@@ -214,6 +219,9 @@ class Destalinator(object):
         """
         self.action("{} safe-archiving all appropriate channels stale for more than {} days".format(self.user, days))
         for channel in sorted(self.channels.keys()):
+            if channel in self.ignore_channels:
+                self.debug("Not archiving {} because it's in ignore_channels".format(channel))
+                continue
             if self.stale(channel, days):
                 # self.debug("Attempting to safe-archive {}".format(channel))
                 self.safe_archive(channel)
@@ -225,6 +233,9 @@ class Destalinator(object):
         """
         self.action("{} warning all appropriate channels stale for more than {} days".format(self.user, days))
         for channel in sorted(self.channels.keys()):
+            if channel in self.ignore_channels:
+                self.debug("Not warning {} because it's in ignore_channels".format(channel))
+                continue
             if self.stale(channel, days):
                 self.warn(channel, days, force_warn)
 
