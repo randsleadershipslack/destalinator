@@ -1,6 +1,7 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 from warner import Warner
 from archiver import Archiver
+from announcer import Announcer
 import os
 
 sched = BlockingScheduler()
@@ -15,10 +16,13 @@ def destalinate_job():
     else:
         warner = Warner()
         archiver = Archiver()
+        announcer = Announcer()
         print("Warning")
         warner.warn()
         print("Archiving")
         archiver.archive()
+        print("Announcing")
+        announcer.announcing()
         print("OK: destalinated")
     print("END: destalinate_job")
 

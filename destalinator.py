@@ -19,6 +19,7 @@ class Destalinator(object):
     output_debug_to_slack = "DESTALINATOR_SLACK_VERBOSE"
     ignore_users = ["USLACKBOT"]
     ignore_channels = ["destalinator-log"]
+    announce_channel = "zmeta-new-channels"
 
     def __init__(self, slack_name, slackbot, token):
         """
@@ -41,6 +42,15 @@ class Destalinator(object):
         self.user = os.getenv("USER")
         self.config = config.Config()
         self.earliest_archive_date = self.config.earliest_archive_date
+        self.get_users()
+
+    def asciify(self, text):
+        return ''.join([x for x in list(text) if ord(x) in range(128)])
+
+    def get_users(self):
+        url = self.url + "users.list?token=" + self.token
+        payload = requests.get(url).json()['members']
+        self.users = {x['id']: x['name'] for x in payload}
 
     def get_content(self, fname):
         """
@@ -59,6 +69,38 @@ class Destalinator(object):
         return a {channel_name: channel_id} dictionary
         if exclude_arhived (default: True), only shows non-archived channels
         """
+        channels = self.get_all_channel_objects(exclude_archived=exclude_archived)
+        return {x['name']: x['id'] for x in channels}
+
+    def announce_new_channels(self):
+        new = self.get_new_channels()
+        for cname, creator, purpose in new:
+            m = "Channel #{} was created by {} with purpose: {}".format(cname, creator, purpose)
+            self.slackbot.say(self.announce_channel, m)
+
+    def get_new_channels(self):
+        """
+        returns [(channel_name, creator, purpose)] created in the last 24 hours
+        """
+
+        now = time.time()
+        dayago = now - 86400
+        channels = self.get_all_channel_objects()
+        new_channels = [channel for channel in channels if channel['created'] > dayago]
+        new = []
+        for new_channel in new_channels:
+            purpose = self.asciify(new_channel['purpose']['value'])
+            creator = new_channel['creator']
+            friendly = self.asciify(self.users[creator])
+            name = self.asciify(new_channel['name'])
+            new.append((name, friendly, purpose))
+        return new
+
+    def get_all_channel_objects(self, exclude_archived=True):
+        """
+        return all channels
+        if exclude_arhived (default: True), only shows non-archived channels
+        """
 
         url_template = self.url + "channels.list?exclude_archived={}&token={}"
         if exclude_archived:
@@ -69,8 +111,7 @@ class Destalinator(object):
         request = requests.get(url)
         payload = request.json()
         assert 'channels' in payload
-        channels = {x['name']: x['id'] for x in payload['channels']}
-        return channels
+        return payload['channels']
 
     def get_channelid(self, channel_name):
         """
