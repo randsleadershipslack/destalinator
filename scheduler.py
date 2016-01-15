@@ -22,7 +22,7 @@ def destalinate_job():
         print("Archiving")
         archiver.archive()
         print("Announcing")
-        announcer.announcing()
+        announcer.announce()
         print("OK: destalinated")
     print("END: destalinate_job")
 
