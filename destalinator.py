@@ -61,6 +61,61 @@ class Destalinator(object):
         f.close()
         return ret
 
+    def get_messages_in_time_range(self, oldest, cid, latest=None):
+        messages = []
+        done = False
+        while not done:
+            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
+            if latest:
+                murl += "&latest={}".format(latest)
+            else:
+                murl += "&latest={}".format(time.time())
+            payload = requests.get(murl).json()
+            messages += payload['messages']
+            if payload['has_more'] == False:
+                done = True
+                continue
+            ts = [float(x['ts']) for x in messages]
+            earliest = min(ts)
+            latest = earliest
+        messages.sort(key=lambda x: float(x['ts']))
+        return messages
+
+    def get_interesting_messages(self):
+        """
+        returns list of interesting messages
+        """
+        now = time.time()
+        dayago = now - 86400
+
+        messages = []
+        for channel in self.channels:
+            cid = self.channels[channel]
+            cur_messages = self.get_messages_in_time_range(dayago, cid, now)
+            for message in cur_messages:
+                if message.get("reactions") is None:
+                    continue
+                reactions = message.get("reactions")
+                for reaction in reactions:
+                    if reaction['name'] == self.config.interesting_emoji and reaction['count'] >= self.config.interesting_threshold:
+                        messages.append(message)
+                        message['channel'] = channel
+
+        return messages
+
+    def announce_interesting_messages(self):
+        messages = self.get_interesting_messages()
+        slack_name = self.config.slack_name
+        for message in messages:
+            ts = message['ts'].replace(".", "")
+            channel = message['channel']
+            author = message['user']
+            author_name = self.users[author]
+            text = self.asciify(message['text'])
+            url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
+            m = "{} said '{}' ({})".format(author_name, text, url)
+            self.slackbot.say(self.config.interesting_channel, m)
+
     def api_url(self):
         return "https://{}.slack.com/api/".format(self.slack_name)
 
