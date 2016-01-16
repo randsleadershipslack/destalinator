@@ -8,7 +8,7 @@ import executor
 
 class Announcer(executor.Executor):
 
-    def announce(self, force_warn=False):
+    def announce(self):
         self.ds.announce_new_channels()
 
 if __name__ == "__main__":
