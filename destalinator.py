@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import re
 import sys
 import time
 
@@ -112,9 +113,39 @@ class Destalinator(object):
             author = message['user']
             author_name = self.users[author]
             text = self.asciify(message['text'])
+            text = self.detokenize(text)
             url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
-            m = "{} said '{}' ({})".format(author_name, text, url)
+            m = "*{}* said _'{}'_ ({})".format(author_name, text, url)
+            # print m
             self.slackbot.say(self.config.interesting_channel, m)
+
+    def replace_id(self, cid):
+        """
+        Assuming either a #channelid or @personid, replace them with #channelname or @username
+        """
+        stripped = cid[1:]
+        first = cid[0]
+        if first == "#":
+            m = [x for x in self.channels if self.channels[x] == stripped]
+            if m:
+                return "#" + m[0]
+            else:
+                return cid
+        elif first == "@":
+            uname = self.users.get(stripped)
+            if uname:
+                return "@" + uname
+        return cid
+
+    def detokenize(self, message):
+        new = []
+        tokens = re.split("(<.*?>)", message)
+        for token in tokens:
+            if len(token) > 3 and token[0] == "<" and token[-1] == ">":
+                token = self.replace_id(token[1:-1])
+            new.append(token)
+        message = " ".join(new)
+        return message
 
     def api_url(self):
         return "https://{}.slack.com/api/".format(self.slack_name)
