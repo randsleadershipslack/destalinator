@@ -16,3 +16,5 @@ interesting_emoji: "floppy_disk"
 interesting_threshold: 2
 # What channel should we mention interesting things?
 interesting_channel: "zmeta-flagged"
+# Where should we announce new channels?
+announce_channel: "zmeta-new-channels"
