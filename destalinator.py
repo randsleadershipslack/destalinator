@@ -115,7 +115,7 @@ class Destalinator(object):
             text = self.asciify(message['text'])
             text = self.detokenize(text)
             url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
-            m = "*{}* said _'{}'_ ({})".format(author_name, text, url)
+            m = "*{}* said in *{}* _'{}'_ ({})".format(author_name, channel, text, url)
             # print m
             self.slackbot.say(self.config.interesting_channel, m)
 
