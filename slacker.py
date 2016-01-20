@@ -97,6 +97,14 @@ class Slacker(object):
     def get_channelid(self, channel_name):
         return self.channels_by_name[channel_name]
 
+    def delete_message(self, cid, message_timestamp):
+        url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
+        url = url_template.format(self.token, cid, message_timestamp)
+        ret = requests.get(url).json()
+        if not ret['ok']:
+            print ret
+        return ret['ok']
+
     def get_channel_info(self, channel_name):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
