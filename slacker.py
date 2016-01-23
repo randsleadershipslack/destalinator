@@ -66,7 +66,7 @@ class Slacker(object):
             else:
                 return cid
         elif first == "@":
-            uname = self.users.get(stripped)
+            uname = self.users_by_id[stripped]
             if uname:
                 return "@" + uname
         return cid
