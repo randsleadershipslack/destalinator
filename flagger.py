@@ -32,11 +32,15 @@ class Flagger(executor.Executor):
                     threshold = int(tokens[4])
                     emoji = tokens[5].replace(":", "")
                     output_channel_id = re.sub("[<>]", "", tokens[6])
+                    if output_channel_id.find("|") != -1:
+                        cid, cname = output_channel_id.split("|")
+                        output_channel_id = cid
                     output_channel_name = self.slacker.replace_id(output_channel_id)
                     control[uuid] = {'threshold': threshold, 'emoji': emoji, 'output': output_channel_name}
                 except Exception, e:
                     self.ds.warning("Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e))
             self.control = control
+            # print "control: {}".format(json.dumps(self.control, indent=4))
             self.emoji = [x['emoji'] for x in self.control.values()]
 
         def announce_interesting_messages(self):
@@ -98,6 +102,7 @@ class Flagger(executor.Executor):
                 m = "*@{}* said in *#{}* _'{}'_ ({})".format(author_name, channel, text, url)
                 # print m
                 for output_channel in channels:
+                    # print "Saying {} to {}".format(m, output_channel)
                     self.sb.say(output_channel, m)
 
         def flag(self):
