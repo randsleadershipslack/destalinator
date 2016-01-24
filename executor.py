@@ -10,7 +10,9 @@ import slacker
 
 class Executor(object):
 
-    def __init__(self):
+    def __init__(self, debug=False, verbose=False):
+        self.debug = debug
+        self.verbose = verbose
         self.config = config.Config()
         slackbot_token = os.getenv(self.config.slackbot_api_token_env_varname)
         api_token = os.getenv(self.config.api_token_env_varname)

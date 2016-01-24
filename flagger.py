@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import argparse
 import json
 import os
 import re
@@ -14,6 +15,13 @@ config = config.Config()
 
 class Flagger(executor.Executor):
 
+        def dprint(self, message):
+            """
+            If we're in debug or verbose mode, print message
+            """
+            if self.debug or self.verbose:
+                print message
+
         def initialize_control(self):
             """
             sets up known control configuration based on #zmeta-control messages
@@ -24,8 +32,18 @@ class Flagger(executor.Executor):
             control = {}
             for message in messages:
                 text = message['text']
-                if text.find("flag content rule") != 0:
+                tokens = text.split()
+                if tokens[0:3] != ['flag', 'content', 'rule']:
                     continue
+                if len(tokens) < 5:
+                    self.ds.warning("control message {} has too few tokens".format(text))
+                    continue
+                if len(tokens) == 5 and tokens[4] == 'delete':
+                    uuid = tokens[3]
+                    if uuid in control:
+                        del(control[uuid])
+                        self.dprint("Message {} deletes UUID {}".format(text, uuid))
+                        continue
                 try:
                     tokens = text.split()
                     uuid = tokens[3]
@@ -38,14 +56,13 @@ class Flagger(executor.Executor):
                     output_channel_name = self.slacker.replace_id(output_channel_id)
                     control[uuid] = {'threshold': threshold, 'emoji': emoji, 'output': output_channel_name}
                 except Exception, e:
-                    self.ds.warning("Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e))
+                    m = "Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e)
+                    self.dprint(m)
+                    if not self.debug:
+                        self.ds.warning(m)
             self.control = control
-            # print "control: {}".format(json.dumps(self.control, indent=4))
+            self.dprint("control: {}".format(json.dumps(self.control, indent=4)))
             self.emoji = [x['emoji'] for x in self.control.values()]
-
-        def announce_interesting_messages(self):
-            messages = self.get_interesting_messages()
-
 
         def message_destination(self, message):
             """
@@ -67,9 +84,6 @@ class Flagger(executor.Executor):
                     if reaction['name'] == rule['emoji'] and reaction['count'] >= rule['threshold']:
                         channels.append(rule['output'])
             return channels
-
-        def asciify(self, text):
-            return ''.join([x for x in list(text) if ord(x) in range(128)])
 
         def get_interesting_messages(self):
             """
@@ -96,20 +110,25 @@ class Flagger(executor.Executor):
                 channel = message['channel']
                 author = message['user']
                 author_name = self.slacker.users_by_id[author]
-                text = self.asciify(message['text'])
+                text = self.slacker.asciify(message['text'])
                 text = self.slacker.detokenize(text)
                 url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
                 m = "*@{}* said in *#{}* _'{}'_ ({})".format(author_name, channel, text, url)
-                # print m
                 for output_channel in channels:
-                    # print "Saying {} to {}".format(m, output_channel)
-                    self.sb.say(output_channel, m)
+                    m = "Saying {} to {}".format(m, output_channel)
+                    self.dprint(m)
+                    if not self.debug:
+                        self.sb.say(output_channel, m)
 
         def flag(self):
             self.initialize_control()
             self.announce_interesting_messages()
 
 if __name__ == "__main__":
-    flagger = Flagger()
+    parser = argparse.ArgumentParser(description='Flag interesting Slack messages.')
+    parser.add_argument("--debug", action="store_true", default=False)
+    parser.add_argument("--verbose", action="store_true", default=False)
+    args = parser.parse_args()
+
+    flagger = Flagger(debug=args.debug, verbose=args.verbose)
     flagger.flag()
-    # flagger.initialize_control()
