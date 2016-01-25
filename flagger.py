@@ -115,8 +115,8 @@ class Flagger(executor.Executor):
                 url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
                 m = "*@{}* said in *#{}* _'{}'_ ({})".format(author_name, channel, text, url)
                 for output_channel in channels:
-                    m = "Saying {} to {}".format(m, output_channel)
-                    self.dprint(m)
+                    md = "Saying {} to {}".format(m, output_channel)
+                    self.dprint(md)
                     if not self.debug:
                         self.sb.say(output_channel, m)
 
