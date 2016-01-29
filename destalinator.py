@@ -57,8 +57,8 @@ class Destalinator(object):
         year, month, day = [int(x) for x in self.earliest_archive_date.split("-")]
         earliest = datetime.date(year, month, day)
         if today >= earliest:
-            self.action("(not really) Archiving channel {}".format(channel_name))
-            # self.archive(channel_name)
+            self.action("Archiving channel {}".format(channel_name))
+            self.archive(channel_name)
         else:
             message = "Would have archived {} but it's not yet {}"
             message = message.format(channel_name, self.earliest_archive_date)
