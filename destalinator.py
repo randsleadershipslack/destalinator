@@ -20,6 +20,7 @@ class Destalinator(object):
     output_debug_to_slack = "DESTALINATOR_SLACK_VERBOSE"
     ignore_users = ["USLACKBOT"]
     ignore_channels = ["destalinator-log"]
+    ignore_channel_patterns = ["^zmeta-"]
 
     def __init__(self, slacker, slackbot):
         """
@@ -68,8 +69,9 @@ class Destalinator(object):
         """
         Archives the given channel name.  Returns the response content
         """
-        if channel_name in self.ignore_channels:
+        if self.ignore_channel(channel_name):
             self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
+            return
         payload = self.slacker.archive(channel_name)
         self.slackbot.say(channel_name, self.closure_text)
         self.debug("Archived {}".format(channel_name))
@@ -124,8 +126,9 @@ class Destalinator(object):
         in the last DAYS days
         if force_warn, will warn even if we have before
         """
-        if channel_name in self.ignore_channels:
+        if self.ignore_channel(channel_name):
             self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
+            return
         messages = self.get_messages(channel_name, days)
         # print "messages for {}: {}".format(channel_name, messages)
         texts = [x['text'].strip() for x in messages]
@@ -163,12 +166,20 @@ class Destalinator(object):
         """
         self.action("Safe-archiving all channels stale for more than {} days".format(days))
         for channel in sorted(self.slacker.channels_by_name.keys()):
-            if channel in self.ignore_channels:
+            if self.ignore_channel(channel):
                 self.debug("Not archiving {} because it's in ignore_channels".format(channel))
                 continue
             if self.stale(channel, days):
                 # self.debug("Attempting to safe-archive {}".format(channel))
                 self.safe_archive(channel)
+
+    def ignore_channel(self, channel_name):
+        if channel_name in self.ignore_channels:
+            return True
+        for pat in self.ignore_channel_patterns:
+            if re.match(pat, channel_name):
+                return True
+        return False
 
     def warn_all(self, days, force_warn=False):
         """
@@ -178,7 +189,7 @@ class Destalinator(object):
         self.action("Warning all channels stale for more than {} days".format(days))
         # for channel in ["austin"]:
         for channel in sorted(self.slacker.channels_by_name.keys()):
-            if channel in self.ignore_channels:
+            if self.ignore_channel(channel):
                 self.debug("Not warning {} because it's in ignore_channels".format(channel))
                 continue
             if self.stale(channel, days):
