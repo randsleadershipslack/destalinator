@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import os
+import warnings
 import yaml
 
 
@@ -14,4 +16,12 @@ class Config(object):
         self.config = yaml.load(blob)
 
     def __getattr__(self, attrname):
+        if attrname == "slack_name":
+            warnings.warn("The `slack_name` key in %s is deprecated in favour of the `SLACK_NAME` environment variable" % self.config_fname, DeprecationWarning)
+
         return self.config[attrname]
+
+
+SLACK_NAME = os.getenv("SLACK_NAME")
+if SLACK_NAME is None:  # This deliberately isn't a `getenv` default so `.slack_name` isn't tried if there's a SLACK_NAME
+    SLACK_NAME = Config().slack_name
