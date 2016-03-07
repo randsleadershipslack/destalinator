@@ -7,10 +7,10 @@ import re
 import sys
 import time
 
-import config
+import config as _config
 import executor
 
-config = config.Config()
+config = _config.Config()
 
 
 class Flagger(executor.Executor):
@@ -104,7 +104,7 @@ class Flagger(executor.Executor):
 
         def announce_interesting_messages(self):
             messages = self.get_interesting_messages()
-            slack_name = config.slack_name
+            slack_name = _config.SLACK_NAME
             for message, channels in messages:
                 ts = message['ts'].replace(".", "")
                 channel = message['channel']

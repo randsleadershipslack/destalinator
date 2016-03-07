@@ -1,4 +1,4 @@
-# Name of your Slack -- just the aprt before '.slack.com'
+# Name of your Slack (Deprecated in favour of the SLACK_NAME env var)
 slack_name: rands-leadership
 # Name of environmental variable holding a valid Slackbot API token
 slackbot_api_token_env_varname: SB_TOKEN
