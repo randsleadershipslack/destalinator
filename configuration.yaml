@@ -1,15 +1,41 @@
 # Name of your Slack (Deprecated in favour of the SLACK_NAME env var)
 slack_name: rands-leadership
+
 # Name of environmental variable holding a valid Slackbot API token
 slackbot_api_token_env_varname: SB_TOKEN
+
 # Name of environmental variable holding a valid general-purpose API token
 api_token_env_varname: API_TOKEN
+
+# Name of environmental variable determining whether output debug mode is enabled
+output_debug_env_varname: DESTALINATOR_SLACK_VERBOSE
+
 # Days of silence before we warn a channel it's going to be archived
 warn_threshold: 30
+
 # Days of silence before we auto-archive a channel
 archive_threshold: 60
-earliest_archive_date: "2016-01-28"  # Do not archive before this date
+
+# Do not archive before this date
+earliest_archive_date: "2016-01-28"
+
 # Where should we announce new channels?
 announce_channel: "zmeta-new-channels"
+
 # Where do we send control messages?
 control_channel: "zmeta-control"
+
+# Where to send destalinator debug logs
+log_channel: "destalinator-log"
+
+# Channels to ignore when archiving (i.e. they can be silent and not get archived)
+ignore_channels:
+  - destalinator-log
+
+# Regular expression patterns for additional channels to ignore during archiving
+ignore_channel_patterns:
+  - ^zmeta-
+
+# Users to ignore when considering if a channel is stale
+ignore_users:
+  - USLACKBOT

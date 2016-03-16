@@ -24,7 +24,7 @@ class Flagger(executor.Executor):
 
         def initialize_control(self):
             """
-            sets up known control configuration based on #zmeta-control messages
+            sets up known control configuration based on control channel messages
             """
             channel = config.control_channel
             cid = self.slacker.get_channelid(channel)
