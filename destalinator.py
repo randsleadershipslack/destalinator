@@ -16,11 +16,6 @@ class Destalinator(object):
 
     closure_text_fname = "closure.txt"
     warning_text_fname = "warning.txt"
-    log_channel = "destalinator-log"
-    output_debug_to_slack = "DESTALINATOR_SLACK_VERBOSE"
-    ignore_users = ["USLACKBOT"]
-    ignore_channels = ["destalinator-log"]
-    ignore_channel_patterns = ["^zmeta-"]
 
     def __init__(self, slacker, slackbot):
         """
@@ -31,12 +26,12 @@ class Destalinator(object):
         self.warning_text = self.get_content(self.warning_text_fname)
         self.slacker = slacker
         self.slackbot = slackbot
-        self.output_debug_to_slack_flag = False
-        if os.getenv(self.output_debug_to_slack):
-            self.output_debug_to_slack_flag = True
-        print "output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag)
         self.user = os.getenv("USER")
         self.config = config.Config()
+        self.output_debug_to_slack_flag = False
+        if os.getenv(self.config.output_debug_env_varname):
+            self.output_debug_to_slack_flag = True
+        print "output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag)
         self.earliest_archive_date = self.config.earliest_archive_date
         self.cache = {}
         self.now = time.time()
@@ -89,14 +84,14 @@ class Destalinator(object):
     def stale(self, channel_name, days):
         """
         returns True/False whether the channel is stale.  Definition of stale is
-        no messages in the last DAYS days which are not from self.ignore_users
+        no messages in the last DAYS days which are not from config.ignore_users
         """
         minimum_age = self.channel_minimum_age(channel_name, days)
         if not minimum_age:
             # self.debug("Not checking if {} is stale -- it's too new".format(channel_name))
             return False
         messages = self.get_messages(channel_name, days)
-        messages = [x for x in messages if x.get("user") not in self.ignore_users]
+        messages = [x for x in messages if x.get("user") not in self.config.ignore_users]
         if messages:
             return False
         else:
@@ -143,7 +138,7 @@ class Destalinator(object):
     def log(self, message):
         timestamp = time.strftime("%H:%M:%S: ", time.localtime())
         message = timestamp + " ({}) ".format(self.user) + message
-        self.slackbot.say(self.log_channel, message)
+        self.slackbot.say(self.config.log_channel, message)
 
     def action(self, message):
         message = "*ACTION: " + message + "*"
@@ -174,9 +169,9 @@ class Destalinator(object):
                 self.safe_archive(channel)
 
     def ignore_channel(self, channel_name):
-        if channel_name in self.ignore_channels:
+        if channel_name in self.config.ignore_channels:
             return True
-        for pat in self.ignore_channel_patterns:
+        for pat in self.config.ignore_channel_patterns:
             if re.match(pat, channel_name):
                 return True
         return False

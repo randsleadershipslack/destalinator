@@ -87,7 +87,7 @@ class Slacker(object):
     def get_channels(self, exclude_archived=True):
         """
         return a {channel_name: channel_id} dictionary
-        if exclude_arhived (default: True), only shows non-archived channels
+        if exclude_archived (default: True), only shows non-archived channels
         """
         channels = self.get_all_channel_objects(exclude_archived=exclude_archived)
         self.channels_by_id = {x['id']: x['name'] for x in channels}
@@ -127,7 +127,7 @@ class Slacker(object):
     def get_all_channel_objects(self, exclude_archived=True):
         """
         return all channels
-        if exclude_arhived (default: True), only shows non-archived channels
+        if exclude_archived (default: True), only shows non-archived channels
         """
 
         url_template = self.url + "channels.list?exclude_archived={}&token={}"
