@@ -105,6 +105,19 @@ class Slacker(object):
             print ret
         return ret['ok']
 
+    def get_channel_members_ids(self, channel_name):
+        """
+        returns an array of member IDs for channel_name
+        """
+        return self.get_channel_info(channel_name)['members']
+
+    def get_channel_member_names(self, channel_name):
+        """
+        returns an array of ["@member"] for members of the channel
+        """
+        members = self.get_channel_members_ids(channel_name)
+        return ["@" + self.users_by_id[x] for x in members]
+
     def get_channel_info(self, channel_name):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
