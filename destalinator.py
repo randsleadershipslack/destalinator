@@ -67,8 +67,11 @@ class Destalinator(object):
         if self.ignore_channel(channel_name):
             self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
             return
-        payload = self.slacker.archive(channel_name)
         self.slackbot.say(channel_name, self.closure_text)
+        members = self.slacker.get_channel_member_names(channel_name)
+        say = "Members at archiving are {}".format(", ".join(members))
+        self.slackbot.say(channel_name, say)
+        payload = self.slacker.archive(channel_name)
         self.debug("Archived {}".format(channel_name))
         return payload
 
