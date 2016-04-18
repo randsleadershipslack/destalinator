@@ -2,8 +2,6 @@
 
 import requests
 
-import util
-
 
 class Slackbot(object):
 
