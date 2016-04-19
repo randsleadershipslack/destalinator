@@ -72,7 +72,13 @@ class Destalinator(object):
         say = "Members at archiving are {}".format(", ".join(members))
         self.slackbot.say(channel_name, say)
         payload = self.slacker.archive(channel_name)
-        self.debug("Archived {}".format(channel_name))
+
+        if payload['ok']:
+            self.debug("Archived {}".format(channel_name))
+        else:
+            error = payload.get('error', '!! No error found in payload %s !!' % payload)
+            self.debug("Failed to archive {channel_name}: {error}. See https://api.slack.com/methods/channels.archive for more context.".format(channel_name=channel_name, error=error))
+
         return payload
 
     def channel_minimum_age(self, channel_name, days):
