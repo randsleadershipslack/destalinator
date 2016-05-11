@@ -48,7 +48,14 @@ class Destalinator(object):
     def safe_archive(self, channel_name):
         """
         Arhives channel if today's date is after self.earliest_archive_date
+        and if channel does not only contain SCGs (Single-Channel Guests)
         """
+
+        if self.slacker.channel_has_only_restricted_members(channel_name):
+            message = "Would have archived {} but it contains restricted users"
+            self.debug(message)
+            return
+
         today = datetime.date.today()
         year, month, day = [int(x) for x in self.earliest_archive_date.split("-")]
         earliest = datetime.date(year, month, day)

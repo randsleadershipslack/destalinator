@@ -20,11 +20,22 @@ class Slacker(object):
         self.get_users()
         self.get_channels()
 
+    def get_user(self, uid):
+        url = self.url + "users.info?token={}&user={}".format(self.token, uid)
+        payload = requests.get(url).json()
+        return payload
+
     def get_users(self):
         url = self.url + "users.list?token=" + self.token
         payload = requests.get(url).json()['members']
         self.users_by_id = {x['id']: x['name'] for x in payload}
         self.users_by_name = {x['name']: x['id'] for x in payload}
+        self.restricted_users = [x['id'] for x in payload if x.get('is_restricted')]
+        self.ultra_restricted_users = [x['id'] for x in payload if x.get('is_ultra_restricted')]
+        self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
+        print "all restricted users: {}".format(self.all_restricted_users)
+        print "All restricted user names: {}".format([self.users_by_id[x] for x in self.all_restricted_users])
+        return payload
 
     def asciify(self, text):
         return ''.join([x for x in list(text) if ord(x) in range(128)])
@@ -110,6 +121,16 @@ class Slacker(object):
         returns an array of member IDs for channel_name
         """
         return self.get_channel_info(channel_name)['members']
+
+    def channel_has_only_restricted_members(self, channel_name):
+        """
+        returns True if the channel only has restricted/ultra_restricted
+        members, False otherwise
+        """
+
+        mids = set(self.get_channel_members_ids(channel_name))
+        print "mids for {} is {}".format(channel_name, mids)
+        return mids.intersection(self.all_restricted_users)
 
     def get_channel_member_names(self, channel_name):
         """
