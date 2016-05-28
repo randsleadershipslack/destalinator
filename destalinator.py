@@ -136,19 +136,21 @@ class Destalinator(object):
         send warning text to channel_name, if it has not been sent already
         in the last DAYS days
         if force_warn, will warn even if we have before
+        returns True/False whether or not we actually warned
         """
         if self.ignore_channel(channel_name):
             self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
-            return
+            return False
         messages = self.get_messages(channel_name, days)
         # print "messages for {}: {}".format(channel_name, messages)
         texts = [x['text'].strip() for x in messages]
         if self.warning_text in texts and not force_warn:
             # nothing to do
             self.debug("Not warning {} because we found a prior warning".format(channel_name))
-            return
+            return False
         self.slackbot.say(channel_name, self.warning_text)
         self.action("Warned {}".format(channel_name))
+        return True
         # print "warned {}".format(channel_name)
 
     def log(self, message):
@@ -205,9 +207,10 @@ class Destalinator(object):
                 self.debug("Not warning {} because it's in ignore_channels".format(channel))
                 continue
             if self.stale(channel, days):
-                self.warn(channel, days, force_warn)
-                stale.append(channel)
-        self.tell_general(stale)
+                if self.warn(channel, days, force_warn):
+                    stale.append(channel)
+        if stale:
+            self.tell_general(stale)
 
     def tell_general(self, stale_channels):
         if not stale_channels:
