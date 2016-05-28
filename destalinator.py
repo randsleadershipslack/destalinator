@@ -199,12 +199,33 @@ class Destalinator(object):
         """
         self.action("Warning all channels stale for more than {} days".format(days))
         # for channel in ["austin"]:
+        stale = []
         for channel in sorted(self.slacker.channels_by_name.keys()):
             if self.ignore_channel(channel):
                 self.debug("Not warning {} because it's in ignore_channels".format(channel))
                 continue
             if self.stale(channel, days):
                 self.warn(channel, days, force_warn)
+                stale.append(channel)
+        self.tell_general(stale)
+
+    def tell_general(self, stale_channels):
+        if not stale_channels:
+            return
+        if len(stale_channels) > 1:
+            channel = "channels"
+            being = "are"
+            there = "them"
+        else:
+            channel = "channel"
+            being = "is"
+            there = "it"
+        message = "Hey, heads up -- the following {} {} stale and will be "
+        message += "archived if no one participates in {} over the next 30 days: "
+        message += ", ".join(["#" + x for x in stale_channels])
+        message = message.format(channel, being, there)
+        self.slackbot.say("general", message)
+
 
     def get_stale_channels(self, days):
         ret = []
