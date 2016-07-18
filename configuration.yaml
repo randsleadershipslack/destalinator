@@ -40,6 +40,8 @@ ignore_channel_patterns:
 ignore_users:
   - USLACKBOT
 
-# Which message subtypes (other than "none") count as activity?
+# Which message subtypes count as activity?
+# "None" means the message was typed by a human. You probably want to keep it.
 included_subtypes:
+  - None
   - bot_message
