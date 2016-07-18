@@ -39,3 +39,7 @@ ignore_channel_patterns:
 # Users to ignore when considering if a channel is stale
 ignore_users:
   - USLACKBOT
+
+# Which message subtypes (other than "none") count as activity?
+included_subtypes:
+  - bot_message
