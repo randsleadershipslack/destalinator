@@ -41,7 +41,6 @@ ignore_users:
   - USLACKBOT
 
 # Which message subtypes count as activity?
-# "None" means the message was typed by a human. You probably want to keep it.
+# "None" means the message was typed by a human and is included by default.
 included_subtypes:
-  - None
   - bot_message
