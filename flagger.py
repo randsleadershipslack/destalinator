@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import operator
 import re
 import time
 
@@ -13,12 +14,34 @@ config = _config.Config()
 
 class Flagger(executor.Executor):
 
+    operators = {'>': operator.gt, '<': operator.lt, '==': operator.eq,
+                 '>=': operator.ge, '<=': operator.le}
+
     def dprint(self, message):
         """
         If we're in debug or verbose mode, print message
         """
         if self.debug or self.verbose:
             print message
+
+    def extract_threshold(self, token):
+        """
+        accept tokens of the format:
+        int
+        >=int
+        <=int
+        ==int
+        >int
+        <int
+        returns [comparator, int] or throws error if invalid
+        """
+        comparator = re.sub("\d+$", "", token)
+        value = int(re.sub("\D*", "", token))
+        if comparator == '':  # no comparator specified
+            comparator = '>='
+        print "comparator: {} value: {}".format(comparator, token)
+        assert comparator in self.operators
+        return (comparator, value)
 
     def initialize_control(self):
         """
@@ -45,14 +68,15 @@ class Flagger(executor.Executor):
             try:
                 tokens = text.split()
                 uuid = tokens[3]
-                threshold = int(tokens[4])
+                comparator, threshold = self.extract_threshold(tokens[4])
                 emoji = tokens[5].replace(":", "")
                 output_channel_id = re.sub("[<>]", "", tokens[6])
                 if output_channel_id.find("|") != -1:
                     cid, cname = output_channel_id.split("|")
                     output_channel_id = cid
                 output_channel_name = self.slacker.replace_id(output_channel_id)
-                control[uuid] = {'threshold': threshold, 'emoji': emoji, 'output': output_channel_name}
+                control[uuid] = {'threshold': threshold, "comparator": comparator,
+                                 'emoji': emoji, 'output': output_channel_name}
             except Exception, e:
                 m = "Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e)
                 self.dprint(m)
@@ -77,8 +101,13 @@ class Flagger(executor.Executor):
             # if we're here, at least one emoji matches (but count may still not be right)
             for uuid in self.control:
                 rule = self.control[uuid]
-                if reaction['name'] == rule['emoji'] and reaction['count'] >= rule['threshold']:
-                    channels.append(rule['output'])
+                if reaction['name'] == rule['emoji']:
+                    threshold = rule['threshold']
+                    comparator = rule['comparator']
+                    count = reaction['count']
+                    op = self.operators[comparator]
+                    if op(count, threshold):
+                        channels.append(rule['output'])
         return channels
 
     def get_interesting_messages(self):
