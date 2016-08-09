@@ -124,7 +124,7 @@ class Destalinator(object):
         messages = self.slacker.get_messages_in_time_range(oldest, cid)
         # print "now is {}, oldest is {}, diff is {}".format(now, oldest, now - oldest)
         # print "messages for {} are {}".format(cid, messages)
-        messages = [x for x in messages if x.get("subtype") is None]
+        messages = [x for x in messages if (x.get("subtype") is None or x.get("subtype") in self.config.included_subtypes)]
         if cid not in self.cache:
             self.cache[cid] = {}
         self.cache[cid][oldest] = messages
@@ -150,8 +150,8 @@ class Destalinator(object):
             return False
         self.slackbot.say(channel_name, self.warning_text)
         self.action("Warned {}".format(channel_name))
-        return True
         # print "warned {}".format(channel_name)
+        return True
 
     def log(self, message):
         timestamp = time.strftime("%H:%M:%S: ", time.localtime())
