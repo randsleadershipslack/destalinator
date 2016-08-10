@@ -44,3 +44,6 @@ ignore_users:
 # "None" means the message was typed by a human and is included by default.
 included_subtypes:
   - bot_message
+  - file_mention
+  - file_share
+  - me_message
