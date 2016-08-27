@@ -20,6 +20,11 @@ class Slacker(object):
         self.get_users()
         self.get_channels()
 
+    def get_emojis(self):
+        url = self.url + "emoji.list?token={}".format(self.token)
+        payload = requests.get(url).json()
+        return payload
+
     def get_user(self, uid):
         url = self.url + "users.info?token={}&user={}".format(self.token, uid)
         payload = requests.get(url).json()
@@ -33,8 +38,8 @@ class Slacker(object):
         self.restricted_users = [x['id'] for x in payload if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in payload if x.get('is_ultra_restricted')]
         self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
-        print "all restricted users: {}".format(self.all_restricted_users)
-        print "All restricted user names: {}".format([self.users_by_id[x] for x in self.all_restricted_users])
+        # print "all restricted users: {}".format(self.all_restricted_users)
+        # print "All restricted user names: {}".format([self.users_by_id[x] for x in self.all_restricted_users])
         return payload
 
     def asciify(self, text):
