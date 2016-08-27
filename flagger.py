@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import copy
 import argparse
 import json
 import operator
@@ -39,7 +40,7 @@ class Flagger(executor.Executor):
         value = int(re.sub("\D*", "", token))
         if comparator == '':  # no comparator specified
             comparator = '>='
-        print "comparator: {} value: {}".format(comparator, token)
+        self.dprint("comparator: {} value: {}".format(comparator, token))
         assert comparator in self.operators
         return (comparator, value)
 
@@ -85,6 +86,39 @@ class Flagger(executor.Executor):
         self.control = control
         self.dprint("control: {}".format(json.dumps(self.control, indent=4)))
         self.emoji = [x['emoji'] for x in self.control.values()]
+        self.initialize_emoji_aliases()
+
+    def initialize_emoji_aliases(self):
+        """
+        In some cases, emojiA might be an alias of emojiB
+        The problem is that if we say that 2xemojiB should be
+        enough to flag something, then we should accept
+        2 x emojiB
+        1 x emojiA, 1 x emojiB
+        2 x emojiA
+        This method grabs the emoji list from the Slack and creates the equivalence
+        structure
+        """
+        self.dprint("Starting emoji alias list")
+        emojis_response = self.slacker.get_emojis()
+        self.dprint("emojis_response keys are {}".format(emojis_response.keys()))
+        emojis = emojis_response['emoji']
+        equivalents = {}
+        for emoji in emojis:
+            target = emojis[emoji]
+            target_type, target_value = target.split(":", 1)
+            if target_type != "alias":
+                continue
+            self.dprint("Found emoji alias: {} <-> {}".format(emoji, target_value))
+            if emoji not in equivalents:
+                equivalents[emoji] = []
+            if target_value not in equivalents:
+                equivalents[target_value] = []
+            equivalents[emoji].append(target_value)
+            equivalents[target_value].append(emoji)
+        self.emoji_equivalents = equivalents
+        self.dprint("equivalents: {}".format(json.dumps(self.emoji_equivalents, indent=4)))
+        self.dprint("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
 
     def message_destination(self, message):
         """
@@ -95,16 +129,41 @@ class Flagger(executor.Executor):
         if message.get("reactions") is None:
             return False
         reactions = message.get("reactions")
+        emoji_set = set(self.emoji)
+        current_reactions = {}
+        t = message.get("text")
+        if t.find("SVP") != -1:
+            def d(p):
+                pass  # print p
+        else:
+            def d(p):
+                pass
+        d("reactions: {}".format(reactions))
+        d("emoji_equivalents:\n{}".format(json.dumps(self.emoji_equivalents, indent=4)))
+        d("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
         for reaction in reactions:
-            if reaction['name'] not in self.emoji:
+            count = reaction['count']
+            current_emoji = reaction['name']
+            d("current_emoji: {}".format(current_emoji))
+            equivalents = copy.copy(self.emoji_equivalents.get(current_emoji, []))
+            d("equivalents = {}".format(equivalents))
+            equivalents.append(current_emoji)
+            d("equivalents = {}".format(equivalents))
+            current_set = set(equivalents)
+            i = current_set.intersection(emoji_set)
+            if not i:
                 continue
+            for ce in equivalents:
+                current_reactions[ce] = current_reactions.get(ce, 0) + count
             # if we're here, at least one emoji matches (but count may still not be right)
-            for uuid in self.control:
-                rule = self.control[uuid]
-                if reaction['name'] == rule['emoji']:
+        d("Current reactions: {}".format(current_reactions))
+        for uuid in self.control:
+            rule = self.control[uuid]
+            for ce in current_reactions:
+                if ce == rule['emoji']:
+                    count = current_reactions[ce]
                     threshold = rule['threshold']
                     comparator = rule['comparator']
-                    count = reaction['count']
                     op = self.operators[comparator]
                     if op(count, threshold):
                         channels.append(rule['output'])
