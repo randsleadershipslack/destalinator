@@ -3,9 +3,11 @@
 import copy
 import argparse
 import json
+import HTMLParser
 import operator
 import re
 import time
+import traceback
 
 import config as _config
 import executor
@@ -17,6 +19,10 @@ class Flagger(executor.Executor):
 
     operators = {'>': operator.gt, '<': operator.lt, '==': operator.eq,
                  '>=': operator.ge, '<=': operator.le}
+
+    def __init__(self, *args, **kwargs):
+        self.htmlparser = HTMLParser.HTMLParser()
+        super(Flagger, self).__init__(*args, **kwargs)
 
     def dprint(self, message):
         """
@@ -40,7 +46,10 @@ class Flagger(executor.Executor):
         value = int(re.sub("\D*", "", token))
         if comparator == '':  # no comparator specified
             comparator = '>='
-        self.dprint("comparator: {} value: {}".format(comparator, token))
+
+        comparator = self.htmlparser.unescape(comparator)
+        self.dprint("token: {} comparator: {} value: {}".format(token, comparator, value))
+
         assert comparator in self.operators
         return (comparator, value)
 
@@ -79,8 +88,10 @@ class Flagger(executor.Executor):
                 control[uuid] = {'threshold': threshold, "comparator": comparator,
                                  'emoji': emoji, 'output': output_channel_name}
             except Exception, e:
+                tb = traceback.format_exc()
                 m = "Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e)
                 self.dprint(m)
+                self.dprint(tb)
                 if not self.debug:
                     self.ds.warning(m)
         self.control = control
