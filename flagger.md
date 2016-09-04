@@ -16,7 +16,8 @@ configuration.yaml (by default, #zmeta-control)
 ## Configuration messages
 
 Flagger sweeps the configuration channel for messages of the form
-flag content rule NAMEOFRULE COMPARATORINTEGER :REACTION: #CHANNELNAME
+
+`flag content rule NAMEOFRULE COMPARATORINTEGER :REACTION: #CHANNELNAME`
 
 Where
 "flag content rule" is literal
