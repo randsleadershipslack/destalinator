@@ -107,7 +107,13 @@ class Destalinator(object):
             # self.debug("Not checking if {} is stale -- it's too new".format(channel_name))
             return False
         messages = self.get_messages(channel_name, days)
-        messages = [x for x in messages if x.get("user") not in self.config.ignore_users]
+        messages = [
+            x
+            for x
+            in messages
+            if x.get("user") not in self.config.ignore_users
+            and ":dolphin:" not in x.get("text")
+        ]
         if messages:
             return False
         else:
