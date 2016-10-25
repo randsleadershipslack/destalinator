@@ -81,6 +81,7 @@ class Destalinator(object):
         payload = self.slacker.archive(channel_name)
 
         if payload['ok']:
+            self.debug("Payload: {}".format(json.dumps(payload, indent=4)))
             self.debug("Archived {}".format(channel_name))
         else:
             error = payload.get('error', '!! No error found in payload %s !!' % payload)
