@@ -1,1 +1,3 @@
 Hello still very quiet channel. We're archiving this channel as it's been crickets here for 60 days. Content on this channel is still available via search and anyone can un-archive a channel if they want to dust it off. Channels are free.
+
+*Note*: If you unarchive this channel, but then send no messages to it, it will be archived again immediately.  Destalinator bases archival decisions based on messages, not archival/unarchival activity.
