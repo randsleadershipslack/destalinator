@@ -212,6 +212,11 @@ class Destalinator(object):
         warns all channels which are DAYS idle
         if force_warn, will warn even if we already have
         """
+        if not self.destalinator_activated:
+            m  = "Note, destalinator is not activated and is in a dry-run"
+            m += "mode. For help, see the documentation on the "
+            m += "DESTALINATOR_ACTIVATED environment variable."
+            self.log(m)
         self.action("Warning all channels stale for more than {} days".format(days))
         # for channel in ["austin"]:
         stale = []
