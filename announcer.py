@@ -32,7 +32,9 @@ class Announcer(executor.Executor):
         new = self.get_new_channels()
         for cname, creator, purpose in new:
             m = "Channel #{} was created by @{} with purpose: {}".format(cname, creator, purpose)
-            self.sb.say(config.announce_channel, m)
+            if self.destalinator_activated:
+                self.sb.say(config.announce_channel, m)
+            print("ANNOUNCE: {}".format(m))
 
 
 if __name__ == "__main__":

@@ -1,13 +1,19 @@
 # Name of your Slack (Deprecated in favour of the SLACK_NAME env var)
 slack_name: rands-leadership
 
-# Name of environmental variable holding a valid Slackbot API token
+# Name of environment variable holding a valid Slackbot API token
 slackbot_api_token_env_varname: SB_TOKEN
 
-# Name of environmental variable holding a valid general-purpose API token
+# Name of environment variable holding a valid general-purpose API token
 api_token_env_varname: API_TOKEN
 
-# Name of environmental variable determining whether output debug mode is enabled
+# Name of environment variable that determines if destalinator should 
+# actually do things to a live slack. Without this environment variable, 
+# everything will output in a "dry run" fashion (debug messages should take place,
+# but no changes or messages should affect a live Slack).
+destalinator_activated_env_varname: DESTALINATOR_ACTIVATED
+
+# Name of environment variable determining whether output debug mode is enabled
 output_debug_env_varname: DESTALINATOR_SLACK_VERBOSE
 
 # Days of silence before we warn a channel it's going to be archived
