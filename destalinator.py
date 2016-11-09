@@ -3,9 +3,8 @@
 import datetime
 import os
 import re
-import sys
 import time
-
+import json
 import requests
 
 import config
@@ -17,7 +16,7 @@ class Destalinator(object):
     closure_text_fname = "closure.txt"
     warning_text_fname = "warning.txt"
 
-    def __init__(self, slacker, slackbot):
+    def __init__(self, slacker, slackbot, activated):
         """
         slacker is a Slacker() object
         slackbot should be an initialized slackbot.Slackbot() object
@@ -31,7 +30,9 @@ class Destalinator(object):
         self.output_debug_to_slack_flag = False
         if os.getenv(self.config.output_debug_env_varname):
             self.output_debug_to_slack_flag = True
-        print "output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag)
+        print("output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag))
+        self.destalinator_activated = activated
+        print("destalinator_activated is {}".format(self.destalinator_activated))
         self.earliest_archive_date = self.config.earliest_archive_date
         self.cache = {}
         self.now = time.time()
@@ -74,20 +75,24 @@ class Destalinator(object):
         if self.ignore_channel(channel_name):
             self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
             return
-        self.slackbot.say(channel_name, self.closure_text)
-        members = self.slacker.get_channel_member_names(channel_name)
-        say = "Members at archiving are {}".format(", ".join(members))
-        self.slackbot.say(channel_name, say)
-        payload = self.slacker.archive(channel_name)
+        
+        if self.destalinator_activated:
+            self.slackbot.say(channel_name, self.closure_text)
+            self.debug("Telling channel {}: {}".format(channel_name, self.closure_text))
+            members = self.slacker.get_channel_member_names(channel_name)
+            say = "Members at archiving are {}".format(", ".join(members))
+            self.slackbot.say(channel_name, say)
+            self.debug("Telling channel {}: {}".format(channel_name, say))
+            payload = self.slacker.archive(channel_name)
 
-        if payload['ok']:
-            self.debug("Payload: {}".format(json.dumps(payload, indent=4)))
-            self.debug("Archived {}".format(channel_name))
-        else:
-            error = payload.get('error', '!! No error found in payload %s !!' % payload)
-            self.debug("Failed to archive {channel_name}: {error}. See https://api.slack.com/methods/channels.archive for more context.".format(channel_name=channel_name, error=error))
+            if payload['ok']:
+                self.debug("Payload: {}".format(json.dumps(payload, indent=4)))
+                self.debug("Archived {}".format(channel_name))
+            else:
+                error = payload.get('error', '!! No error found in payload %s !!' % payload)
+                self.debug("Failed to archive {channel_name}: {error}. See https://api.slack.com/methods/channels.archive for more context.".format(channel_name=channel_name, error=error))
 
-        return payload
+            return payload
 
     def channel_minimum_age(self, channel_name, days):
         """
@@ -155,7 +160,8 @@ class Destalinator(object):
             # nothing to do
             self.debug("Not warning {} because we found a prior warning".format(channel_name))
             return False
-        self.slackbot.say(channel_name, self.warning_text)
+        if self.destalinator_activated:
+            self.slackbot.say(channel_name, self.warning_text)
         self.action("Warned {}".format(channel_name))
         # print "warned {}".format(channel_name)
         return True
@@ -174,7 +180,7 @@ class Destalinator(object):
         if self.output_debug_to_slack_flag:
             self.log(message)
         else:
-            print message
+            print(message)
 
     def warning(self, message):
         message = "WARNING: " + message
@@ -206,6 +212,11 @@ class Destalinator(object):
         warns all channels which are DAYS idle
         if force_warn, will warn even if we already have
         """
+        if not self.destalinator_activated:
+            m  = "Note, destalinator is not activated and is in a dry-run"
+            m += "mode. For help, see the documentation on the "
+            m += "DESTALINATOR_ACTIVATED environment variable."
+            self.log(m)
         self.action("Warning all channels stale for more than {} days".format(days))
         # for channel in ["austin"]:
         stale = []
@@ -217,9 +228,10 @@ class Destalinator(object):
                 if self.warn(channel, days, force_warn):
                     stale.append(channel)
         if stale:
-            self.tell_general(stale)
+            self.debug("Notifying #general of warned channels")
+            self.warn_in_general(stale)
 
-    def tell_general(self, stale_channels):
+    def warn_in_general(self, stale_channels):
         if not stale_channels:
             return
         if len(stale_channels) > 1:
@@ -234,7 +246,9 @@ class Destalinator(object):
         message += "archived if no one participates in {} over the next 30 days: "
         message += ", ".join(["#" + x for x in stale_channels])
         message = message.format(channel, being, there)
-        self.slackbot.say("general", message)
+        if self.destalinator_activated:
+            self.slackbot.say("general", message)
+        self.debug("Notified #general with: {}".format(message))
 
 
     def get_stale_channels(self, days):

@@ -3,11 +3,16 @@
 import copy
 import argparse
 import json
-import HTMLParser
 import operator
 import re
 import time
 import traceback
+
+# support Python 2 and 3's versions of this module
+try:
+    import html.parser as HTMLParser
+except ImportError:
+    import HTMLParser
 
 import config as _config
 import executor
@@ -29,7 +34,7 @@ class Flagger(executor.Executor):
         If we're in debug or verbose mode, print message
         """
         if self.debug or self.verbose:
-            print message
+            print(message)
 
     def extract_threshold(self, token):
         """
@@ -87,7 +92,7 @@ class Flagger(executor.Executor):
                 output_channel_name = self.slacker.replace_id(output_channel_id)
                 control[uuid] = {'threshold': threshold, "comparator": comparator,
                                  'emoji': emoji, 'output': output_channel_name}
-            except Exception, e:
+            except Exception as e:
                 tb = traceback.format_exc()
                 m = "Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e)
                 self.dprint(m)
@@ -212,7 +217,7 @@ class Flagger(executor.Executor):
             for output_channel in channels:
                 md = "Saying {} to {}".format(m, output_channel)
                 self.dprint(md)
-                if not self.debug:
+                if not self.debug and self.destalinator_activated:
                     self.sb.say(output_channel, m)
 
     def flag(self):

@@ -118,7 +118,7 @@ class Slacker(object):
         url = url_template.format(self.token, cid, message_timestamp)
         ret = requests.get(url).json()
         if not ret['ok']:
-            print ret
+            print(ret)
         return ret['ok']
 
     def get_channel_members_ids(self, channel_name):
@@ -134,7 +134,7 @@ class Slacker(object):
         """
 
         mids = set(self.get_channel_members_ids(channel_name))
-        print "mids for {} is {}".format(channel_name, mids)
+        print("mids for {} is {}".format(channel_name, mids))
         return mids.intersection(self.all_restricted_users)
 
     def get_channel_member_names(self, channel_name):
