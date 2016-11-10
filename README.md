@@ -53,4 +53,6 @@ It's not *nice*, but it's simple and avoids the whole callback-URL-oauth-request
 
 #### `DESTALINATOR_ACTIVATED`
 
-Destalinator can be chatty and make potentially big changes to a Slack (by warning or archiving a large amount of channels), especially when first installed. To minimize the risk of making a mistake, Destalinator will run in a dry-run mode until the `DESTALINATOR_ACTIVATED` environment variable exists. It can be set to any non-empty value.
+Destalinator can be chatty and make potentially big changes to a Slack team (by warning or archiving a large amount of channels), especially when first installed.
+
+To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to any non-empty value and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
