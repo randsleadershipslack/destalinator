@@ -63,6 +63,9 @@ class Flagger(executor.Executor):
         sets up known control configuration based on control channel messages
         """
         channel = config.control_channel
+        if not self.slacker.channel_exists(channel):
+            self.ds.warning("Flagger control channel does not exist, cannot run. Please create #{}.".format(channel))
+            return False
         cid = self.slacker.get_channelid(channel)
         messages = self.slacker.get_messages_in_time_range(0, cid, time.time())
         control = {}
@@ -221,8 +224,8 @@ class Flagger(executor.Executor):
                     self.sb.say(output_channel, m)
 
     def flag(self):
-        self.initialize_control()
-        self.announce_interesting_messages()
+        if self.initialize_control():
+            self.announce_interesting_messages()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Flag interesting Slack messages.')
