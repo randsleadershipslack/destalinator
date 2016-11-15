@@ -1,10 +1,12 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
+import logging
 import warner
 import archiver
 import announcer
 import flagger
 import os
 
+logging.basicConfig()
 sched = BlockingScheduler()
 
 @sched.scheduled_job("cron", hour=4)
