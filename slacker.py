@@ -113,6 +113,12 @@ class Slacker(object):
     def get_channelid(self, channel_name):
         return self.channels_by_name[channel_name]
 
+    def channel_exists(self, channel_name):
+        try:
+            return self.channels_by_name[channel_name]
+        except KeyError as e: # channel not found
+            return None
+
     def delete_message(self, cid, message_timestamp):
         url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
         url = url_template.format(self.token, cid, message_timestamp)
