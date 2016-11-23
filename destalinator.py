@@ -156,7 +156,7 @@ class Destalinator(object):
             return False
         messages = self.get_messages(channel_name, days)
         # print "messages for {}: {}".format(channel_name, messages)
-        texts = [x['text'].strip() for x in messages if x['text']]
+        texts = [x.get("text").strip() for x in messages if x.get("text")]
         if self.warning_text in texts and not force_warn:
             # nothing to do
             self.debug("Not warning {} because we found a prior warning".format(channel_name))
