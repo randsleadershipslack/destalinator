@@ -118,7 +118,8 @@ class Destalinator(object):
             for x
             in messages
             if x.get("user") not in self.config.ignore_users
-            and ":dolphin:" not in x.get("text")
+            and x.get("text")
+            and ":dolphin:" not in x.get("text").encode('utf-8', 'ignore')
         ]
         if messages:
             return False
@@ -155,7 +156,7 @@ class Destalinator(object):
             return False
         messages = self.get_messages(channel_name, days)
         # print "messages for {}: {}".format(channel_name, messages)
-        texts = [x['text'].strip() for x in messages]
+        texts = [x.get("text").strip() for x in messages if x.get("text")]
         if self.warning_text in texts and not force_warn:
             # nothing to do
             self.debug("Not warning {} because we found a prior warning".format(channel_name))
