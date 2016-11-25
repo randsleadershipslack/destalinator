@@ -1,0 +1,14 @@
+version: 1
+cron:
+  - name: "warner"
+    url: "/warner"
+    schedule: "0 15 * * *"
+  - name: "archiver"
+    url: "/archiver"
+    schedule: "0 3 * * *"
+  - name: "announcer"
+    url: "/announcer"
+    schedule: "0 3 * * *"
+  - name: "flagger"
+    url: "/flagger"
+    schedule: "0 3 * * *"

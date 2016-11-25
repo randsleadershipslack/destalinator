@@ -58,3 +58,8 @@ target/
 
 # Where to store your personal API token
 *_token.txt
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

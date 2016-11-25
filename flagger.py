@@ -73,6 +73,7 @@ class Flagger(executor.Executor):
             text = message['text']
             tokens = text.split()
             if tokens[0:3] != ['flag', 'content', 'rule']:
+                self.dprint("Message detected, but not interpreted as commend: {}".format(text))
                 continue
             if len(tokens) < 5:
                 self.ds.warning("control message {} has too few tokens".format(text))
@@ -106,6 +107,7 @@ class Flagger(executor.Executor):
         self.dprint("control: {}".format(json.dumps(self.control, indent=4)))
         self.emoji = [x['emoji'] for x in self.control.values()]
         self.initialize_emoji_aliases()
+        return True
 
     def initialize_emoji_aliases(self):
         """
@@ -204,16 +206,21 @@ class Flagger(executor.Executor):
         messages = []
         for channel in self.slacker.channels_by_name:
             cid = self.slacker.get_channelid(channel)
+            self.dprint("Getting messages in last day from channel {}".format(channel))
             cur_messages = self.slacker.get_messages_in_time_range(dayago, cid, now)
+            self.dprint("Found {} messages".format(len(cur_messages)))
             for message in cur_messages:
                 announce = self.message_destination(message)
                 if announce:
                     messages.append([message, announce])
+        self.dprint("Returning messages: {}".format(messages))
         return messages
 
     def announce_interesting_messages(self):
+        self.dprint("Getting interesting messages")
         messages = self.get_interesting_messages()
         slack_name = _config.SLACK_NAME
+        self.dprint("Announcing interesting messages")
         for message, channels in messages:
             ts = message['ts'].replace(".", "")
             channel = message['channel']
@@ -226,12 +233,20 @@ class Flagger(executor.Executor):
             for output_channel in channels:
                 md = "Saying {} to {}".format(m, output_channel)
                 self.dprint(md)
+                print("self.dprint = {}".format(self.debug))
+                print("self.destalinator_activated = {}".format(self.destalinator_activated))
                 if not self.debug and self.destalinator_activated:
                     self.sb.say(output_channel, m)
+                else:
+                    self.ds.action(m)
 
     def flag(self):
+        self.dprint("Flagger control initializing")
         if self.initialize_control():
+            self.dprint("Flagger control initialized")
             self.announce_interesting_messages()
+        else:
+            self.dprint("Flagger control not initalized")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Flag interesting Slack messages.')
@@ -240,4 +255,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     flagger = Flagger(debug=args.debug, verbose=args.verbose)
+    print("Flagger running as main")
     flagger.flag()

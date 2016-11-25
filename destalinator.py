@@ -118,7 +118,6 @@ class Destalinator(object):
             for x
             in messages
             if x.get("user") not in self.config.ignore_users
-            and ":dolphin:" not in x.get("text")
         ]
         if messages:
             return False
@@ -169,6 +168,7 @@ class Destalinator(object):
     def log(self, message):
         timestamp = time.strftime("%H:%M:%S: ", time.localtime())
         message = timestamp + " ({}) ".format(self.user) + message
+        print(self.config.log_channel + ": " + message)
         self.slackbot.say(self.config.log_channel, message)
 
     def action(self, message):
