@@ -137,10 +137,8 @@ class Flagger(executor.Executor):
             equivalents[target_value].append(emoji)
         self.emoji_equivalents = equivalents
         self.dprint("equivalents: {}".format(json.dumps(self.emoji_equivalents, indent=4)))
-        try:
+        if "floppy_disk" in self.emoji_equivalents.keys():
             self.dprint("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
-        except KeyError as e:
-            self.ds.warning("Flagger attempted to use an emoji that does not exist. Please add the {} emoji.".format('floppy_disk'))
 
     def message_destination(self, message):
         """
@@ -162,10 +160,8 @@ class Flagger(executor.Executor):
                 pass
         d("reactions: {}".format(reactions))
         d("emoji_equivalents:\n{}".format(json.dumps(self.emoji_equivalents, indent=4)))
-        try:
+        if "floppy_disk" in self.emoji_equivalents.keys():
             d("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
-        except KeyError as e:
-            self.ds.warning("Flagger attempted to use an emoji that does not exist. Please add the {} emoji.".format('floppy_disk'))
         for reaction in reactions:
             count = reaction['count']
             current_emoji = reaction['name']
