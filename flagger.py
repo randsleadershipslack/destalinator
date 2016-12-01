@@ -106,6 +106,7 @@ class Flagger(executor.Executor):
         self.dprint("control: {}".format(json.dumps(self.control, indent=4)))
         self.emoji = [x['emoji'] for x in self.control.values()]
         self.initialize_emoji_aliases()
+        return True
 
     def initialize_emoji_aliases(self):
         """
@@ -220,10 +221,13 @@ class Flagger(executor.Executor):
             url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
             m = "*@{}* said in *#{}* _'{}'_ ({})".format(author_name, channel, text, url)
             for output_channel in channels:
-                md = "Saying {} to {}".format(m, output_channel)
-                self.dprint(md)
-                if not self.debug and self.destalinator_activated:
-                    self.sb.say(output_channel, m)
+                if self.slacker.channel_exists(output_channel):
+                    md = "Saying {} to {}".format(m, output_channel)
+                    self.dprint(md)
+                    if not self.debug and self.destalinator_activated:
+                        self.sb.say(output_channel, m)
+                else:
+                    self.ds.warning("Attempted to announce in {}, but channel does not exist.".format(output_channel))
 
     def flag(self):
         if self.initialize_control():
