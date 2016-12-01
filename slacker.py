@@ -115,7 +115,12 @@ class Slacker(object):
 
     def channel_exists(self, channel_name):
         try:
-            return self.channels_by_name[channel_name]
+            # strip leading "#" if it exists, as Slack returns all channels without them
+            if channel_name[0] == "#":
+                channel = channel_name[1:]
+            else:
+                channel = channel_name
+            return self.channels_by_name[channel]
         except KeyError as e: # channel not found
             return None
 
