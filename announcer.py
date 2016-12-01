@@ -33,7 +33,10 @@ class Announcer(executor.Executor):
         for cname, creator, purpose in new:
             m = "Channel #{} was created by @{} with purpose: {}".format(cname, creator, purpose)
             if self.destalinator_activated:
-                self.sb.say(config.announce_channel, m)
+                if self.slacker.channel_exists(config.announce_channel):
+                    self.sb.say(config.announce_channel, m)
+                else:
+                    self.ds.warning("Attempted to announce in {}, but channel does not exist.".format(config.announce_channel))
             print("ANNOUNCE: {}".format(m))
 
 
