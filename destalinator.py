@@ -37,6 +37,13 @@ class Destalinator(object):
         self.cache = {}
         self.now = time.time()
 
+    def add_slack_channel_markup_item(self, item):
+        return self.slacker.add_channel_markup(item.group(1))
+
+    def add_slack_channel_markup(self, text):
+        marked_up = re.sub(r"\#(\w+)", self.add_slack_channel_markup_item, text)
+        return marked_up
+
     def get_content(self, fname):
         """
         read fname into text blob, return text blob
@@ -157,7 +164,7 @@ class Destalinator(object):
         messages = self.get_messages(channel_name, days)
         # print "messages for {}: {}".format(channel_name, messages)
         texts = [x.get("text").strip() for x in messages if x.get("text")]
-        if self.warning_text in texts and not force_warn:
+        if self.add_slack_channel_markup(self.warning_text) in texts and not force_warn:
             # nothing to do
             self.debug("Not warning {} because we found a prior warning".format(channel_name))
             return False
