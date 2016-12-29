@@ -45,6 +45,16 @@ class Slacker(object):
     def asciify(self, text):
         return ''.join([x for x in list(text) if ord(x) in range(128)])
 
+    def add_channel_markup(self, channel_name, fail_silently=True):
+        channel_id = self.get_channelid(channel_name)
+        if channel_id:
+            return "<#{}|{}>".format(channel_id, channel_name)
+        else:
+            if fail_silently:
+                return "#{}".format(channel_name)
+            else:
+                return None
+
     def get_messages_in_time_range(self, oldest, cid, latest=None):
         assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
         cname = self.channels_by_id[cid]
@@ -111,7 +121,7 @@ class Slacker(object):
         self.channels = self.channels_by_name
 
     def get_channelid(self, channel_name):
-        return self.channels_by_name[channel_name]
+        return self.channels_by_name.get(channel_name)
 
     def channel_exists(self, channel_name):
         try:
