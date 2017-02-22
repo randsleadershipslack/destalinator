@@ -239,5 +239,5 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", action="store_true", default=False)
     args = parser.parse_args()
 
-    flagger = Flagger(debug=args.debug, verbose=args.verbose)
-    flagger.flag()
+    # flagger = Flagger(debug=args.debug, verbose=args.verbose)
+    # flagger.flag()
