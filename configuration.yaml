@@ -25,6 +25,9 @@ archive_threshold: 60
 # Do not archive before this date
 earliest_archive_date: "2016-01-28"
 
+# Where should we post "general" announcement messages?
+general_message_channel: "general"
+
 # Where should we announce new channels?
 announce_channel: "zmeta-new-channels"
 
