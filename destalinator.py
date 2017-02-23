@@ -236,7 +236,8 @@ class Destalinator(object):
                 if self.warn(channel, days, force_warn):
                     stale.append(channel)
         if stale:
-            self.debug("Notifying #general of warned channels")
+
+            self.debug("Notifying #{} of warned channels".format(self.config.general_message_channel))
             self.warn_in_general(stale)
 
     def warn_in_general(self, stale_channels):
@@ -255,8 +256,8 @@ class Destalinator(object):
         message += ", ".join(["#" + x for x in stale_channels])
         message = message.format(channel, being, there)
         if self.destalinator_activated:
-            self.slackbot.say("general", message)
-        self.debug("Notified #general with: {}".format(message))
+            self.slackbot.say(self.config.general_message_channel, message)
+        self.debug("Notified #{} with: {}".format(self.config.general_message_channel, message))
 
 
     def get_stale_channels(self, days):
