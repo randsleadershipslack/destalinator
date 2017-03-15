@@ -34,9 +34,9 @@ You'll want to change this to the name of your Slack
 
 Tune these two variables to decide how long after inactivity a channel should be warned for inactivity and then subsequently archived.
 
-#### `announce_channel`, `control_channel`, and `log_channel`
+#### `general_message_channel`, `announce_channel`, `control_channel`, and `log_channel`
 
-These three channels need to be manually created by you in your Slack.
+These channels need to be manually created by you in your Slack.
 
 ### Required environment variables
 
