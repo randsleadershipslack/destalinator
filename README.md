@@ -2,7 +2,11 @@
 Code for managing Cleanup of Stale Channels
 
 # Making it work in your environment
-You'll need to change configuration.yaml appropriately.  warner.py and archiver.py should then work from the commandline.  Productionalized automated deployments and running on a schedule are left unspecified because every production environment is unique.
+These scripts work with Python 2.7 but not 3.x.
+
+You'll need to install a few libraries: `pip install -r requirements.txt`
+
+You'll also need to change configuration.yaml appropriately.  warner.py and archiver.py should then work from the command line.  Productionalized automated deployments and running on a schedule are left unspecified because every production environment is unique.
 
 ## Components
 
