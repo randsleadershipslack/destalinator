@@ -188,7 +188,7 @@ class Flagger(executor.Executor):
                     comparator = rule['comparator']
                     op = self.operators[comparator]
                     if op(count, threshold):
-                        channels.append(rule['output'])
+                        channels.append(rule)
         return channels
 
     def get_interesting_messages(self):
@@ -212,22 +212,23 @@ class Flagger(executor.Executor):
         messages = self.get_interesting_messages()
         slack_name = _config.SLACK_NAME
         for message, channels in messages:
-            ts = message['ts'].replace(".", "")
-            channel = message['channel']
-            author = message['user']
+            ts = message["ts"].replace(".", "")
+            channel = message["channel"]
+            author = message["user"]
             author_name = self.slacker.users_by_id[author]
-            text = self.slacker.asciify(message['text'])
+            text = self.slacker.asciify(message["text"])
             text = self.slacker.detokenize(text)
             url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
             m = "*@{}* said in *#{}* _'{}'_ ({})".format(author_name, channel, text, url)
             for output_channel in channels:
-                if self.slacker.channel_exists(output_channel):
-                    md = "Saying {} to {}".format(m, output_channel)
+                if self.slacker.channel_exists(output_channel["output"]):
+                    md = "Saying {} to {}".format(m, output_channel["output"])
                     self.dprint(md)
                     if not self.debug and self.destalinator_activated:
-                        self.sb.say(output_channel, m)
+                        self.sb.say(output_channel["output"], m)
                 else:
-                    self.ds.warning("Attempted to announce in {}, but channel does not exist.".format(output_channel))
+                    self.ds.warning("Attempted to announce in {} because of rule :{}:{}{}, but channel does not exist.".format(
+                            output_channel["output"], output_channel["emoji"], output_channel["comparator"], output_channel["threshold"]))
 
     def flag(self):
         if self.initialize_control():
@@ -239,5 +240,5 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", action="store_true", default=False)
     args = parser.parse_args()
 
-    # flagger = Flagger(debug=args.debug, verbose=args.verbose)
-    # flagger.flag()
+    flagger = Flagger(debug=args.debug, verbose=args.verbose)
+    flagger.flag()

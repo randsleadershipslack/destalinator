@@ -92,7 +92,14 @@ class Slacker(object):
             else:
                 return cid
         elif first == "@":
-            uname = self.users_by_id[stripped]
+            # occasionally input will have the format "userid|name".
+            #  in case the name changed at some point,
+            #  lookup user by userid in users_by_id
+            if "|" in stripped:
+                uname_parts = stripped.split("|")
+                uname = self.users_by_id[uname_parts[0]]
+            else:
+                uname = self.users_by_id[stripped]      
             if uname:
                 return "@" + uname
         return cid
