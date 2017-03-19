@@ -48,6 +48,6 @@ name of an existing rule
 
 ## Deleting rules
 
-`flag content rule delete NAME`
+`flag content rule NAME delete`
 
 Will delete the content rule with the given name
