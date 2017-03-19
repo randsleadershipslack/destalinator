@@ -65,7 +65,7 @@ class Slacker(object):
             if latest:
                 murl += "&latest={}".format(latest)
             else:
-                murl += "&latest={}".format(time.time())
+                murl += "&latest={}".format(int(time.time()))
             payload = requests.get(murl).json()
             messages += payload['messages']
             if payload['has_more'] is False:
@@ -178,7 +178,7 @@ class Slacker(object):
         """
         url_template = self.url + "channels.info?token={}&channel={}"
         cid = self.get_channelid(channel_name)
-        now = time.time()
+        now = int(time.time())
         url = url_template.format(self.token, cid)
         ret = requests.get(url).json()
         if ret['ok'] is not True:

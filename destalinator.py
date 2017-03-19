@@ -35,7 +35,7 @@ class Destalinator(object):
         print("destalinator_activated is {}".format(self.destalinator_activated))
         self.earliest_archive_date = self.config.earliest_archive_date
         self.cache = {}
-        self.now = time.time()
+        self.now = int(time.time())
 
     def add_slack_channel_markup_item(self, item):
         return self.slacker.add_channel_markup(item.group(1))
