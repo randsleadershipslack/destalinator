@@ -28,6 +28,7 @@ class Flagger(executor.Executor):
     def __init__(self, *args, **kwargs):
         self.htmlparser = HTMLParser.HTMLParser()
         super(Flagger, self).__init__(*args, **kwargs)
+        self.now = int(time.time())
 
     def dprint(self, message):
         """
@@ -67,7 +68,7 @@ class Flagger(executor.Executor):
             self.ds.warning("Flagger control channel does not exist, cannot run. Please create #{}.".format(channel))
             return False
         cid = self.slacker.get_channelid(channel)
-        messages = self.slacker.get_messages_in_time_range(0, cid, time.time())
+        messages = self.slacker.get_messages_in_time_range(0, cid, self.now)
         control = {}
         for message in messages:
             text = message['text']
@@ -195,13 +196,12 @@ class Flagger(executor.Executor):
         """
         returns [[message, [listofchannelstoannounce]]
         """
-        now = time.time()
-        dayago = now - 86400
+        dayago = self.now - 86400
 
         messages = []
         for channel in self.slacker.channels_by_name:
             cid = self.slacker.get_channelid(channel)
-            cur_messages = self.slacker.get_messages_in_time_range(dayago, cid, now)
+            cur_messages = self.slacker.get_messages_in_time_range(dayago, cid, self.now)
             for message in cur_messages:
                 announce = self.message_destination(message)
                 if announce:

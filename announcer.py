@@ -15,7 +15,7 @@ class Announcer(executor.Executor):
         returns [(channel_name, creator, purpose)] created in the last 24 hours
         """
 
-        now = time.time()
+        now = int(time.time())
         dayago = now - 86400
         channels = self.slacker.get_all_channel_objects()
         new_channels = [channel for channel in channels if channel['created'] > dayago]
