@@ -60,7 +60,7 @@ class Destalinator(object):
         """
 
         if self.slacker.channel_has_only_restricted_members(channel_name):
-            message = "Would have archived {} but it contains restricted users"
+            message = "Would have archived {} but it contains restricted users".format(channel_name)
             self.debug(message)
             return
 
@@ -82,7 +82,7 @@ class Destalinator(object):
         if self.ignore_channel(channel_name):
             self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
             return
-        
+
         if self.destalinator_activated:
             self.slackbot.say(channel_name, self.closure_text)
             self.debug("Telling channel {}: {}".format(channel_name, self.closure_text))
