@@ -80,7 +80,7 @@ class Destalinator(object):
         Archives the given channel name.  Returns the response content
         """
         if self.ignore_channel(channel_name):
-            self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
+            self.debug("Not archiving {} because it's in ignore_channels".format(channel_name))
             return
 
         if self.destalinator_activated:
@@ -158,9 +158,15 @@ class Destalinator(object):
         if force_warn, will warn even if we have before
         returns True/False whether or not we actually warned
         """
+        if self.slacker.channel_has_only_restricted_members(channel_name):
+            message = "Would have warned {} but it contains restricted users".format(channel_name)
+            self.debug(message)
+            return False
+
         if self.ignore_channel(channel_name):
             self.debug("Not warning {} because it's in ignore_channels".format(channel_name))
             return False
+
         messages = self.get_messages(channel_name, days)
         # print "messages for {}: {}".format(channel_name, messages)
         texts = [x.get("text").strip() for x in messages if x.get("text")]
