@@ -53,6 +53,15 @@ The easiest way to get an `API_TOKEN` is to [generate an OAuth test token](https
 
 It's not *nice*, but it's simple and avoids the whole callback-URL-oauth-request-app-creation dance.
 
+If you run into rate limits on your test token, you may need to set up a Slack App. [Create a new one](https://api.slack.com/apps) and give it the following permissions:
+
+- `channels:history`
+- `channels:read`
+- `channels:write`
+- `chat:writer:user`
+- `emoji:read`
+- `users:read`
+
 #### `DESTALINATOR_ACTIVATED`
 
 Destalinator can be chatty and make potentially big changes to a Slack team (by warning or archiving a large amount of channels), especially when first installed.
