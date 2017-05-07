@@ -47,3 +47,4 @@ included_subtypes:
   - file_mention
   - file_share
   - me_message
+  - slackbot_response
