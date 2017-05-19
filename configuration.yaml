@@ -44,6 +44,8 @@ ignore_channels:
 # Regular expression patterns for additional channels to ignore during archiving
 ignore_channel_patterns:
   - ^zmeta-
+  - amity_library
+  - memories
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
