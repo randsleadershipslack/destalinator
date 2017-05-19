@@ -7,8 +7,8 @@ slackbot_api_token_env_varname: SB_TOKEN
 # Name of environment variable holding a valid general-purpose API token
 api_token_env_varname: API_TOKEN
 
-# Name of environment variable that determines if destalinator should 
-# actually do things to a live slack. Without this environment variable, 
+# Name of environment variable that determines if destalinator should
+# actually do things to a live slack. Without this environment variable,
 # everything will output in a "dry run" fashion (debug messages should take place,
 # but no changes or messages should affect a live Slack).
 destalinator_activated_env_varname: DESTALINATOR_ACTIVATED
@@ -17,16 +17,16 @@ destalinator_activated_env_varname: DESTALINATOR_ACTIVATED
 output_debug_env_varname: DESTALINATOR_SLACK_VERBOSE
 
 # Days of silence before we warn a channel it's going to be archived
-warn_threshold: 30
+warn_threshold: 60
 
 # Days of silence before we auto-archive a channel
-archive_threshold: 60
+archive_threshold: 90
 
 # Do not archive before this date
 earliest_archive_date: "2016-01-28"
 
 # Where should we post "general" announcement messages?
-general_message_channel: "general"
+general_message_channel: "general-test"
 
 # Where should we announce new channels?
 announce_channel: "zmeta-new-channels"
