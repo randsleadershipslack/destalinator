@@ -7,8 +7,8 @@ slackbot_api_token_env_varname: SB_TOKEN
 # Name of environment variable holding a valid general-purpose API token
 api_token_env_varname: API_TOKEN
 
-# Name of environment variable that determines if destalinator should 
-# actually do things to a live slack. Without this environment variable, 
+# Name of environment variable that determines if destalinator should
+# actually do things to a live slack. Without this environment variable,
 # everything will output in a "dry run" fashion (debug messages should take place,
 # but no changes or messages should affect a live Slack).
 destalinator_activated_env_varname: DESTALINATOR_ACTIVATED
@@ -53,7 +53,12 @@ ignore_users:
 # "None" means the message was typed by a human and is included by default.
 included_subtypes:
   - bot_message
+  - channel_name
+  - channel_purpose
+  - channel_topic
   - file_mention
   - file_share
   - me_message
+  - message_replied
+  - reply_broadcast
   - slackbot_response
