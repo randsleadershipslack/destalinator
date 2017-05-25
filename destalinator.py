@@ -125,7 +125,7 @@ class Destalinator(object):
             for x
             in messages
             if x.get("user") not in self.config.ignore_users
-            and x.get("text")
+            and (x.get("text") or x.get("attachments"))
             and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore')
         ]
         if messages:
