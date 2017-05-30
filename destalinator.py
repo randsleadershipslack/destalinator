@@ -6,6 +6,7 @@ import re
 import time
 import json
 import requests
+import codecs
 
 import config
 import slackbot
@@ -46,9 +47,9 @@ class Destalinator(object):
 
     def get_content(self, fname):
         """
-        read fname into text blob, return text blob
+        read fname into unicode text blob, return unicode text blob
         """
-        f = open(fname)
+        f = codecs.open(fname, encoding='utf-8')
         ret = f.read().strip()
         f.close()
         return ret
