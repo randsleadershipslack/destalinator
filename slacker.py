@@ -99,7 +99,7 @@ class Slacker(object):
                 uname_parts = stripped.split("|")
                 uname = self.users_by_id[uname_parts[0]]
             else:
-                uname = self.users_by_id[stripped]      
+                uname = self.users_by_id[stripped]
             if uname:
                 return "@" + uname
         return cid
@@ -184,7 +184,6 @@ class Slacker(object):
         if ret['ok'] is not True:
             m = "Attempted to get channel info for {}, but return was {}"
             m = m.format(channel_name, ret)
-            self.warning(m)
             raise RuntimeError(m)
         created = ret['channel']['created']
         age = now - created
