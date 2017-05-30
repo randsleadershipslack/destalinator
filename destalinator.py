@@ -120,18 +120,21 @@ class Destalinator(object):
             # self.debug("Not checking if {} is stale -- it's too new".format(channel_name))
             return False
         messages = self.get_messages(channel_name, days)
-        messages = [
+        # return True (stale) if none of the messages match the criteria below
+        return not any(
             x
             for x
             in messages
-            if x.get("user") not in self.config.ignore_users
-            and (x.get("text") or x.get("attachments"))
-            and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore')
-        ]
-        if messages:
-            return False
-        else:
-            return True
+            if
+            # the message is not from an ignored user
+            x.get("user") not in self.config.ignore_users
+            and (
+                # the message must have text that doesn't include ignored words
+                (x.get("text") and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore'))
+                # or the message must have attachments
+                or x.get("attachments")
+            )
+        )
 
     def get_messages(self, cname, days):
         """
