@@ -6,6 +6,7 @@ import re
 import time
 import json
 import requests
+import codecs
 
 import config
 import slackbot
@@ -41,14 +42,14 @@ class Destalinator(object):
         return self.slacker.add_channel_markup(item.group(1))
 
     def add_slack_channel_markup(self, text):
-        marked_up = re.sub(r"\#(\w+)", self.add_slack_channel_markup_item, text)
+        marked_up = re.sub(r"\#([a-z0-9_-]+)", self.add_slack_channel_markup_item, text)
         return marked_up
 
     def get_content(self, fname):
         """
-        read fname into text blob, return text blob
+        read fname into unicode text blob, return unicode text blob
         """
-        f = open(fname)
+        f = codecs.open(fname, encoding='utf-8')
         ret = f.read().strip()
         f.close()
         return ret
@@ -120,18 +121,18 @@ class Destalinator(object):
             # self.debug("Not checking if {} is stale -- it's too new".format(channel_name))
             return False
         messages = self.get_messages(channel_name, days)
-        messages = [
-            x
-            for x
-            in messages
-            if x.get("user") not in self.config.ignore_users
-            and (x.get("text") or x.get("attachments"))
-            and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore')
-        ]
-        if messages:
-            return False
-        else:
-            return True
+        # return True (stale) if none of the messages match the criteria below
+        return not any(
+            # the message is not from an ignored user
+            x.get("user") not in self.config.ignore_users
+            and (
+                # the message must have text that doesn't include ignored words
+                (x.get("text") and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore'))
+                # or the message must have attachments
+                or x.get("attachments")
+            )
+            for x in messages
+        )
 
     def get_messages(self, cname, days):
         """
