@@ -123,10 +123,6 @@ class Destalinator(object):
         messages = self.get_messages(channel_name, days)
         # return True (stale) if none of the messages match the criteria below
         return not any(
-            x
-            for x
-            in messages
-            if
             # the message is not from an ignored user
             x.get("user") not in self.config.ignore_users
             and (
@@ -135,6 +131,7 @@ class Destalinator(object):
                 # or the message must have attachments
                 or x.get("attachments")
             )
+            for x in messages
         )
 
     def get_messages(self, cname, days):
