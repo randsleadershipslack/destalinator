@@ -42,7 +42,7 @@ class Destalinator(object):
         return self.slacker.add_channel_markup(item.group(1))
 
     def add_slack_channel_markup(self, text):
-        marked_up = re.sub(r"\#([\w-]+)", self.add_slack_channel_markup_item, text)
+        marked_up = re.sub(r"\#([a-z0-9_-]+)", self.add_slack_channel_markup_item, text)
         return marked_up
 
     def get_content(self, fname):
