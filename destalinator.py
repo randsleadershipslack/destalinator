@@ -227,7 +227,7 @@ class Destalinator(object):
 
         messages = self.get_messages(channel_name, days)
         texts = [x.get("text").strip() for x in messages if x.get("text")]
-        if self.add_slack_channel_markup(self.warning_text) in texts and not force_warn:
+        if not force_warn and self.add_slack_channel_markup(self.warning_text) in texts:
             self.debug("Not warning #{} because we found a prior warning".format(channel_name))
             return False
 
