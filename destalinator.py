@@ -104,6 +104,7 @@ class Destalinator(object):
         return messages
 
     def get_stale_channels(self, days):
+        """Return a list of channel names that have been stale for `days`."""
         ret = []
         for channel in sorted(self.slacker.channels_by_name.keys()):
             if self.stale(channel, days):
@@ -112,6 +113,7 @@ class Destalinator(object):
         return ret
 
     def ignore_channel(self, channel_name):
+        """Return True if `channel_name` is a channel we should ignore based on config settings."""
         if channel_name in self.config.ignore_channels:
             return True
         for pat in self.config.ignore_channel_patterns:
@@ -136,8 +138,7 @@ class Destalinator(object):
         Return True if channel represented by `channel_name` is stale.
         Definition of stale is: no messages in the last `days` which are not from config.ignore_users.
         """
-        minimum_age = self.channel_minimum_age(channel_name, days)
-        if not minimum_age:
+        if not self.channel_minimum_age(channel_name, days):
             self.debug("Channel #{} is not yet of minimum_age; skipping stale messages check".format(channel_name))
             return False
 
@@ -173,6 +174,7 @@ class Destalinator(object):
             self.debug("Telling channel #{}: {}".format(channel_name, say))
             self.slackbot.say(channel_name, say)
 
+            self.action("Archiving channel #{}".format(channel_name))
             payload = self.slacker.archive(channel_name)
             if payload['ok']:
                 self.debug("Slack API response to archive: {}".format(json.dumps(payload, indent=4)))
@@ -201,7 +203,7 @@ class Destalinator(object):
             self.debug("Would have archived #{} but it's not yet {}".format(channel_name, self.earliest_archive_date))
 
     def safe_archive_all(self, days):
-        """Safe archives all channels stale longer than `days`."""
+        """Safe archive all channels stale longer than `days`."""
         self.action("Safe-archiving all channels stale for more than {} days".format(days))
         for channel in sorted(self.slacker.channels_by_name.keys()):
             if self.ignore_channel(channel):
@@ -238,10 +240,7 @@ class Destalinator(object):
         return True
 
     def warn_all(self, days, force_warn=False):
-        """
-        warns all channels which are DAYS idle
-        if force_warn, will warn even if we already have
-        """
+        """Warn all channels which are `days` idle; if `force_warn`, will warn even if we already have."""
         if not self.destalinator_activated:
             self.logger.info("Note, destalinator is not activated and is in a dry-run mode. For help, see the " \
                              "documentation on the DESTALINATOR_ACTIVATED environment variable.")
@@ -250,7 +249,7 @@ class Destalinator(object):
         stale = []
         for channel in sorted(self.slacker.channels_by_name.keys()):
             if self.ignore_channel(channel):
-                self.debug("Not warning {} because it's in ignore_channels".format(channel))
+                self.debug("Not warning #{} because it's in ignore_channels".format(channel))
                 continue
             if self.stale(channel, days):
                 if self.warn(channel, days, force_warn):
