@@ -254,7 +254,7 @@ class Destalinator(object):
             if self.stale(channel, days):
                 if self.warn(channel, days, force_warn):
                     stale.append(channel)
-        if stale:
+        if stale and self.config.general_message_channel:
             self.debug("Notifying #{} of warned channels".format(self.config.general_message_channel))
             self.warn_in_general(stale)
 
