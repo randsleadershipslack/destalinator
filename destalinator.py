@@ -7,11 +7,11 @@ import time
 import logging
 import json
 import requests
-import codecs
 import sys
 
 import config
 import slackbot
+import utils
 
 
 # An arbitrary past date, as a default value for the earliest archive date
@@ -29,8 +29,8 @@ class Destalinator(object):
         slackbot should be an initialized slackbot.Slackbot() object
         activated is a boolean indicating whether destalinator should do dry runs or real runs
         """
-        self.closure_text = self.get_content(self.closure_text_fname)
-        self.warning_text = self.get_content(self.warning_text_fname)
+        self.closure_text = utils.get_local_file_content(self.closure_text_fname)
+        self.warning_text = utils.get_local_file_content(self.warning_text_fname)
         self.slacker = slacker
         self.slackbot = slackbot
         self.user = os.getenv("USER")
