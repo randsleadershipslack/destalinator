@@ -36,7 +36,7 @@ class Announcer(executor.Executor):
                 if self.slacker.channel_exists(config.announce_channel):
                     self.sb.say(config.announce_channel, m)
                 else:
-                    self.ds.warning("Attempted to announce in {}, but channel does not exist.".format(config.announce_channel))
+                    self.ds.logger.warning("Attempted to announce in %s, but channel does not exist.", config.announce_channel)
             print("ANNOUNCE: {}".format(m))
 
 
