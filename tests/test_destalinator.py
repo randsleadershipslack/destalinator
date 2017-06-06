@@ -74,6 +74,16 @@ sample_slack_messages = [
 ]
 
 
+class MockValidator(object):
+
+    def __init__(self, validator):
+        # validator is a function that takes a single argument and returns a bool.
+        self.validator = validator
+
+    def __eq__(self, other):
+        return bool(self.validator(other))
+
+
 class SlackerMock(slacker.Slacker):
     def get_users(self):
         pass
@@ -279,6 +289,57 @@ class DestalinatorStaleTestCase(unittest.TestCase):
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
         self.destalinator.get_messages = mock.MagicMock(return_value=[m for m in sample_slack_messages if m.has_key('attachments')])
         self.assertFalse(self.destalinator.stale('stalinists', 30))
+
+
+class DestalinatorArchiveTestCase(unittest.TestCase):
+    def setUp(self):
+        self.slacker = SlackerMock("testing", "token")
+        self.slackbot = slackbot.Slackbot("testing", "token")
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_skips_ignored_channel(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.archive.return_value = {'ok': True}
+        self.destalinator.config.ignore_channels = ['stalinists']
+        self.destalinator.archive("stalinists")
+        self.assertFalse(self.slackbot.say.called)
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_skips_when_destalinator_not_activated(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=False)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        self.destalinator.archive("stalinists")
+        self.assertFalse(self.slackbot.say.called)
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_announces_closure_with_closure_text(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.archive.return_value = {'ok': True}
+        self.destalinator.archive("stalinists")
+        self.assertIn(mock.call('stalinists', self.destalinator.closure_text), self.slackbot.say.mock_calls)
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_announces_members_at_channel_closing(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.archive.return_value = {'ok': True}
+        names = ['sridhar', 'jane']
+        mock_slacker.get_channel_member_names.return_value = names
+        self.destalinator.archive("stalinists")
+        self.assertIn(
+            mock.call('stalinists', MockValidator(lambda s: all(name in s for name in names))),
+            self.slackbot.say.mock_calls
+        )
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_calls_archive_method(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.archive.return_value = {'ok': True}
+        self.destalinator.archive("stalinists")
+        mock_slacker.archive.assert_called_once_with('stalinists')
 
 
 if __name__ == '__main__':
