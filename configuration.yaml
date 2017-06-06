@@ -16,14 +16,15 @@ destalinator_activated_env_varname: DESTALINATOR_ACTIVATED
 # Name of environment variable determining whether output debug mode is enabled
 output_debug_env_varname: DESTALINATOR_SLACK_VERBOSE
 
+# Name of environment variable for the earliest date to archive stale channels.
+# If this is set, it should be of the form "yyyy-mm-dd" (e.g. "2017-02-19").
+earliest_archive_date_env_varname: EARLIEST_ARCHIVE_DATE
+
 # Days of silence before we warn a channel it's going to be archived
 warn_threshold: 30
 
 # Days of silence before we auto-archive a channel
 archive_threshold: 60
-
-# Do not archive before this date
-earliest_archive_date: "2016-01-28"
 
 # Where should we post "general" announcement messages?
 general_message_channel: "general"
