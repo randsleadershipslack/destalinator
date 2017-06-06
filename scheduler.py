@@ -6,11 +6,17 @@ import announcer
 import flagger
 import os
 
+
+# When testing changes, set the "TEST_SCHEDULE" envvar to run more often
+if os.getenv("TEST_SCHEDULE"):
+    schedule_kwargs = {"hour": "*", "minute": "*/10"}
+else:
+    schedule_kwargs = {"hour": 4}
+
 logging.basicConfig()
 sched = BlockingScheduler()
 
-@sched.scheduled_job("cron", hour=4)
-#@sched.scheduled_job("cron", hour="*", minute="*/10") # for testing
+@sched.scheduled_job("cron", **schedule_kwargs)
 def destalinate_job():
     print("Destalinating")
     if "SB_TOKEN" not in os.environ or "API_TOKEN" not in os.environ:
