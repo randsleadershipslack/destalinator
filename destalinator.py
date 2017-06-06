@@ -206,9 +206,6 @@ class Destalinator(object):
         """Safe archive all channels stale longer than `days`."""
         self.action("Safe-archiving all channels stale for more than {} days".format(days))
         for channel in sorted(self.slacker.channels_by_name.keys()):
-            if self.ignore_channel(channel):
-                self.debug("Not archiving #{} because it's in ignore_channels".format(channel))
-                continue
             if self.stale(channel, days):
                 self.debug("Attempting to safe-archive #{}".format(channel))
                 self.safe_archive(channel)

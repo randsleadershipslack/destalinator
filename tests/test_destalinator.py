@@ -1,3 +1,4 @@
+import datetime
 import mock
 import os
 import unittest
@@ -340,6 +341,85 @@ class DestalinatorArchiveTestCase(unittest.TestCase):
         mock_slacker.archive.return_value = {'ok': True}
         self.destalinator.archive("stalinists")
         mock_slacker.archive.assert_called_once_with('stalinists')
+
+
+class DestalinatorSafeArchiveTestCase(unittest.TestCase):
+    def setUp(self):
+        self.slacker = SlackerMock("testing", "token")
+        self.slackbot = slackbot.Slackbot("testing", "token")
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_skips_channel_with_only_restricted_users(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.archive.return_value = {'ok': True}
+        mock_slacker.channel_has_only_restricted_members.return_value = True
+        self.destalinator.safe_archive("stalinists")
+        self.assertFalse(mock_slacker.archive.called)
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_skips_archiving_if_before_earliest_archive_date(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        self.destalinator.archive = mock.MagicMock(return_value=True)
+        mock_slacker.channel_has_only_restricted_members.return_value = False
+        today = datetime.date.today()
+        self.destalinator.earliest_archive_date = today.replace(day=today.day + 1).isoformat()
+        self.destalinator.safe_archive("stalinists")
+        self.assertFalse(self.destalinator.archive.called)
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_calls_archive_method(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.slackbot.say = mock.MagicMock(return_value=200)
+        self.destalinator.archive = mock.MagicMock(return_value=True)
+        mock_slacker.channel_has_only_restricted_members.return_value = False
+        self.destalinator.safe_archive("stalinists")
+        self.destalinator.archive.assert_called_once_with('stalinists')
+
+
+class DestalinatorSafeArchiveAllTestCase(unittest.TestCase):
+    def setUp(self):
+        self.slacker = SlackerMock("testing", "token")
+        self.slackbot = slackbot.Slackbot("testing", "token")
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_calls_stale_once_for_each_channel(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+        self.destalinator.stale = mock.MagicMock(return_value=False)
+        days = self.destalinator.config.archive_threshold
+        self.destalinator.safe_archive_all(days)
+        self.assertEqual(self.destalinator.stale.mock_calls, [mock.call('leninists', days), mock.call('stalinists', days)])
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_only_archives_stale_channels(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+
+        def fake_stale(channel, days):
+            return {'leninists': True, 'stalinists': False}[channel]
+
+        self.destalinator.stale = mock.MagicMock(side_effect=fake_stale)
+        days = self.destalinator.config.archive_threshold
+        self.destalinator.safe_archive = mock.MagicMock()
+        self.destalinator.safe_archive_all(days)
+        self.destalinator.safe_archive.assert_called_once_with('leninists')
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_does_not_archive_ignored_channels(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        self.destalinator.config.ignore_channels = ['leninists']
+        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+
+        def fake_stale(channel, days):
+            return {'leninists': True, 'stalinists': False}[channel]
+
+        self.destalinator.stale = mock.MagicMock(side_effect=fake_stale)
+        mock_slacker.channel_has_only_restricted_members.return_value = False
+        self.destalinator.earliest_archive_date = datetime.date.today().isoformat()
+        self.destalinator.safe_archive_all(self.destalinator.config.archive_threshold)
+        self.assertFalse(mock_slacker.archive.called)
 
 
 if __name__ == '__main__':
