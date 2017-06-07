@@ -21,13 +21,13 @@ output_debug_env_varname: DESTALINATOR_SLACK_VERBOSE
 earliest_archive_date_env_varname: EARLIEST_ARCHIVE_DATE
 
 # Days of silence before we warn a channel it's going to be archived
-warn_threshold: 30
+warn_threshold: 60
 
 # Days of silence before we auto-archive a channel
-archive_threshold: 60
+archive_threshold: 90
 
 # Where should we post "general" announcement messages?
-general_message_channel: "general"
+general_message_channel: "general-test"
 
 # Where should we announce new channels?
 announce_channel: "zmeta-new-channels"
@@ -45,6 +45,8 @@ ignore_channels:
 # Regular expression patterns for additional channels to ignore during archiving
 ignore_channel_patterns:
   - ^zmeta-
+  - amity_library
+  - memories
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
