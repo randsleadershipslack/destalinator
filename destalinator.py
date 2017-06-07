@@ -13,7 +13,7 @@ import slackbot
 
 
 # An arbitrary past date, as a default value for the earliest archive date
-PAST_DATE = datetime.date(2000, 1, 1)
+PAST_DATE_STRING = '2000-01-01'
 
 
 class Destalinator(object):
@@ -39,12 +39,10 @@ class Destalinator(object):
         self.destalinator_activated = activated
         print("destalinator_activated is {}".format(self.destalinator_activated))
 
-        archive_date_string = os.getenv(self.config.earliest_archive_date_env_varname)
-        if archive_date_string:
-            year, month, day = [int(x) for x in archive_date_string.split("-")]
-            self.earliest_archive_date = datetime.date(year, month, day)
-        else:
-            self.earliest_archive_date = PAST_DATE
+        archive_date_string = (os.getenv(self.config.earliest_archive_date_env_varname)
+                               or PAST_DATE_STRING)
+        year, month, day = [int(x) for x in archive_date_string.split("-")]
+        self.earliest_archive_date = datetime.date(year, month, day)
 
         self.cache = {}
         self.now = int(time.time())
