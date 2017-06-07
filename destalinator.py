@@ -12,6 +12,10 @@ import config
 import slackbot
 
 
+# An arbitrary past date, as a default value for the earliest archive date
+PAST_DATE_STRING = '2000-01-01'
+
+
 class Destalinator(object):
 
     closure_text_fname = "closure.txt"
@@ -34,7 +38,12 @@ class Destalinator(object):
         print("output_debug_to_slack_flag is {}".format(self.output_debug_to_slack_flag))
         self.destalinator_activated = activated
         print("destalinator_activated is {}".format(self.destalinator_activated))
-        self.earliest_archive_date = self.config.earliest_archive_date
+
+        archive_date_string = (os.getenv(self.config.earliest_archive_date_env_varname)
+                               or PAST_DATE_STRING)
+        year, month, day = [int(x) for x in archive_date_string.split("-")]
+        self.earliest_archive_date = datetime.date(year, month, day)
+
         self.cache = {}
         self.now = int(time.time())
 
@@ -66,9 +75,7 @@ class Destalinator(object):
             return
 
         today = datetime.date.today()
-        year, month, day = [int(x) for x in self.earliest_archive_date.split("-")]
-        earliest = datetime.date(year, month, day)
-        if today >= earliest:
+        if today >= self.earliest_archive_date:
             self.action("Archiving channel {}".format(channel_name))
             self.archive(channel_name)
         else:
