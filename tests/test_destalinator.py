@@ -71,6 +71,16 @@ sample_slack_messages = [
         ],
         "ts": "1403051575.000407",
         "user": "U023BEAD1"
+    },
+    {
+        "user": "U023BCDA1",
+        "text":"This is a channel warning! Put on your helmets!",
+        "username":"bot",
+        "bot_id":"B0T8EDVLY",
+        "attachments": [{"fallback":"channel_warning", "id": 1}],
+        "type":"message",
+        "subtype":"bot_message",
+        "ts":"1496855882.185855"
     }
 ]
 
@@ -173,7 +183,7 @@ class DestalinatorGetMessagesTestCase(unittest.TestCase):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         mock_slacker.get_channelid.return_value = "123456"
         mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
-        self.assertEquals(len(self.destalinator.get_messages("general", 30)), 5)
+        self.assertEquals(len(self.destalinator.get_messages("general", 30)), len(sample_slack_messages))
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_empty_included_subtypes(self, mock_slacker):
@@ -181,7 +191,10 @@ class DestalinatorGetMessagesTestCase(unittest.TestCase):
         self.destalinator.config.included_subtypes = []
         mock_slacker.get_channelid.return_value = "123456"
         mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
-        self.assertEquals(len(self.destalinator.get_messages("general", 30)), 2)
+        self.assertEquals(
+            len(self.destalinator.get_messages("general", 30)),
+            sum(not m.has_key('subtype') for m in sample_slack_messages)
+        )
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_limited_included_subtypes(self, mock_slacker):
@@ -189,7 +202,10 @@ class DestalinatorGetMessagesTestCase(unittest.TestCase):
         self.destalinator.config.included_subtypes = ['bot_message']
         mock_slacker.get_channelid.return_value = "123456"
         mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
-        self.assertEquals(len(self.destalinator.get_messages("general", 30)), 4)
+        self.assertEquals(
+            len(self.destalinator.get_messages("general", 30)),
+            sum(m.get('subtype', None) in (None, 'bot_message') for m in sample_slack_messages)
+        )
 
 
 class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
@@ -208,7 +224,7 @@ class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_no_stale_channels_but_all_minimum_age_with_specific_ignore_users(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.ignore_users = ['U023BEAD1', 'U023BECGF', 'U2147483697']
+        self.destalinator.config.ignore_users = [m['user'] for m in sample_slack_messages if m.get('user')]
         mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
@@ -263,7 +279,7 @@ class DestalinatorStaleTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_all_users_ignored(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.ignore_users = ['U023BEAD1', 'U023BECGF', 'U2147483697']
+        self.destalinator.config.ignore_users = [m['user'] for m in sample_slack_messages if m.get('user')]
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertTrue(self.destalinator.stale('stalinists', 30))
