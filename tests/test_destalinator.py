@@ -300,44 +300,48 @@ class DestalinatorArchiveTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_skips_ignored_channel(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         mock_slacker.archive.return_value = {'ok': True}
         self.destalinator.config.ignore_channels = ['stalinists']
         self.destalinator.archive("stalinists")
-        self.assertFalse(self.slackbot.say.called)
+        self.assertFalse(mock_slacker.post_message.called)
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_skips_when_destalinator_not_activated(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=False)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         self.destalinator.archive("stalinists")
-        self.assertFalse(self.slackbot.say.called)
+        self.assertFalse(mock_slacker.post_message.called)
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_announces_closure_with_closure_text(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         mock_slacker.archive.return_value = {'ok': True}
+        mock_slacker.get_channel_member_names.return_value = ['sridhar', 'jane']
         self.destalinator.archive("stalinists")
-        self.assertIn(mock.call('stalinists', self.destalinator.closure_text), self.slackbot.say.mock_calls)
+        self.assertIn(
+            mock.call('stalinists', mock.ANY, message_type='channel_archive'),
+            mock_slacker.post_message.mock_calls
+        )
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_announces_members_at_channel_closing(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         mock_slacker.archive.return_value = {'ok': True}
         names = ['sridhar', 'jane']
         mock_slacker.get_channel_member_names.return_value = names
         self.destalinator.archive("stalinists")
         self.assertIn(
-            mock.call('stalinists', MockValidator(lambda s: all(name in s for name in names))),
-            self.slackbot.say.mock_calls
+            mock.call('stalinists', MockValidator(lambda s: all(name in s for name in names)), message_type=mock.ANY),
+            mock_slacker.post_message.mock_calls
         )
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_calls_archive_method(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         mock_slacker.archive.return_value = {'ok': True}
         self.destalinator.archive("stalinists")
         mock_slacker.archive.assert_called_once_with('stalinists')
@@ -351,7 +355,7 @@ class DestalinatorSafeArchiveTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_skips_channel_with_only_restricted_users(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         mock_slacker.archive.return_value = {'ok': True}
         mock_slacker.channel_has_only_restricted_members.return_value = True
         self.destalinator.safe_archive("stalinists")
@@ -360,7 +364,7 @@ class DestalinatorSafeArchiveTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_skips_archiving_if_before_earliest_archive_date(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         self.destalinator.archive = mock.MagicMock(return_value=True)
         mock_slacker.channel_has_only_restricted_members.return_value = False
         today = datetime.date.today()
@@ -371,7 +375,7 @@ class DestalinatorSafeArchiveTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_calls_archive_method(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.slackbot.say = mock.MagicMock(return_value=200)
+        mock_slacker.post_message.return_value = {}
         self.destalinator.archive = mock.MagicMock(return_value=True)
         mock_slacker.channel_has_only_restricted_members.return_value = False
         self.destalinator.safe_archive("stalinists")

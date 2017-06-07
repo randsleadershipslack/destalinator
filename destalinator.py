@@ -124,7 +124,7 @@ class Destalinator(object):
     def log(self, message):
         timestamp = time.strftime("%H:%M:%S: ", time.localtime())
         message = timestamp + " ({}) ".format(self.user) + message
-        self.slackbot.say(self.config.log_channel, message)
+        self.slacker.post_message(self.config.log_channel, message, message_type='log')
 
     def set_up_logger(self, logger, log_level_env_var=None, log_to_slack_env_var=None, log_channel=None, default_level='INFO'):
         logger.setLevel(getattr(logging, os.getenv(log_level_env_var, default_level).upper(), getattr(logging, default_level)))
@@ -167,12 +167,12 @@ class Destalinator(object):
 
         if self.destalinator_activated:
             self.debug("Announcing channel closure in #{}".format(channel_name))
-            self.slackbot.say(channel_name, self.closure_text)
+            self.slacker.post_message(channel_name, self.closure_text, message_type='channel_archive')
 
             members = self.slacker.get_channel_member_names(channel_name)
             say = "Members at archiving are {}".format(", ".join(sorted(members)))
             self.debug("Telling channel #{}: {}".format(channel_name, say))
-            self.slackbot.say(channel_name, say)
+            self.slacker.post_message(channel_name, say, message_type='channel_archive_members')
 
             self.action("Archiving channel #{}".format(channel_name))
             payload = self.slacker.archive(channel_name)
@@ -231,7 +231,7 @@ class Destalinator(object):
             return False
 
         if self.destalinator_activated:
-            self.slackbot.say(channel_name, self.warning_text)
+            self.slacker.post_message(channel_name, self.warning_text, message_type='channel_warning')
             self.action("Warned #{}".format(channel_name))
 
         return True
@@ -271,5 +271,5 @@ class Destalinator(object):
         message += ", ".join(["#" + x for x in stale_channels])
         message = message.format(channel, being, there)
         if self.destalinator_activated:
-            self.slackbot.say(self.config.general_message_channel, message)
+            self.slacker.post_message(self.config.general_message_channel, message, message_type='warn_in_general')
         self.debug("Notified #{} with: {}".format(self.config.general_message_channel, message))
