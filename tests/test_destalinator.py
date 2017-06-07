@@ -71,7 +71,10 @@ sample_slack_messages = [
         ],
         "ts": "1403051575.000407",
         "user": "U023BEAD1"
-    },
+    }
+]
+
+sample_warning_messages = [
     {
         "user": "U023BCDA1",
         "text":"This is a channel warning! Put on your helmets!",
@@ -440,6 +443,48 @@ class DestalinatorSafeArchiveAllTestCase(unittest.TestCase):
         self.destalinator.earliest_archive_date = datetime.date.today().isoformat()
         self.destalinator.safe_archive_all(self.destalinator.config.archive_threshold)
         self.assertFalse(mock_slacker.archive.called)
+
+
+class DestalinatorWarnTestCase(unittest.TestCase):
+    def setUp(self):
+        self.slacker = SlackerMock("testing", "token")
+        self.slackbot = slackbot.Slackbot("testing", "token")
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_warns_by_posting_message(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        mock_slacker.channel_has_only_restricted_members.return_value = False
+        mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
+        self.destalinator.warn("stalinists", 30)
+        mock_slacker.post_message.assert_called_with("stalinists", self.destalinator.warning_text, message_type='channel_warning')
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_does_not_warn_when_previous_warning_found(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        mock_slacker.channel_has_only_restricted_members.return_value = False
+        mock_slacker.get_messages_in_time_range.return_value = [
+            {
+                "text": self.destalinator.warning_text,
+                "user": "ABC123",
+                "attachments": [{"fallback": "channel_warning"}]
+            }
+        ]
+        self.destalinator.warn("stalinists", 30)
+        self.assertFalse(mock_slacker.post_message.called)
+
+    @mock.patch('tests.test_destalinator.SlackerMock')
+    def test_does_not_warn_when_previous_warning_with_changed_text_found(self, mock_slacker):
+        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
+        mock_slacker.channel_has_only_restricted_members.return_value = False
+        mock_slacker.get_messages_in_time_range.return_value = [
+            {
+                "text": self.destalinator.warning_text + "Some new stuff",
+                "user": "ABC123",
+                "attachments": [{"fallback": "channel_warning"}]
+            }
+        ]
+        self.destalinator.warn("stalinists", 30)
+        self.assertFalse(mock_slacker.post_message.called)
 
 
 if __name__ == '__main__':
