@@ -81,7 +81,7 @@ class Destalinator(object):
 
     def get_earliest_archive_date(self):
         """Return a datetime.date object representing the earliest archive date."""
-        date_string = os.getenv(self.config.get('earliest_archive_date_env_varname', '')) \
+        date_string = os.getenv(self.config.get('earliest_archive_date_env_varname') or '') \
             or self.config.get('earliest_archive_date') \
             or PAST_DATE_STRING
         return datetime.strptime(date_string, "%Y-%m-%d").date()
