@@ -1,6 +1,8 @@
 # destalinator
 Code for managing Cleanup of Stale Channels
 
+[![Build Status](https://travis-ci.org/randsleadershipslack/destalinator.svg?branch=master)](https://travis-ci.org/randsleadershipslack/destalinator)
+
 # Making it work in your environment
 You'll need to install a few libraries: `pip install -r requirements.txt`
 
