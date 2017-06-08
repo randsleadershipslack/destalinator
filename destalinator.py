@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import datetime
+from datetime import datetime, date
 import os
 import re
 import time
@@ -48,10 +48,7 @@ class Destalinator(object):
         self.destalinator_activated = activated
         self.logger.debug("destalinator_activated is %s", self.destalinator_activated)
 
-        archive_date_string = (os.getenv(self.config.earliest_archive_date_env_varname)
-                               or PAST_DATE_STRING)
-        year, month, day = [int(x) for x in archive_date_string.split("-")]
-        self.earliest_archive_date = datetime.date(year, month, day)
+        self.earliest_archive_date = self.get_earliest_archive_date()
 
         self.cache = {}
         self.now = int(time.time())
@@ -81,6 +78,13 @@ class Destalinator(object):
         message = "DEBUG: " + message
         if self.output_debug_to_slack_flag:
             self.log(message)
+
+    def get_earliest_archive_date(self):
+        """Return a datetime.date object representing the earliest archive date."""
+        date_string = os.getenv(self.config.get('earliest_archive_date_env_varname')) \
+            or self.config.get('earliest_archive_date') \
+            or PAST_DATE_STRING
+        return datetime.strptime(date_string, "%Y-%m-%d").date()
 
     def get_messages(self, channel_name, days):
         """Return `days` worth of messages for channel `channel_name`. Caches messages per channel & days."""
@@ -195,7 +199,7 @@ class Destalinator(object):
             self.debug("Would have archived #{} but it contains only restricted users".format(channel_name))
             return
 
-        today = datetime.date.today()
+        today = date.today()
         if today >= self.earliest_archive_date:
             self.action("Archiving channel #{}".format(channel_name))
             self.archive(channel_name)
