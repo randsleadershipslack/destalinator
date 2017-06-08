@@ -67,3 +67,7 @@ If you run into rate limits on your test token, you may need to set up a Slack A
 Destalinator can be chatty and make potentially big changes to a Slack team (by warning or archiving a large amount of channels), especially when first installed.
 
 To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to any non-empty value and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
+
+#### `DESTALINATOR_LOG_LEVEL`
+
+Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.

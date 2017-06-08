@@ -214,3 +214,25 @@ class Slacker(object):
         request = requests.get(url)
         payload = request.json()
         return payload
+
+    def post_message(self, channel, message, message_type=None):
+        """
+        Posts a `message` into a `channel`.
+        Optionally append an invisible attachment with 'fallback' set to `message_type`.
+
+        Note: `channel` value should not be preceded with '#'.
+        """
+        assert channel  # not blank
+        if channel[0] == '#':
+            channel = channel[1:]
+
+        post_data = {
+            'token': self.token,
+            'channel': channel,
+            'text': message.encode('utf-8')
+        }
+        if message_type:
+            post_data['attachments'] = json.dumps([{'fallback': message_type}], encoding='utf-8')
+
+        p = requests.post(self.url + "chat.postMessage", data=post_data)
+        return p.json()

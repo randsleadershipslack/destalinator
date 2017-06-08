@@ -24,5 +24,5 @@ class Slackbot(object):
         if channel[0] == '#':
             channel = channel[1:]
         nurl = self.url + "?token={}&channel=%23{}".format(self.token, channel)
-        p = requests.post(nurl, statement)
+        p = requests.post(nurl, data=statement.encode('utf-8'))
         return p.status_code
