@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import logging
 import re
 import time
 
@@ -8,7 +9,7 @@ import requests
 
 class Slacker(object):
 
-    def __init__(self, slack_name, token):
+    def __init__(self, slack_name, token, logger=None):
         """
         slack name is the short name of the slack (preceding '.slack.com')
         token should be a Slack API Token.
@@ -16,6 +17,7 @@ class Slacker(object):
         self.slack_name = slack_name
         self.token = token
         assert self.token, "Token should not be blank"
+        self.logger = logger or logging.getLogger(__name__)
         self.url = self.api_url()
         self.get_users()
         self.get_channels()
@@ -38,8 +40,7 @@ class Slacker(object):
         self.restricted_users = [x['id'] for x in payload if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in payload if x.get('is_ultra_restricted')]
         self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
-        # print "all restricted users: {}".format(self.all_restricted_users)
-        # print "All restricted user names: {}".format([self.users_by_id[x] for x in self.all_restricted_users])
+        self.logger.debug("All restricted user names: {}".format([self.users_by_id[x] for x in self.all_restricted_users]))
         return payload
 
     def asciify(self, text):
@@ -146,7 +147,7 @@ class Slacker(object):
         url = url_template.format(self.token, cid, message_timestamp)
         ret = requests.get(url).json()
         if not ret['ok']:
-            print(ret)
+            self.logger.error("Failed to delete message; error: {}".format(ret))
         return ret['ok']
 
     def get_channel_members_ids(self, channel_name):
@@ -162,7 +163,7 @@ class Slacker(object):
         """
 
         mids = set(self.get_channel_members_ids(channel_name))
-        print("mids for {} is {}".format(channel_name, mids))
+        self.logger.debug("Current members in {} are {}".format(channel_name, mids))
         return mids.intersection(self.all_restricted_users)
 
     def get_channel_member_names(self, channel_name):

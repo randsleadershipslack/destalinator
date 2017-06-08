@@ -23,7 +23,7 @@ class Destalinator(object):
     closure_text_fname = "closure.txt"
     warning_text_fname = "warning.txt"
 
-    def __init__(self, slacker, slackbot, activated):
+    def __init__(self, slacker, slackbot, activated, logger=None):
         """
         slacker is a Slacker() object
         slackbot should be an initialized slackbot.Slackbot() object
@@ -39,11 +39,7 @@ class Destalinator(object):
         if os.getenv(self.config.output_debug_env_varname):
             self.output_debug_to_slack_flag = True
 
-        self.logger = logging.getLogger(__name__)
-        self.set_up_logger(self.logger,
-                           log_level_env_var='DESTALINATOR_LOG_LEVEL',
-                           log_to_slack_env_var=self.config.output_debug_env_varname,
-                           log_channel=self.config.log_channel)
+        self.logger = logger or logging.getLogger(__name__)
 
         self.destalinator_activated = activated
         self.logger.debug("destalinator_activated is %s", self.destalinator_activated)
@@ -129,13 +125,6 @@ class Destalinator(object):
         timestamp = time.strftime("%H:%M:%S: ", time.localtime())
         message = timestamp + " ({}) ".format(self.user) + message
         self.slacker.post_message(self.config.log_channel, message, message_type='log')
-
-    def set_up_logger(self, logger, log_level_env_var=None, log_to_slack_env_var=None, log_channel=None, default_level='INFO'):
-        logger.setLevel(getattr(logging, os.getenv(log_level_env_var, default_level).upper(), getattr(logging, default_level)))
-        stream_handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
 
     def stale(self, channel_name, days):
         """
