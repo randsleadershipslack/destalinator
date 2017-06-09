@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 
-import copy
 import argparse
+import copy
 import json
+import logging
 import operator
 import re
 import time
@@ -28,14 +29,10 @@ class Flagger(executor.Executor):
     def __init__(self, *args, **kwargs):
         self.htmlparser = HTMLParser.HTMLParser()
         super(Flagger, self).__init__(*args, **kwargs)
-        self.now = int(time.time())
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel((self.debug or self.verbose) and logging.DEBUG or logging.ERROR)
 
-    def dprint(self, message):
-        """
-        If we're in debug or verbose mode, print message
-        """
-        if self.debug or self.verbose:
-            print(message)
+        self.now = int(time.time())
 
     def extract_threshold(self, token):
         """
@@ -54,7 +51,7 @@ class Flagger(executor.Executor):
             comparator = '>='
 
         comparator = self.htmlparser.unescape(comparator)
-        self.dprint("token: {} comparator: {} value: {}".format(token, comparator, value))
+        self.logger.debug("token: {} comparator: {} value: {}".format(token, comparator, value))
 
         assert comparator in self.operators
         return (comparator, value)
@@ -82,7 +79,7 @@ class Flagger(executor.Executor):
                 uuid = tokens[3]
                 if uuid in control:
                     del(control[uuid])
-                    self.dprint("Message {} deletes UUID {}".format(text, uuid))
+                    self.logger.debug("Message {} deletes UUID {}".format(text, uuid))
                     continue
             try:
                 tokens = text.split()
@@ -99,12 +96,12 @@ class Flagger(executor.Executor):
             except Exception as e:
                 tb = traceback.format_exc()
                 m = "Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e)
-                self.dprint(m)
-                self.dprint(tb)
+                self.logger.debug(m)
+                self.logger.debug(tb)
                 if not self.debug:
                     self.ds.logger.warning(m)
         self.control = control
-        self.dprint("control: {}".format(json.dumps(self.control, indent=4)))
+        self.logger.debug("control: {}".format(json.dumps(self.control, indent=4)))
         self.emoji = [x['emoji'] for x in self.control.values()]
         self.initialize_emoji_aliases()
         return True
@@ -120,9 +117,9 @@ class Flagger(executor.Executor):
         This method grabs the emoji list from the Slack and creates the equivalence
         structure
         """
-        self.dprint("Starting emoji alias list")
+        self.logger.debug("Starting emoji alias list")
         emojis_response = self.slacker.get_emojis()
-        self.dprint("emojis_response keys are {}".format(emojis_response.keys()))
+        self.logger.debug("emojis_response keys are {}".format(emojis_response.keys()))
         emojis = emojis_response['emoji']
         equivalents = {}
         for emoji in emojis:
@@ -130,7 +127,7 @@ class Flagger(executor.Executor):
             target_type, target_value = target.split(":", 1)
             if target_type != "alias":
                 continue
-            self.dprint("Found emoji alias: {} <-> {}".format(emoji, target_value))
+            self.logger.debug("Found emoji alias: {} <-> {}".format(emoji, target_value))
             if emoji not in equivalents:
                 equivalents[emoji] = []
             if target_value not in equivalents:
@@ -138,9 +135,9 @@ class Flagger(executor.Executor):
             equivalents[emoji].append(target_value)
             equivalents[target_value].append(emoji)
         self.emoji_equivalents = equivalents
-        self.dprint("equivalents: {}".format(json.dumps(self.emoji_equivalents, indent=4)))
+        self.logger.debug("equivalents: {}".format(json.dumps(self.emoji_equivalents, indent=4)))
         if "floppy_disk" in self.emoji_equivalents.keys():
-            self.dprint("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
+            self.logger.debug("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
 
     def message_destination(self, message):
         """
@@ -156,7 +153,7 @@ class Flagger(executor.Executor):
         t = message.get("text")
         if t.find("SVP") != -1:
             def d(p):
-                pass  # print p
+                pass
         else:
             def d(p):
                 pass
@@ -223,7 +220,7 @@ class Flagger(executor.Executor):
             for output_channel in channels:
                 if self.slacker.channel_exists(output_channel["output"]):
                     md = "Saying {} to {}".format(m, output_channel["output"])
-                    self.dprint(md)
+                    self.logger.debug(md)
                     if not self.debug and self.destalinator_activated:
                         self.sb.say(output_channel["output"], m)
                 else:
@@ -237,6 +234,7 @@ class Flagger(executor.Executor):
     def flag(self):
         if self.initialize_control():
             self.announce_interesting_messages()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Flag interesting Slack messages.')
