@@ -72,6 +72,13 @@ class Destalinator(object):
         if self.output_debug_to_slack_flag:
             self.log(message)
 
+    def flush_channel_cache(self, channel_name):
+        """Flush all internal caches for this channel name."""
+        cid = self.slacker.get_channelid(channel_name)
+        if cid in self.cache:
+            self.debug("Purging cache for {}".format(channel_name))
+            del self.cache[cid]
+
     def get_earliest_archive_date(self):
         """Return a datetime.date object representing the earliest archive date."""
         date_string = os.getenv(self.config.get('earliest_archive_date_env_varname') or '') \
@@ -199,6 +206,7 @@ class Destalinator(object):
             if self.stale(channel, days):
                 self.debug("Attempting to safe-archive #{}".format(channel))
                 self.safe_archive(channel)
+            self.flush_channel_cache(channel)
 
     def warn(self, channel_name, days, force_warn=False):
         """
@@ -243,6 +251,8 @@ class Destalinator(object):
             if self.stale(channel, days):
                 if self.warn(channel, days, force_warn):
                     stale.append(channel)
+            self.flush_channel_cache(channel)
+
         if stale and self.config.general_message_channel:
             self.debug("Notifying #{} of warned channels".format(self.config.general_message_channel))
             self.warn_in_general(stale)
