@@ -6,11 +6,8 @@ import re
 import time
 import logging
 import json
-import requests
-import sys
 
 import config
-import slackbot
 import utils
 
 
@@ -49,7 +46,7 @@ class Destalinator(object):
         self.cache = {}
         self.now = int(time.time())
 
-    ## utility & data fetch methods
+    # utility & data fetch methods
 
     def action(self, message):
         message = "*ACTION: " + message + "*"
@@ -94,7 +91,7 @@ class Destalinator(object):
         messages = self.slacker.get_messages_in_time_range(oldest, cid)
         self.debug("Fetched {} messages for #{} over {} days".format(len(messages), channel_name, days))
 
-        messages = [x for x in messages if (x.get("subtype") is None or x.get("subtype") in self.config.included_subtypes)]
+        messages = [x for x in messages if x.get("subtype") is None or x.get("subtype") in self.config.included_subtypes]
         self.debug("Filtered down to {} messages based on included_subtypes: {}".format(len(messages), ", ".join(self.config.included_subtypes)))
 
         if cid not in self.cache:
@@ -150,7 +147,7 @@ class Destalinator(object):
             for x in messages
         )
 
-    ## channel actions
+    # channel actions
 
     def archive(self, channel_name):
         """Archive the given channel name, returning the Slack API response as a JSON string."""
@@ -171,10 +168,10 @@ class Destalinator(object):
             payload = self.slacker.archive(channel_name)
             if payload['ok']:
                 self.debug("Slack API response to archive: {}".format(json.dumps(payload, indent=4)))
-                self.logger.info("Archived #{}".format(channel_name))
+                self.logger.info("Archived %s", channel_name)
             else:
                 error = payload.get('error', '!! No error found in payload %s !!' % payload)
-                self.logger.error("Failed to archive {channel_name}: {error}. See https://api.slack.com/methods/channels.archive for more context.".format(channel_name=channel_name, error=error))
+                self.logger.error("Failed to archive %s: %s. See https://api.slack.com/methods/channels.archive for more context.", channel_name, error)
 
             return payload
 
@@ -220,8 +217,8 @@ class Destalinator(object):
         messages = self.get_messages(channel_name, days)
         texts = [x.get("text").strip() for x in messages if x.get("text")]
         if (not force_warn and
-            (self.add_slack_channel_markup(self.warning_text) in texts or
-                any(any(a.get('fallback') == 'channel_warning' for a in m.get('attachments', [])) for m in messages))):
+                (self.add_slack_channel_markup(self.warning_text) in texts or
+                 any(any(a.get('fallback') == 'channel_warning' for a in m.get('attachments', [])) for m in messages))):
             self.debug("Not warning #{} because we found a prior warning".format(channel_name))
             return False
 
@@ -234,7 +231,7 @@ class Destalinator(object):
     def warn_all(self, days, force_warn=False):
         """Warn all channels which are `days` idle; if `force_warn`, will warn even if we already have."""
         if not self.destalinator_activated:
-            self.logger.info("Note, destalinator is not activated and is in a dry-run mode. For help, see the " \
+            self.logger.info("Note, destalinator is not activated and is in a dry-run mode. For help, see the "
                              "documentation on the DESTALINATOR_ACTIVATED environment variable.")
         self.action("Warning all channels stale for more than {} days".format(days))
 
