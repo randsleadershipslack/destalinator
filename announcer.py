@@ -37,7 +37,7 @@ class Announcer(executor.Executor):
             m = "Channel #{} was created by @{} with purpose: {}".format(cname, creator, purpose)
             if self.destalinator_activated:
                 if self.slacker.channel_exists(config.announce_channel):
-                    self.sb.say(config.announce_channel, m)
+                    self.slackbot.say(config.announce_channel, m)
                 else:
                     self.ds.logger.warning("Attempted to announce in %s, but channel does not exist.", config.announce_channel)
             self.logger.info("ANNOUNCE: {}".format(m))
