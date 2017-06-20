@@ -40,7 +40,7 @@ class Slacker(object):
         self.restricted_users = [x['id'] for x in payload if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in payload if x.get('is_ultra_restricted')]
         self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
-        self.logger.debug("All restricted user names: {}".format([self.users_by_id[x] for x in self.all_restricted_users]))
+        self.logger.debug("All restricted user names: %s", ', '.join([self.users_by_id[x] for x in self.all_restricted_users]))
         return payload
 
     def asciify(self, text):
@@ -53,8 +53,6 @@ class Slacker(object):
         else:
             if fail_silently:
                 return "#{}".format(channel_name)
-            else:
-                return None
 
     def get_messages_in_time_range(self, oldest, cid, latest=None):
         assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
@@ -90,8 +88,6 @@ class Slacker(object):
             m = [x for x in self.channels if self.channels[x] == stripped]
             if m:
                 return "#" + m[0]
-            else:
-                return cid
         elif first == "@":
             # occasionally input will have the format "userid|name".
             #  in case the name changed at some point,
@@ -139,7 +135,7 @@ class Slacker(object):
             else:
                 channel = channel_name
             return self.channels_by_name[channel]
-        except KeyError as e: # channel not found
+        except KeyError:  # channel not found
             return None
 
     def delete_message(self, cid, message_timestamp):
@@ -147,7 +143,7 @@ class Slacker(object):
         url = url_template.format(self.token, cid, message_timestamp)
         ret = requests.get(url).json()
         if not ret['ok']:
-            self.logger.error("Failed to delete message; error: {}".format(ret))
+            self.logger.error("Failed to delete message; error: %s", ret)
         return ret['ok']
 
     def get_channel_members_ids(self, channel_name):
@@ -163,7 +159,7 @@ class Slacker(object):
         """
 
         mids = set(self.get_channel_members_ids(channel_name))
-        self.logger.debug("Current members in {} are {}".format(channel_name, mids))
+        self.logger.debug("Current members in %s are %s", channel_name, mids)
         return mids.intersection(self.all_restricted_users)
 
     def get_channel_member_names(self, channel_name):
