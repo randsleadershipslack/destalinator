@@ -11,6 +11,7 @@ config = config.Config()
 
 class Announcer(executor.Executor):
     def __init__(self, logger=None):
+        super(Announcer, self).__init__()
         self.logger = logger or logging.getLogger(__name__)
 
     def get_new_channels(self):
@@ -40,7 +41,7 @@ class Announcer(executor.Executor):
                     self.slackbot.say(config.announce_channel, m)
                 else:
                     self.ds.logger.warning("Attempted to announce in %s, but channel does not exist.", config.announce_channel)
-            self.logger.info("ANNOUNCE: {}".format(m))
+            self.logger.info("ANNOUNCE: %s", m)
 
 
 if __name__ == "__main__":
