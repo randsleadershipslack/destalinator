@@ -10,7 +10,7 @@ import requests
 
 class Slacker(object):
 
-    def __init__(self, slack_name, token, logger=None):
+    def __init__(self, slack_name, token, logger=None, init=True):
         """
         slack name is the short name of the slack (preceding '.slack.com')
         token should be a Slack API Token.
@@ -20,8 +20,9 @@ class Slacker(object):
         assert self.token, "Token should not be blank"
         self.logger = logger or logging.getLogger(__name__)
         self.url = self.api_url()
-        self.get_users()
-        self.get_channels()
+        if init:
+            self.get_users()
+            self.get_channels()
 
     def get_emojis(self):
         url = self.url + "emoji.list?token={}".format(self.token)
@@ -34,15 +35,14 @@ class Slacker(object):
         return payload
 
     def get_users(self):
-        url = self.url + "users.list?token=" + self.token
-        payload = requests.get(url).json()['members']
-        self.users_by_id = {x['id']: x['name'] for x in payload}
-        self.users_by_name = {x['name']: x['id'] for x in payload}
-        self.restricted_users = [x['id'] for x in payload if x.get('is_restricted')]
-        self.ultra_restricted_users = [x['id'] for x in payload if x.get('is_ultra_restricted')]
+        users = self.get_all_user_objects()
+        self.users_by_id = {x['id']: x['name'] for x in users}
+        self.users_by_name = {x['name']: x['id'] for x in users}
+        self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
+        self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
         self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
         self.logger.debug("All restricted user names: %s", ', '.join([self.users_by_id[x] for x in self.all_restricted_users]))
-        return payload
+        return users
 
     def asciify(self, text):
         return ''.join([x for x in list(text) if ord(x) in range(128)])
@@ -204,6 +204,10 @@ class Slacker(object):
         payload = request.json()
         assert 'channels' in payload
         return payload['channels']
+
+    def get_all_user_objects(self):
+        url = self.url + "users.list?token=" + self.token
+        return requests.get(url).json()['members']
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
