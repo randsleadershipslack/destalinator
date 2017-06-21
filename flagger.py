@@ -222,7 +222,7 @@ class Flagger(executor.Executor):
                     md = "Saying {} to {}".format(m, output_channel["output"])
                     self.logger.debug(md)
                     if not self.debug and self.destalinator_activated:
-                        self.sb.say(output_channel["output"], m)
+                        self.slackbot.say(output_channel["output"], m)
                 else:
                     self.ds.logger.warning("Attempted to announce in {} because of rule :{}:{}{}, but channel does not exist.".format(
                         output_channel["output"],
