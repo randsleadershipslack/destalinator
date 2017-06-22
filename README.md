@@ -73,3 +73,7 @@ To minimize the risk of making a mistake, Destalinator will run in a dry-run mod
 #### `DESTALINATOR_LOG_LEVEL`
 
 Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.
+
+## Code of Conduct
+
+As part of the Rands Leadership Slack community, the [Rands Leadership Slack Code of Conduct](https://github.com/randsleadershipslack/documents-and-resources/blob/master/code-of-conduct.md) applies to this project.
