@@ -7,6 +7,8 @@ import time
 
 import requests
 
+import config
+
 
 class Slacker(object):
 
@@ -20,6 +22,7 @@ class Slacker(object):
         assert self.token, "Token should not be blank"
         self.logger = logger or logging.getLogger(__name__)
         self.url = self.api_url()
+        self.config = config.Config()
         if init:
             self.get_users()
             self.get_channels()
@@ -233,6 +236,16 @@ class Slacker(object):
             'channel': channel,
             'text': message.encode('utf-8')
         }
+
+        bot_name = self.config.get('bot_name')
+        bot_avatar_url = self.config.get('bot_avatar_url')
+        if bot_name or bot_avatar_url:
+            post_data['as_user'] = False
+            if bot_name:
+                post_data['username'] = bot_name
+            if bot_avatar_url:
+                post_data['icon_url'] = bot_avatar_url
+
         if message_type:
             post_data['attachments'] = json.dumps([{'fallback': message_type}], encoding='utf-8')
 

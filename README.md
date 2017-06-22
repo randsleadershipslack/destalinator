@@ -60,7 +60,8 @@ If you run into rate limits on your test token, you may need to set up a Slack A
 - `channels:history`
 - `channels:read`
 - `channels:write`
-- `chat:writer:user`
+- `chat:write:bot`
+- `chat:write:user`
 - `emoji:read`
 - `users:read`
 
