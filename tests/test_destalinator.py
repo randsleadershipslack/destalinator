@@ -1,3 +1,4 @@
+# pylint: disable=W0201
 from datetime import date, datetime, timedelta
 import mock
 import os
@@ -77,13 +78,13 @@ sample_slack_messages = [
 sample_warning_messages = [
     {
         "user": "U023BCDA1",
-        "text":"This is a channel warning! Put on your helmets!",
-        "username":"bot",
-        "bot_id":"B0T8EDVLY",
-        "attachments": [{"fallback":"channel_warning", "id": 1}],
-        "type":"message",
-        "subtype":"bot_message",
-        "ts":"1496855882.185855"
+        "text": "This is a channel warning! Put on your helmets!",
+        "username": "bot",
+        "bot_id": "B0T8EDVLY",
+        "attachments": [{"fallback": "channel_warning", "id": 1}],
+        "type": "message",
+        "subtype": "bot_message",
+        "ts": "1496855882.185855"
     }
 ]
 
@@ -248,7 +249,7 @@ class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_no_stale_channels_but_all_minimum_age_with_default_ignore_users(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+        mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertEqual(len(self.destalinator.get_stale_channels(30)), 0)
@@ -257,7 +258,7 @@ class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
     def test_with_no_stale_channels_but_all_minimum_age_with_specific_ignore_users(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         self.destalinator.config.config['ignore_users'] = [m['user'] for m in sample_slack_messages if m.get('user')]
-        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+        mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertEqual(len(self.destalinator.get_stale_channels(30)), 2)
@@ -294,6 +295,37 @@ class DestalinatorIgnoreChannelTestCase(unittest.TestCase):
         self.destalinator.config.config['ignore_channels'] = []
         self.destalinator.config.config['ignore_channel_patterns'] = []
         self.assertFalse(self.destalinator.ignore_channel('stalinists'))
+
+
+class DestalinatorPostMarkedUpMessageTestCase(unittest.TestCase):
+    def setUp(self):
+        self.slacker = SlackerMock("testing", "token")
+        self.slackbot = slackbot.Slackbot("testing", "token")
+
+    def test_with_a_string_having_a_channel(self):
+        self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
+        self.slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
+        self.slacker.post_message = mock.MagicMock(return_value={})
+        self.destalinator.post_marked_up_message('stalinists', "Really great message about #leninists.")
+        self.slacker.post_message.assert_called_once_with('stalinists',
+                                                          "Really great message about <#C012839|leninists>.")
+
+    def test_with_a_string_having_many_channels(self):
+        self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
+        self.slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
+        self.slacker.post_message = mock.MagicMock(return_value={})
+        self.destalinator.post_marked_up_message('stalinists', "Really great message about #leninists and #stalinists.")
+        self.slacker.post_message.assert_called_once_with(
+            'stalinists',
+            "Really great message about <#C012839|leninists> and <#C102843|stalinists>."
+        )
+
+    def test_with_a_string_having_no_channels(self):
+        self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
+        self.slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
+        self.slacker.post_message = mock.MagicMock(return_value={})
+        self.destalinator.post_marked_up_message('stalinists', "Really great message.")
+        self.slacker.post_message.assert_called_once_with('stalinists', "Really great message.")
 
 
 class DestalinatorStaleTestCase(unittest.TestCase):
@@ -438,7 +470,7 @@ class DestalinatorSafeArchiveAllTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_calls_stale_once_for_each_channel(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+        mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
         self.destalinator.stale = mock.MagicMock(return_value=False)
         days = self.destalinator.config.archive_threshold
         self.destalinator.safe_archive_all(days)
@@ -447,7 +479,7 @@ class DestalinatorSafeArchiveAllTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_only_archives_stale_channels(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+        mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
 
         def fake_stale(channel, days):
             return {'leninists': True, 'stalinists': False}[channel]
@@ -462,7 +494,7 @@ class DestalinatorSafeArchiveAllTestCase(unittest.TestCase):
     def test_does_not_archive_ignored_channels(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         self.destalinator.config.config['ignore_channels'] = ['leninists']
-        mock_slacker.channels_by_name = {'leninists': {'id': 'ABC4321'}, 'stalinists': {'id': 'ABC4321'}}
+        mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
 
         def fake_stale(channel, days):
             return {'leninists': True, 'stalinists': False}[channel]
@@ -485,7 +517,22 @@ class DestalinatorWarnTestCase(unittest.TestCase):
         mock_slacker.channel_has_only_restricted_members.return_value = False
         mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
         self.destalinator.warn("stalinists", 30)
-        mock_slacker.post_message.assert_called_with("stalinists", self.destalinator.warning_text, message_type='channel_warning')
+        mock_slacker.post_message.assert_called_with("stalinists",
+                                                     self.destalinator.warning_text,
+                                                     message_type='channel_warning')
+
+    def test_warns_by_posting_message_with_channel_names(self):
+        self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
+        warning_text = self.destalinator.warning_text + " #leninists"
+        self.destalinator.warning_text = warning_text
+        self.slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
+        self.slacker.channel_has_only_restricted_members = mock.MagicMock(return_value=False)
+        self.slacker.get_messages_in_time_range = mock.MagicMock(return_value=sample_slack_messages)
+        self.slacker.post_message = mock.MagicMock(return_value={})
+        self.destalinator.warn("stalinists", 30)
+        self.slacker.post_message.assert_called_with("stalinists",
+                                                     self.destalinator.add_slack_channel_markup(warning_text),
+                                                     message_type='channel_warning')
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_does_not_warn_when_previous_warning_found(self, mock_slacker):

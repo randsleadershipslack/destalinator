@@ -128,7 +128,10 @@ class Destalinator(object):
     def log(self, message):
         timestamp = time.strftime("%H:%M:%S: ", time.localtime())
         message = timestamp + " ({}) ".format(self.user) + message
-        self.slacker.post_message(self.config.log_channel, message, message_type='log')
+        self.post_marked_up_message(self.config.log_channel, message, message_type='log')
+
+    def post_marked_up_message(self, channel_name, message, **kwargs):
+        self.slacker.post_message(channel_name, self.add_slack_channel_markup(message), **kwargs)
 
     def stale(self, channel_name, days):
         """
@@ -164,12 +167,12 @@ class Destalinator(object):
 
         if self.destalinator_activated:
             self.debug("Announcing channel closure in #{}".format(channel_name))
-            self.slacker.post_message(channel_name, self.closure_text, message_type='channel_archive')
+            self.post_marked_up_message(channel_name, self.closure_text, message_type='channel_archive')
 
             members = self.slacker.get_channel_member_names(channel_name)
             say = "Members at archiving are {}".format(", ".join(sorted(members)))
             self.debug("Telling channel #{}: {}".format(channel_name, say))
-            self.slacker.post_message(channel_name, say, message_type='channel_archive_members')
+            self.post_marked_up_message(channel_name, say, message_type='channel_archive_members')
 
             self.action("Archiving channel #{}".format(channel_name))
             payload = self.slacker.archive(channel_name)
@@ -231,7 +234,7 @@ class Destalinator(object):
             return False
 
         if self.destalinator_activated:
-            self.slacker.post_message(channel_name, self.warning_text, message_type='channel_warning')
+            self.post_marked_up_message(channel_name, self.warning_text, message_type='channel_warning')
             self.action("Warned #{}".format(channel_name))
 
         return True
@@ -273,5 +276,5 @@ class Destalinator(object):
         message += ", ".join(["#" + x for x in stale_channels])
         message = message.format(channel, being, there)
         if self.destalinator_activated:
-            self.slacker.post_message(self.config.general_message_channel, message, message_type='warn_in_general')
+            self.post_marked_up_message(self.config.general_message_channel, message, message_type='warn_in_general')
         self.debug("Notified #{} with: {}".format(self.config.general_message_channel, message))
