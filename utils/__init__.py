@@ -47,6 +47,9 @@ def set_up_logger(logger,
     * `default_level` - The default log level if one is not set in the environment.
     * `slackbot` - A slackbot.Slackbot() object ready to send messages to a Slack channel.
     """
+    if logger.handlers:
+        return
+
     logger.setLevel(getattr(logging, os.getenv(log_level_env_var, default_level).upper(), getattr(logging, default_level)))
     stream_handler = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
