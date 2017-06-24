@@ -190,6 +190,7 @@ class Destalinator(object):
         Archive channel if today's date is after `self.earliest_archive_date`
         and if channel does not only contain single-channel guests.
         """
+        self.debug("Evaluating #{} for archival".format(channel_name))
 
         if self.slacker.channel_has_only_restricted_members(channel_name):
             self.debug("Would have archived #{} but it contains only restricted users".format(channel_name))
@@ -197,7 +198,6 @@ class Destalinator(object):
 
         today = date.today()
         if today >= self.earliest_archive_date:
-            self.action("Archiving channel #{}".format(channel_name))
             self.archive(channel_name)
         else:
             self.debug("Would have archived #{} but it's not yet {}".format(channel_name, self.earliest_archive_date))
