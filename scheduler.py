@@ -43,8 +43,10 @@ def destalinate_job():
             print("Flagging")
             scheduled_flagger.flag()
             print("OK: destalinated")
-        except Exception:  # pylint: disable=W0703
+        except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
+            if not os.getenv('SENTRY_DSN'):
+                raise e
     print("END: destalinate_job")
 
 
