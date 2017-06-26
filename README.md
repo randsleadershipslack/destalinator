@@ -74,3 +74,12 @@ To minimize the risk of making a mistake, Destalinator will run in a dry-run mod
 #### `DESTALINATOR_LOG_LEVEL`
 
 Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.
+
+#### `SENTRY_DSN`
+
+In order to configure exception handling & tracking with [Sentry](https://sentry.io/), set up a Sentry account and
+configure this environment variable with the appropriate DSN value.
+
+If you're on Heroku, you can provision this with:
+
+    heroku addons:create sentry:f1
