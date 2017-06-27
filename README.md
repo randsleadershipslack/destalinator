@@ -6,25 +6,27 @@ Code for managing Cleanup of Stale Channels
 # Making it work in your environment
 You'll need to install a few libraries: `pip install -r requirements.txt`
 
-You'll also need to change configuration.yaml appropriately.  warner.py and archiver.py should then work from the command line.  Productionalized automated deployments and running on a schedule are left unspecified because every production environment is unique.
+You'll also need to change `configuration.yaml` appropriately. `warner.py` and `archiver.py` should then work from the command line. Productionized automated deployments and running on a schedule are left unspecified because every production environment is unique.
+
+That said, if you're running on Heroku, you can create a single `clock` process that runs `python scheduler.py`.
 
 ## Components
 
-### warner
+### Warner
 
-The warner notifies channels that have been inactive for a period of time.
+The Warner notifies channels that have been inactive for a period of time.
 
-### archiver
+### Archiver
 
 The archiver archives channels that have been inactive for a period of time.
 
-### announcer
+### Announcer
 
-The announcer will notify a channel of all new channels created within a period of time.
+The Announcer will notify a channel of all new channels created within a period of time.
 
-### flagger
+### Flagger
 
-The flagger uses a ruleset defined in a specific channel to perform actions such as notifying channels of messages that have received a certain number of reactions.
+The Flagger uses a ruleset defined in a specific channel to perform actions such as notifying channels of messages that have received a certain number of reactions.
 
 ## Setup
 
@@ -42,20 +44,18 @@ Tune these two variables to decide how long after inactivity a channel should be
 
 These channels need to be manually created by you in your Slack.
 
-### Required environment variables
+### Environment variables
 
-#### `SB_TOKEN`
+#### `SB_TOKEN` (Required)
 
 1. Make sure [the Slackbot app](https://slack.com/apps/A0F81R8ET-slackbot) is installed for your Slack
 2. Add a Slackbot integration, and copy the `token` parameter from the URL provided
 
-#### `API_TOKEN`
+#### `API_TOKEN` (Required)
 
-The easiest way to get an `API_TOKEN` is to [generate an OAuth test token](https://api.slack.com/docs/oauth-test-tokens).
+The best way to get an `API_TOKEN` is to [create a new Slack App](https://api.slack.com/apps/new).
 
-It's not *nice*, but it's simple and avoids the whole callback-URL-oauth-request-app-creation dance.
-
-If you run into rate limits on your test token, you may need to set up a Slack App. [Create a new one](https://api.slack.com/apps) and give it the following permissions:
+Once you create and name your app on your team, go to "OAuth & Permissions" to give it the following permission scopes:
 
 - `channels:history`
 - `channels:read`
@@ -65,20 +65,32 @@ If you run into rate limits on your test token, you may need to set up a Slack A
 - `emoji:read`
 - `users:read`
 
-#### `DESTALINATOR_ACTIVATED`
+After saving, you can copy the OAuth Access Token value from the top of the same screen. It probably starts with `xox`.
+
+#### `DESTALINATOR_ACTIVATED` (Required)
 
 Destalinator can be chatty and make potentially big changes to a Slack team (by warning or archiving a large amount of channels), especially when first installed.
 
 To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to any non-empty value and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
 
-#### `DESTALINATOR_LOG_LEVEL`
+#### `DESTALINATOR_LOG_LEVEL` (Optional; Default: `INFO`)
 
 Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.
 
-#### `SENTRY_DSN`
+#### `DESTALINATOR_LOG_TO_CHANNEL` (Optional)
 
-In order to configure exception handling & tracking with [Sentry](https://sentry.io/), set up a Sentry account and
-configure this environment variable with the appropriate DSN value.
+If you would like to log to a Slack channel as well as the default log destination, you can set `true` here. The channel
+will then be pulled from `log_channel` in `configuration.yaml`.
+
+#### `EARLIEST_ARCHIVE_DATE` (Optional)
+
+If you don't want to start archiving channels until a certain date right after introducing destalinator to your team,
+you can set an ISO-8601 date here (`YYYY-mm-dd`).
+
+#### `SENTRY_DSN` (Optional)
+
+If you would like to configure exception handling & tracking with [Sentry](https://sentry.io/), set up a Sentry account
+and configure this environment variable with the appropriate DSN value.
 
 If you're on Heroku, you can provision this with:
 
