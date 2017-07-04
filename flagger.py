@@ -26,8 +26,8 @@ class Flagger(executor.Executor):
                  '>=': operator.ge, '<=': operator.le}
 
     def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(*args, **kwargs)
         self.htmlparser = HTMLParser.HTMLParser()
-        super(Flagger, self).__init__(*args, **kwargs)
         self.debug = kwargs.get('debug')
         self.now = int(time.time())
 
