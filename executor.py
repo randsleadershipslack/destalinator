@@ -21,7 +21,6 @@ class Executor(object):
 
         self.slackbot = slackbot_injected or slackbot.Slackbot(config.SLACK_NAME, token=slackbot_token)
 
-        self.logger = logging.getLogger(__name__)
         utils.set_up_logger(self.logger,
                             slackbot=self.slackbot)
 
@@ -35,3 +34,7 @@ class Executor(object):
         self.ds = destalinator.Destalinator(slacker=self.slacker,
                                             slackbot=self.slackbot,
                                             activated=self.destalinator_activated)
+
+    @property
+    def logger():
+        return logging.getLogger(__name__)
