@@ -23,10 +23,7 @@ class Config(object):
         return self.config[attrname]
 
     def get(self, attrname, fallback=None):
-        try:
-            return self.config[attrname]
-        except KeyError:
-            return fallback
+        return self.config.get(attrname, fallback)
 
 
 # This deliberately isn't a `getenv` default so `.slack_name` isn't tried if there's a SLACK_NAME
