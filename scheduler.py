@@ -1,4 +1,3 @@
-import logging
 import os
 
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -19,7 +18,6 @@ if os.getenv("TEST_SCHEDULE"):
 else:
     schedule_kwargs = {"hour": 4}
 
-logging.basicConfig()
 sched = BlockingScheduler()
 
 

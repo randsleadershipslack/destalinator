@@ -30,9 +30,6 @@ class Flagger(executor.Executor):
         self.htmlparser = HTMLParser.HTMLParser()
         super(Flagger, self).__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel((self.debug or self.verbose) and logging.DEBUG or logging.ERROR)
-        logging.basicConfig()
-
         self.now = int(time.time())
 
     def extract_threshold(self, token):
