@@ -30,7 +30,6 @@ class Destalinator(WithLogger):
         self.warning_text = utils.get_local_file_content(self.warning_text_fname)
         self.slacker = slacker
         self.slackbot = slackbot
-        self.user = os.getenv("USER")
         self.config = config.Config()
 
         self.destalinator_activated = activated
