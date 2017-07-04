@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import logging
 import os
 
 import config
@@ -9,8 +8,10 @@ import slackbot
 import slacker
 import utils
 
+from utils.with_logger import WithLogger
 
-class Executor(object):
+
+class Executor(WithLogger):
 
     def __init__(self, debug=False, verbose=False, slackbot_injected=None, slacker_injected=None):
         self.debug = debug
@@ -34,7 +35,3 @@ class Executor(object):
         self.ds = destalinator.Destalinator(slacker=self.slacker,
                                             slackbot=self.slackbot,
                                             activated=self.destalinator_activated)
-
-    @property
-    def logger():
-        return logging.getLogger(__name__)
