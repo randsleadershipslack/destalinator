@@ -3,7 +3,6 @@
 import argparse
 import copy
 import json
-import logging
 import operator
 import re
 import time
@@ -29,7 +28,6 @@ class Flagger(executor.Executor):
     def __init__(self, *args, **kwargs):
         self.htmlparser = HTMLParser.HTMLParser()
         super(Flagger, self).__init__(*args, **kwargs)
-        self.logger = logging.getLogger(__name__)
         self.now = int(time.time())
 
     def extract_threshold(self, token):

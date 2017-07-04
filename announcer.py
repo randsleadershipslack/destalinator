@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import logging
 import time
 
 import config
@@ -12,7 +11,6 @@ config = config.Config()
 class Announcer(executor.Executor):
     def __init__(self, logger=None, slackbot_injected=None, slacker_injected=None):
         super(Announcer, self).__init__(slackbot_injected=slackbot_injected, slacker_injected=slacker_injected)
-        self.logger = logger or logging.getLogger(__name__)
 
     def get_new_channels(self):
         """
