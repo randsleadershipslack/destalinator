@@ -28,6 +28,7 @@ class Flagger(executor.Executor):
     def __init__(self, *args, **kwargs):
         self.htmlparser = HTMLParser.HTMLParser()
         super(Flagger, self).__init__(*args, **kwargs)
+        self.debug = kwargs.get('debug')
         self.now = int(time.time())
 
     def extract_threshold(self, token):
@@ -92,10 +93,8 @@ class Flagger(executor.Executor):
             except Exception as e:
                 tb = traceback.format_exc()
                 m = "Couldn't create flagger rule with text {}: {} {}".format(text, Exception, e)
-                self.logger.debug(m)
+                self.logger.warning(m)
                 self.logger.debug(tb)
-                if not self.debug:
-                    self.logger.warning(m)
         self.control = control
         self.logger.debug("control: {}".format(json.dumps(self.control, indent=4)))
         self.emoji = [x['emoji'] for x in self.control.values()]
@@ -217,7 +216,7 @@ class Flagger(executor.Executor):
                 if self.slacker.channel_exists(output_channel["output"]):
                     md = "Saying {} to {}".format(m, output_channel["output"])
                     self.logger.debug(md)
-                    if not self.debug and self.destalinator_activated:
+                    if not self.debug and self.destalinator_activated: # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
                     self.logger.warning("Attempted to announce in {} because of rule :{}:{}{}, but channel does not exist.".format(
@@ -235,8 +234,7 @@ class Flagger(executor.Executor):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Flag interesting Slack messages.')
     parser.add_argument("--debug", action="store_true", default=False)
-    parser.add_argument("--verbose", action="store_true", default=False)
     args = parser.parse_args()
 
-    flagger = Flagger(debug=args.debug, verbose=args.verbose)
+    flagger = Flagger(debug=args.debug)
     flagger.flag()

@@ -13,9 +13,7 @@ from utils.with_logger import WithLogger
 
 class Executor(WithLogger):
 
-    def __init__(self, debug=False, verbose=False, slackbot_injected=None, slacker_injected=None):
-        self.debug = debug
-        self.verbose = verbose
+    def __init__(self, slackbot_injected=None, slacker_injected=None):
         self.config = config.Config()
         slackbot_token = os.getenv(self.config.slackbot_api_token_env_varname)
         api_token = os.getenv(self.config.api_token_env_varname)
