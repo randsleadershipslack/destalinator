@@ -34,7 +34,7 @@ def get_local_file_content(file_name):
     return ret
 
 
-def set_up_logger(logger,
+def set_up_slack_logger(logger,
                   slackbot=None):
     """
     Sets up a handler and formatter on a given `logging.Logger` object.
