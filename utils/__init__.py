@@ -2,7 +2,7 @@ import codecs
 import logging
 import os
 
-import config
+from config import Config
 
 
 class SlackHandler(logging.Handler):
@@ -45,24 +45,33 @@ def set_up_logger(logger,
     * `default_level` - The default log level if one is not set in the environment.
     * `slackbot` - A slackbot.Slackbot() object ready to send messages to a Slack channel.
     """
-    default_level='INFO'
-
+    config = Config()
     log_level_env_var = 'DESTALINATOR_LOG_LEVEL'
     log_to_slack_env_var = 'DESTALINATOR_LOG_TO_CHANNEL'
 
-    log_channel = config.Config().log_channel
+    default_level='INFO'
+    slack_log_level = getattr(logging, os.getenv(log_level_env_var, default_level).upper(), getattr(logging, default_level)))
+
+    has_log_to_slack_env_var = os.getenv(config.output_debug_env_varname) or os.getenv(log_to_slack_env_var)
+
+    log_channel = config.log_channel
+
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
 
     if logger.handlers:
         return
 
-    logger.setLevel(getattr(logging, os.getenv(log_level_env_var, default_level).upper(), getattr(logging, default_level)))
+    logger.setLevel(logging.DEBUG)
+
     stream_handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
     stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.DEBUG)
+
     logger.addHandler(stream_handler)
 
-    if os.getenv(log_to_slack_env_var) and log_channel and slackbot:
+    if has_log_to_slack_env_var and log_channel and slackbot:
         logger.debug("Logging to slack channel: %s", log_channel)
-        slack_handler = SlackHandler(slackbot=slackbot, log_channel=log_channel, level=logger.getEffectiveLevel())
+
+        slack_handler = SlackHandler(slackbot=slackbot, log_channel=log_channel, level=slack_log_level)
         slack_handler.setFormatter(formatter)
         logger.addHandler(slack_handler)

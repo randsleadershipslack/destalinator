@@ -32,9 +32,6 @@ class Destalinator(object):
         self.slackbot = slackbot
         self.user = os.getenv("USER")
         self.config = config.Config()
-        self.output_debug_to_slack_flag = False
-        if os.getenv(self.config.output_debug_env_varname):
-            self.output_debug_to_slack_flag = True
 
         self.logger = logging.getLogger(__name__)
 
@@ -66,17 +63,11 @@ class Destalinator(object):
         age = age / 86400
         return age > days
 
-    def debug(self, message):
-        self.logger.debug(message)
-        message = "DEBUG: " + message
-        if self.output_debug_to_slack_flag:
-            self.log(message)
-
     def flush_channel_cache(self, channel_name):
         """Flush all internal caches for this channel name."""
         cid = self.slacker.get_channelid(channel_name)
         if cid in self.cache:
-            self.debug("Purging cache for {}".format(channel_name))
+            self.logger.debug("Purging cache for {}".format(channel_name))
             del self.cache[cid]
 
     def get_earliest_archive_date(self):
@@ -92,14 +83,14 @@ class Destalinator(object):
         cid = self.slacker.get_channelid(channel_name)
 
         if oldest in self.cache.get(cid, {}):
-            self.debug("Returning {} cached messages for #{} over {} days".format(len(self.cache[cid][oldest]), channel_name, days))
+            self.logger.debug("Returning {} cached messages for #{} over {} days".format(len(self.cache[cid][oldest]), channel_name, days))
             return self.cache[cid][oldest]
 
         messages = self.slacker.get_messages_in_time_range(oldest, cid)
-        self.debug("Fetched {} messages for #{} over {} days".format(len(messages), channel_name, days))
+        self.logger.debug("Fetched {} messages for #{} over {} days".format(len(messages), channel_name, days))
 
         messages = [x for x in messages if x.get("subtype") is None or x.get("subtype") in self.config.included_subtypes]
-        self.debug("Filtered down to {} messages based on included_subtypes: {}".format(len(messages), ", ".join(self.config.included_subtypes)))
+        self.logger.debug("Filtered down to {} messages based on included_subtypes: {}".format(len(messages), ", ".join(self.config.included_subtypes)))
 
         if cid not in self.cache:
             self.cache[cid] = {}
@@ -113,7 +104,7 @@ class Destalinator(object):
         for channel in sorted(self.slacker.channels_by_name.keys()):
             if self.stale(channel, days):
                 ret.append(channel)
-        self.debug("{} channels quiet for {} days: {}".format(len(ret), days, ret))
+        self.logger.debug("{} channels quiet for {} days: {}".format(len(ret), days, ret))
         return ret
 
     def ignore_channel(self, channel_name):
@@ -125,11 +116,6 @@ class Destalinator(object):
                 return True
         return False
 
-    def log(self, message):
-        timestamp = time.strftime("%H:%M:%S: ", time.localtime())
-        message = timestamp + " ({}) ".format(self.user) + message
-        self.post_marked_up_message(self.config.log_channel, message, message_type='log')
-
     def post_marked_up_message(self, channel_name, message, **kwargs):
         self.slacker.post_message(channel_name, self.add_slack_channel_markup(message), **kwargs)
 
@@ -139,7 +125,7 @@ class Destalinator(object):
         Definition of stale is: no messages in the last `days` which are not from config.ignore_users.
         """
         if not self.channel_minimum_age(channel_name, days):
-            self.debug("Channel #{} is not yet of minimum_age; skipping stale messages check".format(channel_name))
+            self.logger.debug("Channel #{} is not yet of minimum_age; skipping stale messages check".format(channel_name))
             return False
 
         messages = self.get_messages(channel_name, days)
@@ -162,22 +148,22 @@ class Destalinator(object):
     def archive(self, channel_name):
         """Archive the given channel name, returning the Slack API response as a JSON string."""
         if self.ignore_channel(channel_name):
-            self.debug("Not archiving #{} because it's in ignore_channels".format(channel_name))
+            self.logger.debug("Not archiving #{} because it's in ignore_channels".format(channel_name))
             return
 
         if self.destalinator_activated:
-            self.debug("Announcing channel closure in #{}".format(channel_name))
+            self.logger.debug("Announcing channel closure in #{}".format(channel_name))
             self.post_marked_up_message(channel_name, self.closure_text, message_type='channel_archive')
 
             members = self.slacker.get_channel_member_names(channel_name)
             say = "Members at archiving are {}".format(", ".join(sorted(members)))
-            self.debug("Telling channel #{}: {}".format(channel_name, say))
+            self.logger.debug("Telling channel #{}: {}".format(channel_name, say))
             self.post_marked_up_message(channel_name, say, message_type='channel_archive_members')
 
             self.action("Archiving channel #{}".format(channel_name))
             payload = self.slacker.archive(channel_name)
             if payload['ok']:
-                self.debug("Slack API response to archive: {}".format(json.dumps(payload, indent=4)))
+                self.logger.debug("Slack API response to archive: {}".format(json.dumps(payload, indent=4)))
                 self.logger.info("Archived %s", channel_name)
             else:
                 error = payload.get('error', '!! No error found in payload %s !!' % payload)
@@ -190,24 +176,24 @@ class Destalinator(object):
         Archive channel if today's date is after `self.earliest_archive_date`
         and if channel does not only contain single-channel guests.
         """
-        self.debug("Evaluating #{} for archival".format(channel_name))
+        self.logger.debug("Evaluating #{} for archival".format(channel_name))
 
         if self.slacker.channel_has_only_restricted_members(channel_name):
-            self.debug("Would have archived #{} but it contains only restricted users".format(channel_name))
+            self.logger.debug("Would have archived #{} but it contains only restricted users".format(channel_name))
             return
 
         today = date.today()
         if today >= self.earliest_archive_date:
             self.archive(channel_name)
         else:
-            self.debug("Would have archived #{} but it's not yet {}".format(channel_name, self.earliest_archive_date))
+            self.logger.debug("Would have archived #{} but it's not yet {}".format(channel_name, self.earliest_archive_date))
 
     def safe_archive_all(self, days):
         """Safe archive all channels stale longer than `days`."""
         self.action("Safe-archiving all channels stale for more than {} days".format(days))
         for channel in sorted(self.slacker.channels_by_name.keys()):
             if self.stale(channel, days):
-                self.debug("Attempting to safe-archive #{}".format(channel))
+                self.logger.debug("Attempting to safe-archive #{}".format(channel))
                 self.safe_archive(channel)
             self.flush_channel_cache(channel)
 
@@ -218,11 +204,11 @@ class Destalinator(object):
         Return True if we actually warned, otherwise False.
         """
         if self.slacker.channel_has_only_restricted_members(channel_name):
-            self.debug("Would have warned #{} but it contains only restricted users".format(channel_name))
+            self.logger.debug("Would have warned #{} but it contains only restricted users".format(channel_name))
             return False
 
         if self.ignore_channel(channel_name):
-            self.debug("Not warning #{} because it's in ignore_channels".format(channel_name))
+            self.logger.debug("Not warning #{} because it's in ignore_channels".format(channel_name))
             return False
 
         messages = self.get_messages(channel_name, days)
@@ -230,7 +216,7 @@ class Destalinator(object):
         if (not force_warn and
                 (self.add_slack_channel_markup(self.warning_text) in texts or
                  any(any(a.get('fallback') == 'channel_warning' for a in m.get('attachments', [])) for m in messages))):
-            self.debug("Not warning #{} because we found a prior warning".format(channel_name))
+            self.logger.debug("Not warning #{} because we found a prior warning".format(channel_name))
             return False
 
         if self.destalinator_activated:
@@ -249,7 +235,7 @@ class Destalinator(object):
         stale = []
         for channel in sorted(self.slacker.channels_by_name.keys()):
             if self.ignore_channel(channel):
-                self.debug("Not warning #{} because it's in ignore_channels".format(channel))
+                self.logger.debug("Not warning #{} because it's in ignore_channels".format(channel))
                 continue
             if self.stale(channel, days):
                 if self.warn(channel, days, force_warn):
@@ -257,7 +243,7 @@ class Destalinator(object):
             self.flush_channel_cache(channel)
 
         if stale and self.config.general_message_channel:
-            self.debug("Notifying #{} of warned channels".format(self.config.general_message_channel))
+            self.logger.debug("Notifying #{} of warned channels".format(self.config.general_message_channel))
             self.warn_in_general(stale)
 
     def warn_in_general(self, stale_channels):
@@ -277,4 +263,4 @@ class Destalinator(object):
         message = message.format(channel, being, there)
         if self.destalinator_activated:
             self.post_marked_up_message(self.config.general_message_channel, message, message_type='warn_in_general')
-        self.debug("Notified #{} with: {}".format(self.config.general_message_channel, message))
+        self.logger.debug("Notified #{} with: {}".format(self.config.general_message_channel, message))
