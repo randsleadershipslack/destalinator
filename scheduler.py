@@ -1,3 +1,4 @@
+import logging
 import os
 
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -11,6 +12,7 @@ import flagger
 
 raven_client = RavenClient()
 
+logger = logging.getLogger(__name__)
 
 # When testing changes, set the "TEST_SCHEDULE" envvar to run more often
 if os.getenv("TEST_SCHEDULE"):
@@ -23,29 +25,34 @@ sched = BlockingScheduler()
 
 @sched.scheduled_job("cron", **schedule_kwargs)
 def destalinate_job():
-    print("Destalinating")
+    logger.info("Destalinating")
     if "SB_TOKEN" not in os.environ or "API_TOKEN" not in os.environ:
-        print("ERR: Missing at least one Slack environment variable.")
+        logger.error("Missing at least one Slack environment variable.")
     else:
         try:
-            scheduled_warner = warner.Warner()
-            scheduled_archiver = archiver.Archiver()
-            scheduled_announcer = announcer.Announcer()
-            scheduled_flagger = flagger.Flagger()
-            print("Warning")
-            scheduled_warner.warn()
-            print("Archiving")
-            scheduled_archiver.archive()
-            print("Announcing")
-            scheduled_announcer.announce()
-            print("Flagging")
-            scheduled_flagger.flag()
-            print("OK: destalinated")
+            warner = warner.Warner()
+            archiver = archiver.Archiver()
+            announcer = announcer.Announcer()
+            flagger = flagger.Flagger()
+
+            logger.info("Warning")
+            warner.warn()
+
+            logger.info("Archiving")
+            archiver.archive()
+
+            logger.info("Announcing")
+            announcer.announce()
+
+            logger.info("Flagging")
+            flagger.flag()
+
+            logger.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
             if not os.getenv('SENTRY_DSN'):
                 raise e
-    print("END: destalinate_job")
+    logger.info("END: destalinate_job")
 
 
 sched.start()
