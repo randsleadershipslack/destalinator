@@ -58,7 +58,6 @@ def set_up_slack_logger(slackbot=None):
 
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
-    stream_handler.setLevel(logging.DEBUG)
 
     logger.addHandler(stream_handler)
 
