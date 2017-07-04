@@ -33,8 +33,6 @@ def get_local_file_content(file_name):
 
 
 def set_up_logger(logger,
-                  log_level_env_var=None,
-                  log_to_slack_env_var=None,
                   log_channel=None,
                   default_level='INFO',
                   slackbot=None):
@@ -47,6 +45,9 @@ def set_up_logger(logger,
     * `default_level` - The default log level if one is not set in the environment.
     * `slackbot` - A slackbot.Slackbot() object ready to send messages to a Slack channel.
     """
+    log_level_env_var = 'DESTALINATOR_LOG_LEVEL'
+    log_to_slack_env_var = 'DESTALINATOR_LOG_TO_CHANNEL'
+
     if logger.handlers:
         return
 
