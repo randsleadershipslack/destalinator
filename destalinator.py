@@ -20,7 +20,7 @@ class Destalinator(object):
     closure_text_fname = "closure.txt"
     warning_text_fname = "warning.txt"
 
-    def __init__(self, slacker, slackbot, activated, logger=None):
+    def __init__(self, slacker, slackbot, activated):
         """
         slacker is a Slacker() object
         slackbot should be an initialized slackbot.Slackbot() object
@@ -36,7 +36,7 @@ class Destalinator(object):
         if os.getenv(self.config.output_debug_env_varname):
             self.output_debug_to_slack_flag = True
 
-        self.logger = logger or logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         self.destalinator_activated = activated
         self.logger.debug("destalinator_activated is %s", self.destalinator_activated)

@@ -12,7 +12,7 @@ import config
 
 class Slacker(object):
 
-    def __init__(self, slack_name, token, logger=None, init=True):
+    def __init__(self, slack_name, token, init=True):
         """
         slack name is the short name of the slack (preceding '.slack.com')
         token should be a Slack API Token.
@@ -20,7 +20,7 @@ class Slacker(object):
         self.slack_name = slack_name
         self.token = token
         assert self.token, "Token should not be blank"
-        self.logger = logger or logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
         self.url = self.api_url()
         self.config = config.Config()
         if init:

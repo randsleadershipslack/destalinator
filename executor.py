@@ -31,9 +31,8 @@ class Executor(object):
             self.destalinator_activated = True
         self.logger.debug("destalinator_activated is %s", self.destalinator_activated)
 
-        self.slacker = slacker_injected or slacker.Slacker(config.SLACK_NAME, token=api_token, logger=self.logger)
+        self.slacker = slacker_injected or slacker.Slacker(config.SLACK_NAME, token=api_token)
 
         self.ds = destalinator.Destalinator(slacker=self.slacker,
                                             slackbot=self.slackbot,
-                                            activated=self.destalinator_activated,
-                                            logger=self.logger)
+                                            activated=self.destalinator_activated)
