@@ -6,8 +6,8 @@ import config
 import destalinator
 import slackbot
 import slacker
-import utils
 
+from utils.slack_logging import set_up_slack_logger
 from utils.with_logger import WithLogger
 
 
