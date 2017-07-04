@@ -23,7 +23,6 @@ class Executor(object):
 
         self.logger = logging.getLogger(__name__)
         utils.set_up_logger(self.logger,
-                            log_channel=self.config.log_channel,
                             slackbot=self.slackbot)
 
         self.destalinator_activated = False

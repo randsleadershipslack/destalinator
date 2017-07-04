@@ -2,6 +2,8 @@ import codecs
 import logging
 import os
 
+import config
+
 
 class SlackHandler(logging.Handler):
     """
@@ -33,7 +35,6 @@ def get_local_file_content(file_name):
 
 
 def set_up_logger(logger,
-                  log_channel=None,
                   default_level='INFO',
                   slackbot=None):
     """
@@ -47,6 +48,8 @@ def set_up_logger(logger,
     """
     log_level_env_var = 'DESTALINATOR_LOG_LEVEL'
     log_to_slack_env_var = 'DESTALINATOR_LOG_TO_CHANNEL'
+
+    log_channel = config.Config().log_channel
 
     if logger.handlers:
         return
