@@ -34,8 +34,7 @@ def get_local_file_content(file_name):
     return ret
 
 
-def set_up_slack_logger(logger,
-                  slackbot=None):
+def set_up_slack_logger(slackbot=None):
     """
     Sets up a handler and formatter on a given `logging.Logger` object.
 
@@ -45,6 +44,8 @@ def set_up_slack_logger(logger,
     * `default_level` - The default log level if one is not set in the environment.
     * `slackbot` - A slackbot.Slackbot() object ready to send messages to a Slack channel.
     """
+    logger = logging.getLogger()
+
     config = Config()
     log_level_env_var = 'DESTALINATOR_LOG_LEVEL'
     log_to_slack_env_var = 'DESTALINATOR_LOG_TO_CHANNEL'

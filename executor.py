@@ -22,8 +22,7 @@ class Executor(WithLogger):
 
         self.slackbot = slackbot_injected or slackbot.Slackbot(config.SLACK_NAME, token=slackbot_token)
 
-        utils.set_up_slack_logger(self.logger,
-                            slackbot=self.slackbot)
+        utils.set_up_slack_logger(slackbot=self.slackbot)
 
         self.destalinator_activated = False
         if os.getenv(self.config.destalinator_activated_env_varname):
