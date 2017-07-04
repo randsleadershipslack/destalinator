@@ -4,18 +4,18 @@ from datetime import datetime, date
 import os
 import re
 import time
-import logging
 import json
 
 import config
 import utils
 
+from utils.with_logger import WithLogger
 
 # An arbitrary past date, as a default value for the earliest archive date
 PAST_DATE_STRING = '2000-01-01'
 
 
-class Destalinator(object):
+class Destalinator(WithLogger):
 
     closure_text_fname = "closure.txt"
     warning_text_fname = "warning.txt"
@@ -32,8 +32,6 @@ class Destalinator(object):
         self.slackbot = slackbot
         self.user = os.getenv("USER")
         self.config = config.Config()
-
-        self.logger = logging.getLogger(__name__)
 
         self.destalinator_activated = activated
         self.logger.debug("destalinator_activated is %s", self.destalinator_activated)
