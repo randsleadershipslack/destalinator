@@ -63,7 +63,7 @@ class Flagger(executor.Executor):
         """
         channel = config.control_channel
         if not self.slacker.channel_exists(channel):
-            self.ds.logger.warning("Flagger control channel does not exist, cannot run. Please create #%s.", channel)
+            self.logger.warning("Flagger control channel does not exist, cannot run. Please create #%s.", channel)
             return False
         cid = self.slacker.get_channelid(channel)
         messages = self.slacker.get_messages_in_time_range(0, cid, self.now)
@@ -74,7 +74,7 @@ class Flagger(executor.Executor):
             if tokens[0:3] != ['flag', 'content', 'rule']:
                 continue
             if len(tokens) < 5:
-                self.ds.logger.warning("Control message %s has too few tokens", text)
+                self.logger.warning("Control message %s has too few tokens", text)
                 continue
             if len(tokens) == 5 and tokens[4] == 'delete':
                 uuid = tokens[3]
@@ -100,7 +100,7 @@ class Flagger(executor.Executor):
                 self.logger.debug(m)
                 self.logger.debug(tb)
                 if not self.debug:
-                    self.ds.logger.warning(m)
+                    self.logger.warning(m)
         self.control = control
         self.logger.debug("control: {}".format(json.dumps(self.control, indent=4)))
         self.emoji = [x['emoji'] for x in self.control.values()]
@@ -225,7 +225,7 @@ class Flagger(executor.Executor):
                     if not self.debug and self.destalinator_activated:
                         self.slackbot.say(output_channel["output"], m)
                 else:
-                    self.ds.logger.warning("Attempted to announce in {} because of rule :{}:{}{}, but channel does not exist.".format(
+                    self.logger.warning("Attempted to announce in {} because of rule :{}:{}{}, but channel does not exist.".format(
                         output_channel["output"],
                         output_channel["emoji"],
                         output_channel["comparator"],

@@ -40,7 +40,7 @@ class Announcer(executor.Executor):
                 if self.slacker.channel_exists(config.announce_channel):
                     self.slackbot.say(config.announce_channel, m)
                 else:
-                    self.ds.logger.warning("Attempted to announce in %s, but channel does not exist.", config.announce_channel)
+                    self.logger.warning("Attempted to announce in %s, but channel does not exist.", config.announce_channel)
             self.logger.info("ANNOUNCE: %s", m)
 
 
