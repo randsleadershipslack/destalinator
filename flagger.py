@@ -10,9 +10,11 @@ import traceback
 
 # support Python 2 and 3's versions of this module
 try:
-    import html.parser as HTMLParser
+    import html
+    HTML_UNESCAPER = html
 except ImportError:
     import HTMLParser
+    HTML_UNESCAPER = HTMLParser.HTMLParser()
 
 import config as _config
 import executor
@@ -27,7 +29,6 @@ class Flagger(executor.Executor):
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
-        self.htmlparser = HTMLParser.HTMLParser()
         self.debug = kwargs.get('debug')
         self.now = int(time.time())
 
@@ -47,8 +48,8 @@ class Flagger(executor.Executor):
         if comparator == '':  # no comparator specified
             comparator = '>='
 
-        comparator = self.htmlparser.unescape(comparator)
-        self.logger.debug("token: {} comparator: {} value: %s", token, comparator, value)
+        comparator = HTML_UNESCAPER.unescape(comparator)
+        self.logger.debug("token: %s comparator: %s value: %s", token, comparator, value)
 
         assert comparator in self.operators
         return (comparator, value)
@@ -76,7 +77,7 @@ class Flagger(executor.Executor):
                 uuid = tokens[3]
                 if uuid in control:
                     del(control[uuid])
-                    self.logger.debug("Message {} deletes UUID %s", text, uuid)
+                    self.logger.debug("Message %s deletes UUID %s", text, uuid)
                     continue
             try:
                 tokens = text.split()
@@ -122,7 +123,7 @@ class Flagger(executor.Executor):
             target_type, target_value = target.split(":", 1)
             if target_type != "alias":
                 continue
-            self.logger.debug("Found emoji alias: {} <-> %s", emoji, target_value)
+            self.logger.debug("Found emoji alias: %s <-> %s", emoji, target_value)
             if emoji not in equivalents:
                 equivalents[emoji] = []
             if target_value not in equivalents:
@@ -219,7 +220,7 @@ class Flagger(executor.Executor):
                     if not self.debug and self.destalinator_activated: # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
-                    self.logger.warning("Attempted to announce in {} because of rule :{}:{}%s, but channel does not exist.".format(
+                    self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(
                         output_channel["output"],
                         output_channel["emoji"],
                         output_channel["comparator"],
