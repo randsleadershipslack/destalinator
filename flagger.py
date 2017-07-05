@@ -48,7 +48,7 @@ class Flagger(executor.Executor):
             comparator = '>='
 
         comparator = self.htmlparser.unescape(comparator)
-        self.logger.debug("token: {} comparator: {} value: {}".format(token, comparator, value))
+        self.logger.debug("token: {} comparator: {} value: %s", token, comparator, value)
 
         assert comparator in self.operators
         return (comparator, value)
@@ -76,7 +76,7 @@ class Flagger(executor.Executor):
                 uuid = tokens[3]
                 if uuid in control:
                     del(control[uuid])
-                    self.logger.debug("Message {} deletes UUID {}".format(text, uuid))
+                    self.logger.debug("Message {} deletes UUID %s", text, uuid)
                     continue
             try:
                 tokens = text.split()
@@ -96,7 +96,7 @@ class Flagger(executor.Executor):
                 self.logger.warning(m)
                 self.logger.debug(tb)
         self.control = control
-        self.logger.debug("control: {}".format(json.dumps(self.control, indent=4)))
+        self.logger.debug("control: %s", json.dumps(self.control, indent=4))
         self.emoji = [x['emoji'] for x in self.control.values()]
         self.initialize_emoji_aliases()
         return True
@@ -114,7 +114,7 @@ class Flagger(executor.Executor):
         """
         self.logger.debug("Starting emoji alias list")
         emojis_response = self.slacker.get_emojis()
-        self.logger.debug("emojis_response keys are {}".format(emojis_response.keys()))
+        self.logger.debug("emojis_response keys are %s", emojis_response.keys())
         emojis = emojis_response['emoji']
         equivalents = {}
         for emoji in emojis:
@@ -122,7 +122,7 @@ class Flagger(executor.Executor):
             target_type, target_value = target.split(":", 1)
             if target_type != "alias":
                 continue
-            self.logger.debug("Found emoji alias: {} <-> {}".format(emoji, target_value))
+            self.logger.debug("Found emoji alias: {} <-> %s", emoji, target_value)
             if emoji not in equivalents:
                 equivalents[emoji] = []
             if target_value not in equivalents:
@@ -130,9 +130,9 @@ class Flagger(executor.Executor):
             equivalents[emoji].append(target_value)
             equivalents[target_value].append(emoji)
         self.emoji_equivalents = equivalents
-        self.logger.debug("equivalents: {}".format(json.dumps(self.emoji_equivalents, indent=4)))
+        self.logger.debug("equivalents: %s", json.dumps(self.emoji_equivalents, indent=4))
         if "floppy_disk" in self.emoji_equivalents.keys():
-            self.logger.debug("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
+            self.logger.debug("floppy_disk: %s", self.emoji_equivalents['floppy_disk'])
 
     def message_destination(self, message):
         """
@@ -219,7 +219,7 @@ class Flagger(executor.Executor):
                     if not self.debug and self.destalinator_activated: # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
-                    self.logger.warning("Attempted to announce in {} because of rule :{}:{}{}, but channel does not exist.".format(
+                    self.logger.warning("Attempted to announce in {} because of rule :{}:{}%s, but channel does not exist.".format(
                         output_channel["output"],
                         output_channel["emoji"],
                         output_channel["comparator"],
