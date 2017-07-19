@@ -47,7 +47,7 @@ class Slacker(object):
         self.logger.debug("All restricted user names: %s", ', '.join([self.users_by_id[x] for x in self.all_restricted_users]))
         return users
 
-    def asciify(self, text):
+    def asciify(self, text):  # pylint: disable=R0201
         return ''.join([x for x in list(text) if ord(x) in range(128)])
 
     def add_channel_markup(self, channel_name, fail_silently=True):
@@ -70,10 +70,10 @@ class Slacker(object):
             else:
                 murl += "&latest={}".format(int(time.time()))
             payload = requests.get(murl).json()
-            messages += payload['messages']
-            if payload['has_more'] is False:
+            if 'messages' not in payload or payload['has_more'] is False:
                 done = True
                 continue
+            messages += payload['messages']
             ts = [float(x['ts']) for x in messages]
             earliest = min(ts)
             latest = earliest
