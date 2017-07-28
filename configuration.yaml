@@ -20,6 +20,12 @@ output_debug_env_varname: DESTALINATOR_SLACK_VERBOSE
 # If this is set, it should be of the form "yyyy-mm-dd" (e.g. "2017-02-19").
 earliest_archive_date_env_varname: EARLIEST_ARCHIVE_DATE
 
+# What should the bot's name be when it posts?
+bot_name: "destalinator"
+
+# What should the bot's avatar be when it posts?
+bot_avatar_url: "https://s3-us-west-1.amazonaws.com/eng-management-docs/bread.png"
+
 # Days of silence before we warn a channel it's going to be archived
 warn_threshold: 30
 

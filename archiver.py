@@ -6,6 +6,7 @@ import executor
 class Archiver(executor.Executor):
 
     def archive(self):
+        self.logger.info("Archiving")
         self.ds.safe_archive_all(self.config.archive_threshold)
 
 

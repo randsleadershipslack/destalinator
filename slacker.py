@@ -1,16 +1,19 @@
 #! /usr/bin/env python
 
 import json
-import logging
 import re
 import time
 
 import requests
 
+import config
 
-class Slacker(object):
+from utils.with_logger import WithLogger
 
-    def __init__(self, slack_name, token, logger=None, init=True):
+
+class Slacker(WithLogger):
+
+    def __init__(self, slack_name, token, init=True):
         """
         slack name is the short name of the slack (preceding '.slack.com')
         token should be a Slack API Token.
@@ -18,8 +21,8 @@ class Slacker(object):
         self.slack_name = slack_name
         self.token = token
         assert self.token, "Token should not be blank"
-        self.logger = logger or logging.getLogger(__name__)
         self.url = self.api_url()
+        self.config = config.Config()
         if init:
             self.get_users()
             self.get_channels()
@@ -66,7 +69,13 @@ class Slacker(object):
                 murl += "&latest={}".format(latest)
             else:
                 murl += "&latest={}".format(int(time.time()))
-            payload = requests.get(murl).json()
+            response = requests.get(murl)
+            payload = response.json()
+            if payload.get('error') == 'ratelimited':
+                retry_after = int(response.headers['Retry-After'])
+                self.logger.warn('Ratelimited. Sleeping %s', retry_after)
+                time.sleep(retry_after)
+                continue
             messages += payload['messages']
             if payload['has_more'] is False:
                 done = True
@@ -233,6 +242,16 @@ class Slacker(object):
             'channel': channel,
             'text': message.encode('utf-8')
         }
+
+        bot_name = self.config.get('bot_name')
+        bot_avatar_url = self.config.get('bot_avatar_url')
+        if bot_name or bot_avatar_url:
+            post_data['as_user'] = False
+            if bot_name:
+                post_data['username'] = bot_name
+            if bot_avatar_url:
+                post_data['icon_url'] = bot_avatar_url
+
         if message_type:
             post_data['attachments'] = json.dumps([{'fallback': message_type}], encoding='utf-8')
 
