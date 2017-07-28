@@ -42,4 +42,5 @@ def destalinate_job():
     logger.info("END: destalinate_job")
 
 
-sched.start()
+if __name__ == "__main__":
+    sched.start()
