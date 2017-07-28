@@ -63,18 +63,18 @@ class Slacker(WithLogger):
         cname = self.channels_by_id[cid]
         messages = []
         done = False
-        ratelimited_backoff = 2
         while not done:
             murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
             if latest:
                 murl += "&latest={}".format(latest)
             else:
                 murl += "&latest={}".format(int(time.time()))
-            payload = requests.get(murl).json()
+            response = requests.get(murl)
+            payload = response.json()
             if payload.get('error') == 'ratelimited':
-                self.logger.warn('Ratelimited. Sleeping %d...', ratelimited_backoff)
-                time.sleep(ratelimited_backoff)
-                ratelimited_backoff = min(10, ratelimited_backoff * 1.1)
+                retry_after = response.headers['Retry-After']
+                self.logger.warn('Ratelimited. Sleeping %d', retry_after)
+                time.sleep(retry_after)
                 continue
             messages += payload['messages']
             if payload['has_more'] is False:
