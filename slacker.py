@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import json
-import logging
 import re
 import time
 
@@ -9,10 +8,12 @@ import requests
 
 import config
 
+from utils.with_logger import WithLogger
 
-class Slacker(object):
 
-    def __init__(self, slack_name, token, logger=None, init=True):
+class Slacker(WithLogger):
+
+    def __init__(self, slack_name, token, init=True):
         """
         slack name is the short name of the slack (preceding '.slack.com')
         token should be a Slack API Token.
@@ -20,7 +21,6 @@ class Slacker(object):
         self.slack_name = slack_name
         self.token = token
         assert self.token, "Token should not be blank"
-        self.logger = logger or logging.getLogger(__name__)
         self.url = self.api_url()
         self.config = config.Config()
         if init:
@@ -69,7 +69,13 @@ class Slacker(object):
                 murl += "&latest={}".format(latest)
             else:
                 murl += "&latest={}".format(int(time.time()))
-            payload = requests.get(murl).json()
+            response = requests.get(murl)
+            payload = response.json()
+            if payload.get('error') == 'ratelimited':
+                retry_after = int(response.headers['Retry-After'])
+                self.logger.warn('Ratelimited. Sleeping %s', retry_after)
+                time.sleep(retry_after)
+                continue
             messages += payload['messages']
             if payload['has_more'] is False:
                 done = True
