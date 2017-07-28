@@ -37,7 +37,8 @@ def destalinate_job():
             logger.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
-            raise e
+            if not os.getenv('SENTRY_DSN'):
+                raise e
     logger.info("END: destalinate_job")
 
 
