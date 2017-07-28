@@ -228,6 +228,7 @@ class Flagger(executor.Executor):
                     ))
 
     def flag(self):
+        self.logger.info("Flagging")
         if self.initialize_control():
             self.announce_interesting_messages()
 

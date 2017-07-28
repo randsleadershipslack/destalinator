@@ -30,23 +30,10 @@ def destalinate_job():
         logger.error("Missing at least one Slack environment variable.")
     else:
         try:
-            warner = warner.Warner()
-            archiver = archiver.Archiver()
-            announcer = announcer.Announcer()
-            flagger = flagger.Flagger()
-
-            logger.info("Warning")
-            warner.warn()
-
-            logger.info("Archiving")
-            archiver.archive()
-
-            logger.info("Announcing")
-            announcer.announce()
-
-            logger.info("Flagging")
-            flagger.flag()
-
+            warner.Warner().warn()
+            archiver.Archiver().archive()
+            announcer.Announcer().announce()
+            flagger.Flagger().flag()
             logger.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
