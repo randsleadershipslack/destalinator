@@ -146,25 +146,18 @@ class Flagger(executor.Executor):
         reactions = message.get("reactions")
         emoji_set = set(self.emoji)
         current_reactions = {}
-        t = message.get("text")
-        if t.find("SVP") != -1:
-            def d(p):
-                pass
-        else:
-            def d(p):
-                pass
-        d("reactions: {}".format(reactions))
-        d("emoji_equivalents:\n{}".format(json.dumps(self.emoji_equivalents, indent=4)))
+        self.logger.debug("reactions: %s", reactions)
+        self.logger.debug("emoji_equivalents:\n%s", json.dumps(self.emoji_equivalents, indent=4))
         if "floppy_disk" in self.emoji_equivalents.keys():
-            d("floppy_disk: {}".format(self.emoji_equivalents['floppy_disk']))
+            self.logger.debug("floppy_disk: %s", self.emoji_equivalents['floppy_disk'])
         for reaction in reactions:
             count = reaction['count']
             current_emoji = reaction['name']
-            d("current_emoji: {}".format(current_emoji))
+            self.logger.debug("current_emoji: %s", current_emoji)
             equivalents = copy.copy(self.emoji_equivalents.get(current_emoji, []))
-            d("equivalents = {}".format(equivalents))
+            self.logger.debug("equivalents: %s", equivalents)
             equivalents.append(current_emoji)
-            d("equivalents = {}".format(equivalents))
+            self.logger.debug("equivalents: %s", equivalents)
             current_set = set(equivalents)
             i = current_set.intersection(emoji_set)
             if not i:
@@ -172,7 +165,7 @@ class Flagger(executor.Executor):
             for ce in equivalents:
                 current_reactions[ce] = current_reactions.get(ce, 0) + count
             # if we're here, at least one emoji matches (but count may still not be right)
-        d("Current reactions: {}".format(current_reactions))
+        self.logger.debug("Current reactions: {}".format(current_reactions))
         for uuid in self.control:
             rule = self.control[uuid]
             for ce in current_reactions:
