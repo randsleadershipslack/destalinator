@@ -28,8 +28,8 @@ class Flagger(executor.Executor):
                  '>=': operator.ge, '<=': operator.le}
 
     def __init__(self, *args, **kwargs):
+        self.debug = kwargs.pop('debug', False)
         super(self.__class__, self).__init__(*args, **kwargs)
-        self.debug = kwargs.get('debug')
         self.now = int(time.time())
 
     def extract_threshold(self, token):
