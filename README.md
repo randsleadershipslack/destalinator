@@ -77,6 +77,7 @@ To minimize the risk of making a mistake, Destalinator will run in a dry-run mod
 
 Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.
 
+
 #### `DESTALINATOR_LOG_TO_CHANNEL` (Optional)
 
 If you would like to log to a Slack channel as well as the default log destination, you can set `true` here. The channel
@@ -95,3 +96,7 @@ and configure this environment variable with the appropriate DSN value.
 If you're on Heroku, you can provision this with:
 
     heroku addons:create sentry:f1
+
+## Code of Conduct
+
+As part of the Rands Leadership Slack community, the [Rands Leadership Slack Code of Conduct](https://github.com/randsleadershipslack/documents-and-resources/blob/master/code-of-conduct.md) applies to this project.
