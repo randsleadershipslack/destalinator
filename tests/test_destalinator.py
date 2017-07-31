@@ -448,7 +448,7 @@ class DestalinatorSafeArchiveTestCase(unittest.TestCase):
         self.destalinator.archive = mock.MagicMock(return_value=True)
         mock_slacker.channel_has_only_restricted_members.return_value = False
         today = date.today()
-        self.destalinator.earliest_archive_date = today.replace(day=today.day + 1)
+        self.destalinator.earliest_archive_date = today + timedelta(days=1)
         self.destalinator.safe_archive("stalinists")
         self.assertFalse(self.destalinator.archive.called)
 
