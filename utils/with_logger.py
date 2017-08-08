@@ -1,8 +1,13 @@
 import logging
 import os
 
+log_level_set = False
 
 def set_up_log_level():
+    global log_level_set
+    if log_level_set:
+        return
+    log_level_set = True
     logger = logging.getLogger()
     log_level_env_var = 'DESTALINATOR_LOG_LEVEL'
     default_level='INFO'
