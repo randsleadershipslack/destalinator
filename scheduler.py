@@ -9,6 +9,8 @@ import archiver
 import announcer
 import flagger
 
+from utils.with_logger import set_up_log_level
+
 
 raven_client = RavenClient()
 
@@ -43,4 +45,5 @@ def destalinate_job():
 
 
 if __name__ == "__main__":
+    set_up_log_level()
     sched.start()
