@@ -49,6 +49,8 @@ These channels need to be manually created by you in your Slack.
 
 ### Environment variables
 
+All configs in `configuration.yaml` are overrideable through environment variables. Set array environment variables (e.g. `IGNORE_CHANNELS`) by comma delimiting items
+
 #### `SB_TOKEN` (Required)
 
 1. Make sure [the Slackbot app](https://slack.com/apps/A0F81R8ET-slackbot) is installed for your Slack
@@ -74,7 +76,7 @@ After saving, you can copy the OAuth Access Token value from the top of the same
 
 Destalinator can be chatty and make potentially big changes to a Slack team (by warning or archiving a large amount of channels), especially when first installed.
 
-To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to any non-empty value and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
+To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to true and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
 
 #### `DESTALINATOR_LOG_LEVEL` (Optional; Default: `INFO`)
 

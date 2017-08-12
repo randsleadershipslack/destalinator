@@ -20,7 +20,13 @@ class Config(object):
             warnings.warn("The `slack_name` key in %s is deprecated in favor of the `SLACK_NAME` environment variable" %
                           self.config_fname, DeprecationWarning)
 
-        return self.config[attrname]
+        if os.getenv(attrname.upper()) is not None:
+            return os.getenv(attrname.upper()).split(',') if ',' in os.getenv(attrname.upper()) else os.getenv(attrname.upper())
+
+        try:
+            return self.config[attrname]
+        except:
+            return ''
 
     def get(self, attrname, fallback=None):
         return self.config.get(attrname, fallback)
