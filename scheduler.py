@@ -45,4 +45,8 @@ def destalinate_job():
 
 
 if __name__ == "__main__":
-    sched.start()
+    # Use RUN_ONCE to only run the destalinate job once immediately
+    if os.getenv("RUN_ONCE"):
+        destalinate_job()
+    else:
+        sched.start()
