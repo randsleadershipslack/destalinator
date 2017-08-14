@@ -1,3 +1,8 @@
+sudo: required
+
+services:
+  - docker
+
 language: python
 
 python:
@@ -10,3 +15,11 @@ install:
 
 script:
   - python -m unittest discover -f
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: chmod +x docker-deploy.sh && sh $TRAVIS_BUILD_DIR/docker-deploy.sh
+  on:
+    tags: true
+    repo: randsleadershipslack/destalinator

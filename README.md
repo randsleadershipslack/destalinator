@@ -10,6 +10,9 @@ You'll also need to change `configuration.yaml` appropriately. `warner.py` and `
 
 That said, if you're running on Heroku, you can create a single `clock` process that runs `python scheduler.py`.
 
+### Docker
+You can also use the prebuilt Docker image at [randsleadershipslack/destalinator](https://hub.docker.com/r/randsleadershipslack/destalinator/).
+
 ## Components
 
 ### Warner
