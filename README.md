@@ -80,12 +80,6 @@ To minimize the risk of making a mistake, Destalinator will run in a dry-run mod
 
 Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.
 
-
-#### `DESTALINATOR_LOG_TO_CHANNEL` (Optional)
-
-If you would like to log to a Slack channel as well as the default log destination, you can set `true` here. The channel
-will then be pulled from `log_channel` in `configuration.yaml`.
-
 #### `EARLIEST_ARCHIVE_DATE` (Optional)
 
 If you don't want to start archiving channels until a certain date right after introducing destalinator to your team,
