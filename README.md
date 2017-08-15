@@ -51,12 +51,12 @@ These channels need to be manually created by you in your Slack.
 
 All configs in `configuration.yaml` are overrideable through environment variables with the same name prefixed by `DESTALINATOR_` (e.g. `activated` -> `DESTALINATOR_ACTIVATED`). Set array environment variables (e.g. `DESTALINATOR_IGNORE_CHANNELS`) by comma delimiting items
 
-#### `SB_TOKEN` (Required)
+#### `DESTALINATOR_SB_TOKEN` (Required)
 
 1. Make sure [the Slackbot app](https://slack.com/apps/A0F81R8ET-slackbot) is installed for your Slack
 2. Add a Slackbot integration, and copy the `token` parameter from the URL provided
 
-#### `API_TOKEN` (Required)
+#### `DESTALINATOR_API_TOKEN` (Required)
 
 The best way to get an `API_TOKEN` is to [create a new Slack App](https://api.slack.com/apps/new).
 
@@ -93,7 +93,7 @@ will then be pulled from `log_channel` in `configuration.yaml`.
 If you don't want to start archiving channels until a certain date right after introducing destalinator to your team,
 you can set an ISO-8601 date here (`YYYY-mm-dd`).
 
-#### `SENTRY_DSN` (Optional)
+#### `DESTALINATOR_SENTRY_DSN` (Optional)
 
 If you would like to configure exception handling & tracking with [Sentry](https://sentry.io/), set up a Sentry account
 and configure this environment variable with the appropriate DSN value.
