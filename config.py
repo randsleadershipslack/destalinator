@@ -16,10 +16,6 @@ class Config(object):
         self.config = yaml.load(blob)
 
     def __getattr__(self, attrname):
-        if attrname == "slack_name":
-            warnings.warn("The `slack_name` key in %s is deprecated in favor of the `SLACK_NAME` environment variable" %
-                          self.config_fname, DeprecationWarning)
-
         envvar = os.getenv('DESTALINATOR_' + attrname.upper())
         if envvar is not None:
             return envvar.split(',') if ',' in envvar else envvar
@@ -28,9 +24,3 @@ class Config(object):
 
     def get(self, attrname, fallback=None):
         return self.config.get(attrname, fallback)
-
-
-# This deliberately isn't a `getenv` default so `.slack_name` isn't tried if there's a SLACK_NAME
-SLACK_NAME = os.getenv("SLACK_NAME")
-if SLACK_NAME is None:
-    SLACK_NAME = Config().slack_name
