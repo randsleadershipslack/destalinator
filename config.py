@@ -23,10 +23,7 @@ class Config(object):
         if os.getenv(attrname.upper()) is not None:
             return os.getenv(attrname.upper()).split(',') if ',' in os.getenv(attrname.upper()) else os.getenv(attrname.upper())
 
-        try:
-            return self.config[attrname]
-        except:
-            return ''
+        return self.config.get(attrname, '')
 
     def get(self, attrname, fallback=None):
         return self.config.get(attrname, fallback)
