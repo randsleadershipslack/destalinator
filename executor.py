@@ -20,11 +20,11 @@ class Executor(WithLogger):
         self.slackbot = slackbot_injected or slackbot.Slackbot(config.SLACK_NAME, token=slackbot_token)
         set_up_slack_logger(self.slackbot)
 
-        self.destalinator_activated = self.config.destalinator_activated == 'true'
-        self.logger.debug("destalinator_activated is %s", self.destalinator_activated)
+        self.activated = self.config.activated == 'true'
+        self.logger.debug("activated is %s", self.activated)
 
         self.slacker = slacker_injected or slacker.Slacker(config.SLACK_NAME, token=api_token)
 
         self.ds = destalinator.Destalinator(slacker=self.slacker,
                                             slackbot=self.slackbot,
-                                            activated=self.destalinator_activated)
+                                            activated=self.activated)

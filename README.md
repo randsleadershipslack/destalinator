@@ -49,7 +49,7 @@ These channels need to be manually created by you in your Slack.
 
 ### Environment variables
 
-All configs in `configuration.yaml` are overrideable through environment variables. Set array environment variables (e.g. `IGNORE_CHANNELS`) by comma delimiting items
+All configs in `configuration.yaml` are overrideable through environment variables with the same name prefixed by `DESTALINATOR_` (e.g. `activated` -> `DESTALINATOR_ACTIVATED`). Set array environment variables (e.g. `DESTALINATOR_IGNORE_CHANNELS`) by comma delimiting items
 
 #### `SB_TOKEN` (Required)
 
@@ -88,7 +88,7 @@ Tune your preferred log level for server logs or local debugging. Does not affec
 If you would like to log to a Slack channel as well as the default log destination, you can set `true` here. The channel
 will then be pulled from `log_channel` in `configuration.yaml`.
 
-#### `EARLIEST_ARCHIVE_DATE` (Optional)
+#### `DESTALINATOR_EARLIEST_ARCHIVE_DATE` (Optional)
 
 If you don't want to start archiving channels until a certain date right after introducing destalinator to your team,
 you can set an ISO-8601 date here (`YYYY-mm-dd`).

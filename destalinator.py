@@ -32,8 +32,8 @@ class Destalinator(WithLogger):
         self.slackbot = slackbot
         self.config = config.Config()
 
-        self.destalinator_activated = activated
-        self.logger.debug("destalinator_activated is %s", self.destalinator_activated)
+        self.activated = activated
+        self.logger.debug("activated is %s", self.activated)
 
         self.earliest_archive_date = self.get_earliest_archive_date()
 
@@ -147,7 +147,7 @@ class Destalinator(WithLogger):
             self.logger.debug("Not archiving #%s because it's in ignore_channels", channel_name)
             return
 
-        if self.destalinator_activated:
+        if self.activated:
             self.logger.debug("Announcing channel closure in #%s", channel_name)
             self.post_marked_up_message(channel_name, self.closure_text, message_type='channel_archive')
 
@@ -215,7 +215,7 @@ class Destalinator(WithLogger):
             self.logger.debug("Not warning #%s because we found a prior warning", channel_name)
             return False
 
-        if self.destalinator_activated:
+        if self.activated:
             self.post_marked_up_message(channel_name, self.warning_text, message_type='channel_warning')
             self.action("Warned #{}".format(channel_name))
 
@@ -223,7 +223,7 @@ class Destalinator(WithLogger):
 
     def warn_all(self, days, force_warn=False):
         """Warn all channels which are `days` idle; if `force_warn`, will warn even if we already have."""
-        if not self.destalinator_activated:
+        if not self.activated:
             self.logger.info("Note, destalinator is not activated and is in a dry-run mode. For help, see the "
                              "documentation on the DESTALINATOR_ACTIVATED environment variable.")
         self.action("Warning all channels stale for more than {} days".format(days))
@@ -257,6 +257,6 @@ class Destalinator(WithLogger):
         message += "archived if no one participates in {} over the next 30 days: "
         message += ", ".join(["#" + x for x in stale_channels])
         message = message.format(channel, being, there)
-        if self.destalinator_activated:
+        if self.activated:
             self.post_marked_up_message(self.config.general_message_channel, message, message_type='warn_in_general')
         self.logger.debug("Notified #%s with: %s", self.config.general_message_channel, message)
