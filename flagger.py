@@ -196,7 +196,7 @@ class Flagger(executor.Executor):
 
     def announce_interesting_messages(self):
         messages = self.get_interesting_messages()
-        slack_name = _config.SLACK_NAME
+        slack_name = config.slack_name
         for message, channels in messages:
             ts = message["ts"].replace(".", "")
             channel = message["channel"]

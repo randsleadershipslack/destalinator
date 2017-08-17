@@ -1,4 +1,4 @@
-# Name of your Slack (Deprecated in favour of the SLACK_NAME env var)
+# Name of your Slack (Deprecated in favour of the slack_name env var)
 slack_name: rands-leadership
 
 # Name of environment variable that determines if destalinator should
