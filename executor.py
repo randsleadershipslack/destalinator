@@ -20,7 +20,7 @@ class Executor(WithLogger):
         self.slackbot = slackbot_injected or slackbot.Slackbot(config.slack_name, token=slackbot_token)
         set_up_slack_logger(self.slackbot)
 
-        self.activated = self.config.activated == 'true'
+        self.activated = self.config.activated
         self.logger.debug("activated is %s", self.activated)
 
         self.slacker = slacker_injected or slacker.Slacker(config.slack_name, token=api_token)
