@@ -16,7 +16,13 @@ class Config(object):
         self.config = yaml.load(blob)
 
     def __getattr__(self, attrname):
-        envvar = os.getenv('DESTALINATOR_' + attrname.upper())
+
+        upper_attrname = attrname.upper()
+        envvar = os.getenv(upper_attrname)
+        if envvar is not None:
+            warnings.warn("The %s environment variable is deprecated in favor of the `DESTALINATOR_%s` environment variable".format(upper_attrname, upper_attrname), DeprecationWarning)
+        else:
+            envvar = os.getenv('DESTALINATOR_' + upper_attrname)
         if envvar is not None:
             return envvar.split(',') if ',' in envvar else envvar
 
