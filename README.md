@@ -78,7 +78,7 @@ Destalinator can be chatty and make potentially big changes to a Slack team (by 
 
 To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to true and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
 
-#### `DESTALINATOR_LOG_LEVEL` (Optional; Default: `INFO`)
+#### `DESTALINATOR_LOG_LEVEL` (Optional; Default: `WARNING`)
 
 Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.
 
