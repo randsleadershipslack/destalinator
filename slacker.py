@@ -23,18 +23,19 @@ class Slacker(WithLogger):
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
         self.config = config.Config()
+        self.session = requests.Session()
         if init:
             self.get_users()
             self.get_channels()
 
     def get_emojis(self):
         url = self.url + "emoji.list?token={}".format(self.token)
-        payload = requests.get(url).json()
+        payload = self.session.get(url).json()
         return payload
 
     def get_user(self, uid):
         url = self.url + "users.info?token={}&user={}".format(self.token, uid)
-        payload = requests.get(url).json()
+        payload = self.session.get(url).json()
         return payload
 
     def get_users(self):
@@ -69,7 +70,7 @@ class Slacker(WithLogger):
                 murl += "&latest={}".format(latest)
             else:
                 murl += "&latest={}".format(int(time.time()))
-            response = requests.get(murl)
+            response = self.session.get(murl)
             payload = response.json()
             if payload.get('error') == 'ratelimited':
                 retry_after = int(response.headers['Retry-After'])
@@ -151,7 +152,7 @@ class Slacker(WithLogger):
     def delete_message(self, cid, message_timestamp):
         url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
         url = url_template.format(self.token, cid, message_timestamp)
-        ret = requests.get(url).json()
+        ret = self.session.get(url).json()
         if not ret['ok']:
             self.logger.error("Failed to delete message; error: %s", ret)
         return ret['ok']
@@ -187,7 +188,7 @@ class Slacker(WithLogger):
         cid = self.get_channelid(channel_name)
         now = int(time.time())
         url = url_template.format(self.token, cid)
-        ret = requests.get(url).json()
+        ret = self.session.get(url).json()
         if ret['ok'] is not True:
             m = "Attempted to get channel info for {}, but return was {}"
             m = m.format(channel_name, ret)
@@ -209,20 +210,20 @@ class Slacker(WithLogger):
         else:
             exclude_archived = 0
         url = url_template.format(exclude_archived, self.token)
-        request = requests.get(url)
+        request = self.session.get(url)
         payload = request.json()
         assert 'channels' in payload
         return payload['channels']
 
     def get_all_user_objects(self):
         url = self.url + "users.list?token=" + self.token
-        return requests.get(url).json()['members']
+        return self.session.get(url).json()['members']
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
-        request = requests.get(url)
+        request = self.session.get(url)
         payload = request.json()
         return payload
 
@@ -255,5 +256,5 @@ class Slacker(WithLogger):
         if message_type:
             post_data['attachments'] = json.dumps([{'fallback': message_type}], encoding='utf-8')
 
-        p = requests.post(self.url + "chat.postMessage", data=post_data)
+        p = self.session.post(self.url + "chat.postMessage", data=post_data)
         return p.json()
