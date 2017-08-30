@@ -8,11 +8,10 @@ import warner
 import archiver
 import announcer
 import flagger
+from config import Config
 
 
 raven_client = RavenClient()
-
-logger = logging.getLogger(__name__)
 
 # When testing changes, set the "TEST_SCHEDULE" envvar to run more often
 if os.getenv("DESTALINATOR_TEST_SCHEDULE"):
@@ -25,21 +24,25 @@ sched = BlockingScheduler()
 
 @sched.scheduled_job("cron", **schedule_kwargs)
 def destalinate_job():
-    logger.info("Destalinating")
-    if "DESTALINATOR_SB_TOKEN" not in os.environ or "DESTALINATOR_API_TOKEN" not in os.environ:
-        logger.error("Missing at least one Slack environment variable.")
+    logging.info("Destalinating")
+    config = Config()
+    if not config.sb_token or not config.api_token:
+        logging.error(
+            "Missing at least one required Slack environment variable.\n"
+            "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_API_TOKEN."
+        )
     else:
         try:
             warner.Warner().warn()
             archiver.Archiver().archive()
             announcer.Announcer().announce()
             flagger.Flagger().flag()
-            logger.info("OK: destalinated")
+            logging.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
             if not os.getenv('DESTALINATOR_SENTRY_DSN'):
                 raise e
-    logger.info("END: destalinate_job")
+    logging.info("END: destalinate_job")
 
 
 if __name__ == "__main__":
