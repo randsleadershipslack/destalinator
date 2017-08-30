@@ -8,6 +8,7 @@ import warner
 import archiver
 import announcer
 import flagger
+from config import Config
 
 
 raven_client = RavenClient()
@@ -24,8 +25,12 @@ sched = BlockingScheduler()
 @sched.scheduled_job("cron", **schedule_kwargs)
 def destalinate_job():
     logging.info("Destalinating")
-    if "SB_TOKEN" not in os.environ or "API_TOKEN" not in os.environ:
-        logging.error("Missing at least one Slack environment variable.")
+    config = Config()
+    if not config.sb_token or not config.api_token:
+        logging.error(
+            "Missing at least one required Slack environment variable.\n"
+            "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_API_TOKEN."
+        )
     else:
         try:
             warner.Warner().warn()
