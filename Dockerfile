@@ -12,6 +12,6 @@ ADD LICENSE .
 ADD configuration.yaml .
 ADD utils/*.py utils/
 ADD tests/* tests/
-ENV DESTALINATOR_LOG_LEVEL WARN
+ENV DESTALINATOR_LOG_LEVEL WARNING
 RUN python -m unittest discover -f
 CMD python scheduler.py
