@@ -184,15 +184,13 @@ class DestalinatorGetEarliestArchiveDateTestCase(unittest.TestCase):
         self.slacker = SlackerMock("testing", "token")
         self.slackbot = slackbot.Slackbot("testing", "token")
 
-    @mock.patch.dict(os.environ, {'EARLIEST_ARCHIVE_DATE': target_archive_date_string})
+    @mock.patch.dict(os.environ, {'DESTALINATOR_EARLIEST_ARCHIVE_DATE': target_archive_date_string})
     def test_env_var_name_set_in_config(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['earliest_archive_date_env_varname'] = 'EARLIEST_ARCHIVE_DATE'
         self.assertEqual(self.destalinator.get_earliest_archive_date(), target_archive_date)
 
     def test_archive_date_set_in_config(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['earliest_archive_date_env_varname'] = None
         self.destalinator.config.config['earliest_archive_date'] = target_archive_date_string
         self.assertEqual(self.destalinator.get_earliest_archive_date(), target_archive_date)
 

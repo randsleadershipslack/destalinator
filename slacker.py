@@ -243,8 +243,8 @@ class Slacker(WithLogger):
             'text': message.encode('utf-8')
         }
 
-        bot_name = self.config.get('bot_name')
-        bot_avatar_url = self.config.get('bot_avatar_url')
+        bot_name = self.config.bot_name
+        bot_avatar_url = self.config.bot_avatar_url
         if bot_name or bot_avatar_url:
             post_data['as_user'] = False
             if bot_name:
