@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 from datetime import datetime, date
-import os
 import re
 import time
 import json

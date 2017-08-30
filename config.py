@@ -1,11 +1,12 @@
 #! /usr/bin/env python
 
 import os
-import warnings
 import yaml
 
+from utils.with_logger import WithLogger
 
-class Config(object):
+
+class Config(WithLogger):
     config_fname = "configuration.yaml"
 
     def __init__(self, config_fname=None):
@@ -20,7 +21,7 @@ class Config(object):
         upper_attrname = attrname.upper()
         envvar = os.getenv(upper_attrname)
         if envvar is not None:
-            warnings.warn("The %s environment variable is deprecated in favor of the `DESTALINATOR_%s` environment variable".format(upper_attrname, upper_attrname), DeprecationWarning)
+            self.logger.warning("The `%s` environment variable is deprecated in favor of the `DESTALINATOR_%s` environment variable", upper_attrname, upper_attrname)
         else:
             envvar = os.getenv('DESTALINATOR_' + upper_attrname)
         if envvar is not None:
