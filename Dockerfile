@@ -12,6 +12,7 @@ ADD LICENSE .
 ADD configuration.yaml .
 ADD utils/*.py utils/
 ADD tests/* tests/
+RUN flake8 --ignore=E501
 RUN coverage run --branch --source=. -m unittest discover -f
 RUN coverage report -m --skip-covered --fail-under=71
 ENV DESTALINATOR_LOG_LEVEL WARNING
