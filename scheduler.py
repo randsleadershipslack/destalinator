@@ -35,7 +35,7 @@ def destalinate_job():
             warner.Warner().warn()
             archiver.Archiver().archive()
             announcer.Announcer().announce()
-            if os.getenv('FLAGGER_DISABLED') != 'true':
+            if _config.flagger_disabled != 'true':
                 flagger.Flagger().flag()
             logging.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
@@ -47,7 +47,7 @@ def destalinate_job():
 
 if __name__ == "__main__":
     # Use RUN_ONCE to only run the destalinate job once immediately
-    if os.getenv("RUN_ONCE"):
+    if _config.run_once:
         destalinate_job()
     else:
         sched.start()

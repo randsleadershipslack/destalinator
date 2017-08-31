@@ -102,9 +102,9 @@ If you're on Heroku, you can provision this with:
 
     heroku addons:create sentry:f1
 
-#### `FLAGGER_DISABLED` (Optional)
+#### `DESTALINATOR_FLAGGER_DISABLED` (Optional)
 
-Disable the Flagger by setting `FLAGGER_DISABLED` to `true`
+Disable the Flagger by setting `DESTALINATOR_FLAGGER_DISABLED` to `true`
 
 ## Code of Conduct
 
