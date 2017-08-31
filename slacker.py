@@ -36,8 +36,6 @@ class Slacker(WithLogger):
     def get_users(self):
         users = self.get_all_user_objects()
         self.users_by_id = {x['id']: x['name'] for x in users}
-        # TODO: Why is this unused?
-        self.users_by_name = {x['name']: x['id'] for x in users}
         self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
         self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
