@@ -6,12 +6,11 @@ import time
 
 import requests
 
-from config import get_config
-
+from config import WithConfig
 from utils.with_logger import WithLogger
 
 
-class Slacker(WithLogger):
+class Slacker(WithLogger, WithConfig):
 
     def __init__(self, slack_name, token, init=True):
         """
@@ -22,7 +21,6 @@ class Slacker(WithLogger):
         self.token = token
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
-        self.config = get_config()
         self.session = requests.Session()
         if init:
             self.get_users()

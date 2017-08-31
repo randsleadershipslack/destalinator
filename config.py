@@ -38,3 +38,9 @@ _config = Config()
 
 def get_config():
     return _config
+
+
+class WithConfig(object):
+    @property
+    def config(self):
+        return get_config()

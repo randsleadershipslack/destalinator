@@ -5,7 +5,7 @@ import re
 import time
 import json
 
-from config import get_config
+from config import WithConfig
 import utils
 
 from utils.with_logger import WithLogger
@@ -14,7 +14,7 @@ from utils.with_logger import WithLogger
 PAST_DATE_STRING = '2000-01-01'
 
 
-class Destalinator(WithLogger):
+class Destalinator(WithLogger, WithConfig):
 
     closure_text_fname = "closure.txt"
     warning_text_fname = "warning.txt"
@@ -29,7 +29,6 @@ class Destalinator(WithLogger):
         self.warning_text = utils.get_local_file_content(self.warning_text_fname)
         self.slacker = slacker
         self.slackbot = slackbot
-        self.config = get_config()
 
         self.activated = activated
         self.logger.debug("activated is %s", self.activated)
