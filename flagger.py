@@ -221,7 +221,7 @@ class Flagger(executor.Executor):
                     ))
 
     def flag(self):
-        if _config.flagger_disabled:
+        if self.config.flagger_disabled:
             self.logger.info("Not Flagging... Flagger disabled")
             return
         self.logger.info("Flagging")
