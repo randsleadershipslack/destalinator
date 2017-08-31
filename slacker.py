@@ -6,7 +6,7 @@ import time
 
 import requests
 
-import config
+from config import get_config
 
 from utils.with_logger import WithLogger
 
@@ -22,7 +22,7 @@ class Slacker(WithLogger):
         self.token = token
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
-        self.config = config.Config()
+        self.config = get_config()
         self.session = requests.Session()
         if init:
             self.get_users()

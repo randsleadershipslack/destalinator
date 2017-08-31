@@ -2,10 +2,7 @@
 
 import time
 
-import config
 import executor
-
-config = config.Config()
 
 
 class Announcer(executor.Executor):
@@ -33,10 +30,10 @@ class Announcer(executor.Executor):
         for cname, creator, purpose in new:
             m = "Channel #{} was created by @{} with purpose: {}".format(cname, creator, purpose)
             if self.activated:
-                if self.slacker.channel_exists(config.announce_channel):
-                    self.slackbot.say(config.announce_channel, m)
+                if self.slacker.channel_exists(self.config.announce_channel):
+                    self.slackbot.say(self.config.announce_channel, m)
                 else:
-                    self.logger.warning("Attempted to announce in %s, but channel does not exist.", config.announce_channel)
+                    self.logger.warning("Attempted to announce in %s, but channel does not exist.", self.config.announce_channel)
             self.logger.info("ANNOUNCE: %s", m)
 
 

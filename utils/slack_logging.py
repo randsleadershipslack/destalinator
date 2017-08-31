@@ -1,6 +1,6 @@
 import logging
 
-from config import Config
+from config import get_config
 
 
 class SlackHandler(logging.Handler):
@@ -40,7 +40,7 @@ def set_up_slack_logger(slackbot=None):
         # We've likely already ran through the rest of this method:
         return
 
-    config = Config()
+    config = get_config()
 
     slack_log_level = getattr(logging, config.log_level.upper(), logging.INFO)
 

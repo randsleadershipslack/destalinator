@@ -1,10 +1,10 @@
 import mock
 
-import config as _config
+from config import get_config
 import slackbot
 import slacker
 
-config = _config.Config()
+config = get_config()
 
 
 def mocked_slackbot_object():

@@ -4,6 +4,7 @@ import mock
 import os
 import unittest
 
+from config import get_config
 import destalinator
 import slacker
 import slackbot
@@ -186,20 +187,21 @@ class DestalinatorGetEarliestArchiveDateTestCase(unittest.TestCase):
         self.slacker = SlackerMock("testing", "token")
         self.slackbot = slackbot.Slackbot("testing", "token")
 
+    # TODO: This test (and others) would be redundant with solid testing around config directly.
     @mock.patch.dict(os.environ, {'DESTALINATOR_EARLIEST_ARCHIVE_DATE': target_archive_date_string})
     def test_env_var_name_set_in_config(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
         self.assertEqual(self.destalinator.get_earliest_archive_date(), target_archive_date)
 
+    @mock.patch.object(get_config(), 'earliest_archive_date', target_archive_date_string)
     def test_archive_date_set_in_config(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['earliest_archive_date'] = target_archive_date_string
         self.assertEqual(self.destalinator.get_earliest_archive_date(), target_archive_date)
 
+    @mock.patch.object(get_config(), 'earliest_archive_date_env_varname', None)
+    @mock.patch.object(get_config(), 'earliest_archive_date', None)
     def test_falls_back_to_past_date(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['earliest_archive_date_env_varname'] = None
-        self.destalinator.config.config['earliest_archive_date'] = None
         self.assertEqual(
             self.destalinator.get_earliest_archive_date(),
             datetime.strptime(destalinator.PAST_DATE_STRING, "%Y-%m-%d").date()
@@ -218,10 +220,10 @@ class DestalinatorGetMessagesTestCase(unittest.TestCase):
         mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
         self.assertEqual(len(self.destalinator.get_messages("general", 30)), len(sample_slack_messages))
 
+    @mock.patch.object(get_config(), 'included_subtypes', [])
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_empty_included_subtypes(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['included_subtypes'] = []
         mock_slacker.get_channelid.return_value = "123456"
         mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
         self.assertEqual(
@@ -229,10 +231,10 @@ class DestalinatorGetMessagesTestCase(unittest.TestCase):
             sum('subtype' not in m for m in sample_slack_messages)
         )
 
+    @mock.patch.object(get_config(), 'included_subtypes', ['bot_message'])
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_limited_included_subtypes(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['included_subtypes'] = ['bot_message']
         mock_slacker.get_channelid.return_value = "123456"
         mock_slacker.get_messages_in_time_range.return_value = sample_slack_messages
         self.assertEqual(
@@ -254,10 +256,10 @@ class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertEqual(len(self.destalinator.get_stale_channels(30)), 0)
 
+    @mock.patch.object(get_config(), 'ignore_users', [m['user'] for m in sample_slack_messages if m.get('user')])
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_no_stale_channels_but_all_minimum_age_with_specific_ignore_users(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_users'] = [m['user'] for m in sample_slack_messages if m.get('user')]
         mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
@@ -269,31 +271,31 @@ class DestalinatorIgnoreChannelTestCase(unittest.TestCase):
         self.slacker = SlackerMock("testing", "token")
         self.slackbot = slackbot.Slackbot("testing", "token")
 
+    @mock.patch.object(get_config(), 'ignore_channels', ['stalinists'])
     def test_with_explicit_ignore_channel(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_channels'] = ['stalinists']
         self.assertTrue(self.destalinator.ignore_channel('stalinists'))
 
+    @mock.patch.object(get_config(), 'ignore_channel_patterns', ['^stal'])
     def test_with_matching_ignore_channel_pattern(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_channel_patterns'] = ['^stal']
         self.assertTrue(self.destalinator.ignore_channel('stalinists'))
 
+    @mock.patch.object(get_config(), 'ignore_channel_patterns', ['^len'])
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_non_mathing_ignore_channel_pattern(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_channel_patterns'] = ['^len']
         self.assertFalse(self.destalinator.ignore_channel('stalinists'))
 
+    @mock.patch.object(get_config(), 'ignore_channel_patterns', ['^len', 'lin', '^st'])
     def test_with_many_matching_ignore_channel_patterns(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_channel_patterns'] = ['^len', 'lin', '^st']
         self.assertTrue(self.destalinator.ignore_channel('stalinists'))
 
+    @mock.patch.object(get_config(), 'ignore_channels', [])
+    @mock.patch.object(get_config(), 'ignore_channel_patterns', [])
     def test_with_empty_ignore_channel_config(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_channels'] = []
-        self.destalinator.config.config['ignore_channel_patterns'] = []
         self.assertFalse(self.destalinator.ignore_channel('stalinists'))
 
 
@@ -340,10 +342,10 @@ class DestalinatorStaleTestCase(unittest.TestCase):
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertFalse(self.destalinator.stale('stalinists', 30))
 
+    @mock.patch.object(get_config(), 'ignore_users', [m['user'] for m in sample_slack_messages if m.get('user')])
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_with_all_users_ignored(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_users'] = [m['user'] for m in sample_slack_messages if m.get('user')]
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertTrue(self.destalinator.stale('stalinists', 30))
@@ -377,12 +379,12 @@ class DestalinatorArchiveTestCase(unittest.TestCase):
         self.slacker = SlackerMock("testing", "token")
         self.slackbot = slackbot.Slackbot("testing", "token")
 
+    @mock.patch.object(get_config(), 'ignore_channels', ['stalinists'])
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_skips_ignored_channel(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         mock_slacker.post_message.return_value = {}
         mock_slacker.archive.return_value = {'ok': True}
-        self.destalinator.config.config['ignore_channels'] = ['stalinists']
         self.destalinator.archive("stalinists")
         self.assertFalse(mock_slacker.post_message.called)
 
@@ -490,10 +492,10 @@ class DestalinatorSafeArchiveAllTestCase(unittest.TestCase):
         self.destalinator.safe_archive_all(days)
         self.destalinator.safe_archive.assert_called_once_with('leninists')
 
+    @mock.patch.object(get_config(), 'ignore_channels', ['leninists'])
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_does_not_archive_ignored_channels(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_channels'] = ['leninists']
         mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
 
         def fake_stale(channel, days):

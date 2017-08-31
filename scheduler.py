@@ -7,9 +7,9 @@ import warner
 import archiver
 import announcer
 import flagger
-from config import Config
+from config import get_config
 
-_config = Config()
+_config = get_config()
 
 raven_client = RavenClient()
 

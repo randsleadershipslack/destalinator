@@ -16,10 +16,7 @@ except ImportError:
     import HTMLParser
     HTML_UNESCAPER = HTMLParser.HTMLParser()
 
-import config as _config
 import executor
-
-config = _config.Config()
 
 
 class Flagger(executor.Executor):
@@ -58,7 +55,7 @@ class Flagger(executor.Executor):
         """
         sets up known control configuration based on control channel messages
         """
-        channel = config.control_channel
+        channel = self.config.control_channel
         if not self.slacker.channel_exists(channel):
             self.logger.warning("Flagger control channel does not exist, cannot run. Please create #%s.", channel)
             return False
@@ -196,7 +193,7 @@ class Flagger(executor.Executor):
 
     def announce_interesting_messages(self):
         messages = self.get_interesting_messages()
-        slack_name = config.slack_name
+        slack_name = self.config.slack_name
         for message, channels in messages:
             ts = message["ts"].replace(".", "")
             channel = message["channel"]

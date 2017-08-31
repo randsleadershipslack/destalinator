@@ -31,3 +31,10 @@ class Config(WithLogger):
 
     def get(self, attrname, fallback=None):
         return self.config.get(attrname, fallback)
+
+
+_config = Config()
+
+
+def get_config():
+    return _config

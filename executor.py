@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import config
+from config import get_config
 import destalinator
 import slackbot
 import slacker
@@ -12,7 +12,7 @@ from utils.with_logger import WithLogger
 class Executor(WithLogger):
 
     def __init__(self, slackbot_injected=None, slacker_injected=None):
-        self.config = config.Config()
+        self.config = get_config()
         slackbot_token = self.config.sb_token
         api_token = self.config.api_token
         self.slackbot = slackbot_injected or slackbot.Slackbot(self.config.slack_name, token=slackbot_token)

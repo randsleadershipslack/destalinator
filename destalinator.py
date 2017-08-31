@@ -5,7 +5,7 @@ import re
 import time
 import json
 
-import config
+from config import get_config
 import utils
 
 from utils.with_logger import WithLogger
@@ -29,7 +29,7 @@ class Destalinator(WithLogger):
         self.warning_text = utils.get_local_file_content(self.warning_text_fname)
         self.slacker = slacker
         self.slackbot = slackbot
-        self.config = config.Config()
+        self.config = get_config()
 
         self.activated = activated
         self.logger.debug("activated is %s", self.activated)
