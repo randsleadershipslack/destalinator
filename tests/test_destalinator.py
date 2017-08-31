@@ -241,29 +241,6 @@ class DestalinatorGetMessagesTestCase(unittest.TestCase):
         )
 
 
-class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
-    def setUp(self):
-        self.slacker = SlackerMock("testing", "token")
-        self.slackbot = slackbot.Slackbot("testing", "token")
-
-    @mock.patch('tests.test_destalinator.SlackerMock')
-    def test_with_no_stale_channels_but_all_minimum_age_with_default_ignore_users(self, mock_slacker):
-        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
-        mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
-        self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
-        self.assertEqual(len(self.destalinator.get_stale_channels(30)), 0)
-
-    @mock.patch('tests.test_destalinator.SlackerMock')
-    def test_with_no_stale_channels_but_all_minimum_age_with_specific_ignore_users(self, mock_slacker):
-        self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['ignore_users'] = [m['user'] for m in sample_slack_messages if m.get('user')]
-        mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
-        mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
-        self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
-        self.assertEqual(len(self.destalinator.get_stale_channels(30)), 2)
-
-
 class DestalinatorIgnoreChannelTestCase(unittest.TestCase):
     def setUp(self):
         self.slacker = SlackerMock("testing", "token")
