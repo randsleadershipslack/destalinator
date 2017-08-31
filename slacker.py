@@ -71,7 +71,12 @@ class Slacker(WithLogger):
             else:
                 murl += "&latest={}".format(int(time.time()))
             response = self.session.get(murl)
-            payload = response.json()
+            content = response.content
+            try:
+                payload = response.json()
+            except ValueError as e:
+                self.logger.error("Value error %s for content: %s", e, content)
+                raise e
             if payload.get('error') == 'ratelimited':
                 retry_after = int(response.headers['Retry-After'])
                 self.logger.debug('Ratelimited. Sleeping %s', retry_after)
