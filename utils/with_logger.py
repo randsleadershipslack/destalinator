@@ -1,5 +1,6 @@
 import logging
 
+
 class WithLogger(object):
     @property
     def logger(self):

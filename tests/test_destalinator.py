@@ -161,24 +161,26 @@ class DestalinatorChannelMinimumAgeTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_channel_is_old(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.get_channel_info.return_value = {'age': 86400 *  60}
+        mock_slacker.get_channel_info.return_value = {'age': 86400 * 60}
         self.assertTrue(self.destalinator.channel_minimum_age("testing", 30))
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_channel_is_exactly_expected_age(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.get_channel_info.return_value = {'age': 86400 *  30}
+        mock_slacker.get_channel_info.return_value = {'age': 86400 * 30}
         self.assertFalse(self.destalinator.channel_minimum_age("testing", 30))
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_channel_is_young(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.get_channel_info.return_value = {'age': 86400 *  1}
+        mock_slacker.get_channel_info.return_value = {'age': 86400 * 1}
         self.assertFalse(self.destalinator.channel_minimum_age("testing", 30))
 
 
 target_archive_date = date.today() + timedelta(days=10)
 target_archive_date_string = target_archive_date.isoformat()
+
+
 class DestalinatorGetEarliestArchiveDateTestCase(unittest.TestCase):
     def setUp(self):
         self.slacker = SlackerMock("testing", "token")
