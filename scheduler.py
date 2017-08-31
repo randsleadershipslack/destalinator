@@ -35,7 +35,8 @@ def destalinate_job():
             warner.Warner().warn()
             archiver.Archiver().archive()
             announcer.Announcer().announce()
-            flagger.Flagger().flag()
+            if _config.flagger_disabled != 'true':
+                flagger.Flagger().flag()
             logging.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
@@ -45,4 +46,8 @@ def destalinate_job():
 
 
 if __name__ == "__main__":
-    sched.start()
+    # Use RUN_ONCE to only run the destalinate job once immediately
+    if _config.run_once:
+        destalinate_job()
+    else:
+        sched.start()
