@@ -17,7 +17,7 @@ raven_client = RavenClient()
 if _config.test_schedule:
     schedule_kwargs = {"hour": "*", "minute": "*/10"}
 else:
-    schedule_kwargs = {"hour": 4}
+    schedule_kwargs = {"hour": _config.schedule_hour}
 
 sched = BlockingScheduler()
 

@@ -56,3 +56,6 @@ included_subtypes:
   - message_replied
   - reply_broadcast
   - slackbot_response
+
+# When should destalinator run?
+schedule_hour: 4

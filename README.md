@@ -108,6 +108,10 @@ If you're on Heroku, you can provision this with:
 
 Disable the Flagger by setting `DESTALINATOR_FLAGGER_DISABLED` to `true`
 
+#### `DESTALINATOR_SCHEDULE_HOUR` (Optional)
+
+When should the destalinator run? Defaults to 4. Which time that means depends on your operating system time zone. Good luck!
+
 ## Code of Conduct
 
 As part of the Rands Leadership Slack community, the [Rands Leadership Slack Code of Conduct](https://github.com/randsleadershipslack/documents-and-resources/blob/master/code-of-conduct.md) applies to this project.
