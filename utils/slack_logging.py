@@ -1,15 +1,15 @@
 import logging
 
-from config import get_config
+from config import get_config, WithLogger
 
 
-class SlackHandler(logging.Handler):
+class SlackHandler(logging.Handler, WithLogger):
     """
     A logging.Handler subclass for logging messages into a Slack channel.
 
     See also: https://docs.python.org/3/library/logging.html#handler-objects
     """
-    def __init__(self, slackbot, log_channel, level):
+    def __init__(self, slackbot, level):
         """
         `slackbot` is an initialized Slackbot() object
         `log_channel` is the name of a channel that should receive log messages
@@ -17,11 +17,10 @@ class SlackHandler(logging.Handler):
         """
         super(self.__class__, self).__init__(level)  # pylint: disable=E1003
         self.slackbot = slackbot
-        self.log_channel = log_channel
 
     def emit(self, record):
         """Do whatever it takes to actually log the specified logging record."""
-        self.slackbot.say(self.log_channel, record.getMessage())
+        self.slackbot.say(self.config.log_channel, record.getMessage())
 
 
 def set_up_slack_logger(slackbot=None):
@@ -55,7 +54,6 @@ def set_up_slack_logger(slackbot=None):
 
     if config.log_to_channel and config.log_channel and slackbot:
         logger.debug("Logging to slack channel: %s", config.log_channel)
-        # TODO: no need to pass along log_channel
-        slack_handler = SlackHandler(slackbot=slackbot, log_channel=config.log_channel, level=slack_log_level)
+        slack_handler = SlackHandler(slackbot=slackbot, level=slack_log_level)
         slack_handler.setFormatter(formatter)
         logger.addHandler(slack_handler)
