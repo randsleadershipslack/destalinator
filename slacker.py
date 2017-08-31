@@ -33,6 +33,7 @@ class Slacker(WithLogger):
         payload = self.session.get(url).json()
         return payload
 
+    # TODO: Why is this unused?
     def get_user(self, uid):
         url = self.url + "users.info?token={}&user={}".format(self.token, uid)
         payload = self.session.get(url).json()
@@ -41,6 +42,7 @@ class Slacker(WithLogger):
     def get_users(self):
         users = self.get_all_user_objects()
         self.users_by_id = {x['id']: x['name'] for x in users}
+        # TODO: Why is this unused?
         self.users_by_name = {x['name']: x['id'] for x in users}
         self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
@@ -149,6 +151,7 @@ class Slacker(WithLogger):
         except KeyError:  # channel not found
             return None
 
+    # TODO: Why is this unused?
     def delete_message(self, cid, message_timestamp):
         url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
         url = url_template.format(self.token, cid, message_timestamp)

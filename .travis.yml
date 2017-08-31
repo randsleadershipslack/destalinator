@@ -16,6 +16,7 @@ install:
 
 script:
   - flake8 --ignore=E501
+  - vulture . --exclude=tests/test_destalinator.py
   - coverage run --branch --source=. -m unittest discover -f && coverage report -m --skip-covered --fail-under=71 && coveralls
 
 deploy:

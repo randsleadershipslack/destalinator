@@ -93,6 +93,7 @@ class Destalinator(WithLogger):
 
         return messages
 
+    # TODO: Why is this unused (outside of tests)?
     def get_stale_channels(self, days):
         """Return a list of channel names that have been stale for `days`."""
         ret = []
