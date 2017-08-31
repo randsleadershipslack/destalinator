@@ -193,7 +193,6 @@ class Flagger(executor.Executor):
 
     def announce_interesting_messages(self):
         messages = self.get_interesting_messages()
-        slack_name = self.config.slack_name
         for message, channels in messages:
             ts = message["ts"].replace(".", "")
             channel = message["channel"]
@@ -201,13 +200,13 @@ class Flagger(executor.Executor):
             author_name = self.slacker.users_by_id[author]
             text = self.slacker.asciify(message["text"])
             text = self.slacker.detokenize(text)
-            url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
+            url = "http://{}.slack.com/archives/{}/p{}".format(self.config.slack_name, channel, ts)
             m = "*@{}* said in *#{}* _'{}'_ ({})".format(author_name, channel, text, url)
             for output_channel in channels:
                 if self.slacker.channel_exists(output_channel["output"]):
                     md = "Saying {} to {}".format(m, output_channel["output"])
                     self.logger.debug(md)
-                    if not self.debug and self.activated:  # TODO: rename debug to dry run?
+                    if not self.debug and self.config.activated:  # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
                     self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(

@@ -44,10 +44,6 @@ def set_up_slack_logger(slackbot=None):
 
     slack_log_level = getattr(logging, config.log_level.upper(), logging.INFO)
 
-    has_log_to_slack_env_var = config.log_to_channel
-
-    log_channel = config.log_channel
-
     formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
 
     logger.setLevel(logging.DEBUG)
@@ -57,9 +53,9 @@ def set_up_slack_logger(slackbot=None):
 
     logger.addHandler(stream_handler)
 
-    if has_log_to_slack_env_var and log_channel and slackbot:
-        logger.debug("Logging to slack channel: %s", log_channel)
-
-        slack_handler = SlackHandler(slackbot=slackbot, log_channel=log_channel, level=slack_log_level)
+    if config.log_to_channel and config.log_channel and slackbot:
+        logger.debug("Logging to slack channel: %s", config.log_channel)
+        # TODO: no need to pass along log_channel
+        slack_handler = SlackHandler(slackbot=slackbot, log_channel=config.log_channel, level=slack_log_level)
         slack_handler.setFormatter(formatter)
         logger.addHandler(slack_handler)

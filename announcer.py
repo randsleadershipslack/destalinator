@@ -29,7 +29,7 @@ class Announcer(executor.Executor):
         new = self.get_new_channels()
         for cname, creator, purpose in new:
             m = "Channel #{} was created by @{} with purpose: {}".format(cname, creator, purpose)
-            if self.activated:
+            if self.config.activated:
                 if self.slacker.channel_exists(self.config.announce_channel):
                     self.slackbot.say(self.config.announce_channel, m)
                 else:
