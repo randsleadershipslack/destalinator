@@ -15,7 +15,7 @@ install:
   - pip install -r build-requirements.txt && pip install -r requirements.txt
 
 script:
-  - coverage run --branch --omit="*/site-packages/*" -m unittest discover -f && coverage report -m --skip-covered --fail-under=75 && coveralls
+  - coverage run --branch --source=. -m unittest discover -f && coverage report -m --skip-covered --fail-under=71 && coveralls
 
 deploy:
   provider: script
