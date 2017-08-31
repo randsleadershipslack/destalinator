@@ -12,6 +12,13 @@ ADD LICENSE .
 ADD configuration.yaml .
 ADD utils/*.py utils/
 ADD tests/* tests/
+RUN coverage run -m unittest discover -f
+RUN coverage report -m --fail-under=79
 ENV DESTALINATOR_LOG_LEVEL WARNING
-RUN python -m unittest discover -f
 CMD python scheduler.py
+
+### Coverage HTML report
+## Uncomment these:
+# RUN coverage html
+# CMD python -m http.server 80
+## Then run: docker run -it -p 8080:80 destalinator
