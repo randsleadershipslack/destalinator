@@ -128,12 +128,11 @@ class Destalinator(WithLogger):
         # return True (stale) if none of the messages match the criteria below
         return not any(
             # the message is not from an ignored user
-            x.get("user") not in self.config.ignore_users
+            x.get("user") not in self.config.ignore_users \
             and (
                 # the message must have text that doesn't include ignored words
-                (x.get("text") and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore'))
-                # or the message must have attachments
-                or x.get("attachments")
+                (x.get("text") and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore')) \
+                or x.get("attachments")  # or the message must have attachments
             )
             for x in messages
         )

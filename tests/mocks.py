@@ -6,6 +6,7 @@ import slacker
 
 config = _config.Config()
 
+
 def mocked_slackbot_object():
     obj = mock.MagicMock(wraps=slackbot.Slackbot(config.slack_name, token='token'))
     obj.say = mock.MagicMock(return_value=True)
