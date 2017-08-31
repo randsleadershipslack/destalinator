@@ -143,15 +143,6 @@ class Slacker(WithLogger):
         except KeyError:  # channel not found
             return None
 
-    # TODO: Why is this unused?
-    def delete_message(self, cid, message_timestamp):
-        url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
-        url = url_template.format(self.token, cid, message_timestamp)
-        ret = self.session.get(url).json()
-        if not ret['ok']:
-            self.logger.error("Failed to delete message; error: %s", ret)
-        return ret['ok']
-
     def get_channel_members_ids(self, channel_name):
         """
         returns an array of member IDs for channel_name
