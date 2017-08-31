@@ -105,7 +105,7 @@ When should the destalinator run? Defaults to 4. Which time that means depends o
 
 #### `SENTRY_DSN` (Optional)
 
-*Note:* No `DESTALINATOR_` prefix! The Sentry plugin uses this environment variable on its own.)
+*Note:* No `DESTALINATOR_` prefix! The Sentry plugin uses this environment variable on its own.
 
 If you would like to configure exception handling & tracking with [Sentry](https://sentry.io/), set up a Sentry account
 and configure this environment variable with the appropriate DSN value.
