@@ -35,8 +35,7 @@ def destalinate_job():
             warner.Warner().warn()
             archiver.Archiver().archive()
             announcer.Announcer().announce()
-            if _config.flagger_disabled != 'true':
-                flagger.Flagger().flag()
+            flagger.Flagger().flag()
             logging.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
