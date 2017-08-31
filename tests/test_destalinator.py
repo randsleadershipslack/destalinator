@@ -161,38 +161,38 @@ class DestalinatorChannelMinimumAgeTestCase(unittest.TestCase):
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_channel_is_old(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.get_channel_info.return_value = {'age': 86400 *  60}
+        mock_slacker.get_channel_info.return_value = {'age': 86400 * 60}
         self.assertTrue(self.destalinator.channel_minimum_age("testing", 30))
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_channel_is_exactly_expected_age(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.get_channel_info.return_value = {'age': 86400 *  30}
+        mock_slacker.get_channel_info.return_value = {'age': 86400 * 30}
         self.assertFalse(self.destalinator.channel_minimum_age("testing", 30))
 
     @mock.patch('tests.test_destalinator.SlackerMock')
     def test_channel_is_young(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
-        mock_slacker.get_channel_info.return_value = {'age': 86400 *  1}
+        mock_slacker.get_channel_info.return_value = {'age': 86400 * 1}
         self.assertFalse(self.destalinator.channel_minimum_age("testing", 30))
 
 
 target_archive_date = date.today() + timedelta(days=10)
 target_archive_date_string = target_archive_date.isoformat()
+
+
 class DestalinatorGetEarliestArchiveDateTestCase(unittest.TestCase):
     def setUp(self):
         self.slacker = SlackerMock("testing", "token")
         self.slackbot = slackbot.Slackbot("testing", "token")
 
-    @mock.patch.dict(os.environ, {'EARLIEST_ARCHIVE_DATE': target_archive_date_string})
+    @mock.patch.dict(os.environ, {'DESTALINATOR_EARLIEST_ARCHIVE_DATE': target_archive_date_string})
     def test_env_var_name_set_in_config(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['earliest_archive_date_env_varname'] = 'EARLIEST_ARCHIVE_DATE'
         self.assertEqual(self.destalinator.get_earliest_archive_date(), target_archive_date)
 
     def test_archive_date_set_in_config(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
-        self.destalinator.config.config['earliest_archive_date_env_varname'] = None
         self.destalinator.config.config['earliest_archive_date'] = target_archive_date_string
         self.assertEqual(self.destalinator.get_earliest_archive_date(), target_archive_date)
 

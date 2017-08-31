@@ -196,7 +196,7 @@ class Flagger(executor.Executor):
 
     def announce_interesting_messages(self):
         messages = self.get_interesting_messages()
-        slack_name = _config.SLACK_NAME
+        slack_name = config.slack_name
         for message, channels in messages:
             ts = message["ts"].replace(".", "")
             channel = message["channel"]
@@ -210,7 +210,7 @@ class Flagger(executor.Executor):
                 if self.slacker.channel_exists(output_channel["output"]):
                     md = "Saying {} to {}".format(m, output_channel["output"])
                     self.logger.debug(md)
-                    if not self.debug and self.destalinator_activated: # TODO: rename debug to dry run?
+                    if not self.debug and self.activated:  # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
                     self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(
@@ -221,6 +221,9 @@ class Flagger(executor.Executor):
                     ))
 
     def flag(self):
+        if self.config.flagger_disabled:
+            self.logger.info("Not Flagging... Flagger disabled")
+            return
         self.logger.info("Flagging")
         if self.initialize_control():
             self.announce_interesting_messages()

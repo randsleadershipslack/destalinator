@@ -3,6 +3,8 @@ Code for managing Cleanup of Stale Channels
 
 [![Build Status](https://travis-ci.org/randsleadershipslack/destalinator.svg?branch=master)](https://travis-ci.org/randsleadershipslack/destalinator)
 
+[![Coverage Status](https://coveralls.io/repos/github/randsleadershipslack/destalinator/badge.svg?branch=master)](https://coveralls.io/github/randsleadershipslack/destalinator?branch=master)
+
 # Making it work in your environment
 You'll need to install a few libraries: `pip install -r requirements.txt`
 
@@ -49,12 +51,14 @@ These channels need to be manually created by you in your Slack.
 
 ### Environment variables
 
-#### `SB_TOKEN` (Required)
+All configs in `configuration.yaml` are overrideable through environment variables with the same name prefixed by `DESTALINATOR_` (e.g. `activated` -> `DESTALINATOR_ACTIVATED`). Set array environment variables (e.g. `DESTALINATOR_IGNORE_CHANNELS`) by comma delimiting items
+
+#### `DESTALINATOR_SB_TOKEN` (Required)
 
 1. Make sure [the Slackbot app](https://slack.com/apps/A0F81R8ET-slackbot) is installed for your Slack
 2. Add a Slackbot integration, and copy the `token` parameter from the URL provided
 
-#### `API_TOKEN` (Required)
+#### `DESTALINATOR_API_TOKEN` (Required)
 
 The best way to get an `API_TOKEN` is to [create a new Slack App](https://api.slack.com/apps/new).
 
@@ -74,9 +78,9 @@ After saving, you can copy the OAuth Access Token value from the top of the same
 
 Destalinator can be chatty and make potentially big changes to a Slack team (by warning or archiving a large amount of channels), especially when first installed.
 
-To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to any non-empty value and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
+To minimize the risk of making a mistake, Destalinator will run in a dry-run mode unless the `DESTALINATOR_ACTIVATED` environment variable exists. Set it to true and Destalinator is "active." If you want to remain in dry-run mode, ensure this variable is unset/does not exist.
 
-#### `DESTALINATOR_LOG_LEVEL` (Optional; Default: `INFO`)
+#### `DESTALINATOR_LOG_LEVEL` (Optional; Default: `WARNING`)
 
 Tune your preferred log level for server logs or local debugging. Does not affect the ENV var specified by `output_debug_env_varname`.
 
@@ -86,12 +90,12 @@ Tune your preferred log level for server logs or local debugging. Does not affec
 If you would like to log to a Slack channel as well as the default log destination, you can set `true` here. The channel
 will then be pulled from `log_channel` in `configuration.yaml`.
 
-#### `EARLIEST_ARCHIVE_DATE` (Optional)
+#### `DESTALINATOR_EARLIEST_ARCHIVE_DATE` (Optional)
 
 If you don't want to start archiving channels until a certain date right after introducing destalinator to your team,
 you can set an ISO-8601 date here (`YYYY-mm-dd`).
 
-#### `SENTRY_DSN` (Optional)
+#### `DESTALINATOR_SENTRY_DSN` (Optional)
 
 If you would like to configure exception handling & tracking with [Sentry](https://sentry.io/), set up a Sentry account
 and configure this environment variable with the appropriate DSN value.
@@ -99,6 +103,14 @@ and configure this environment variable with the appropriate DSN value.
 If you're on Heroku, you can provision this with:
 
     heroku addons:create sentry:f1
+
+#### `DESTALINATOR_FLAGGER_DISABLED` (Optional)
+
+Disable the Flagger by setting `DESTALINATOR_FLAGGER_DISABLED` to `true`
+
+#### `DESTALINATOR_SCHEDULE_HOUR` (Optional)
+
+When should the destalinator run? Defaults to 4. Which time that means depends on your operating system time zone. Good luck!
 
 ## Code of Conduct
 

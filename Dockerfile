@@ -12,6 +12,15 @@ ADD LICENSE .
 ADD configuration.yaml .
 ADD utils/*.py utils/
 ADD tests/* tests/
-ENV DESTALINATOR_LOG_LEVEL WARN
-RUN python -m unittest discover -f
+RUN flake8 --ignore=E501
+RUN coverage run --branch --source=. -m unittest discover -f
+RUN coverage report -m --skip-covered --fail-under=71
+ENV DESTALINATOR_LOG_LEVEL WARNING
 CMD python scheduler.py
+
+### Coverage HTML report
+## Uncomment these:
+# RUN coverage html --skip-covered
+# CMD python -m http.server 80
+## Then run: docker run -it -p 8080:80 destalinator
+## And open: http://localhost:8080/htmlcov/

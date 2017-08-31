@@ -1,9 +1,8 @@
 # encoding: utf-8
-
-import mock
 import unittest
 
 import utils
+
 
 class UtilsGetLocalFileContentTestCase(unittest.TestCase):
     def test_unicode_file_content(self):

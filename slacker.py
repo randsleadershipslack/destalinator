@@ -79,7 +79,7 @@ class Slacker(WithLogger):
                 raise e
             if payload.get('error') == 'ratelimited':
                 retry_after = int(response.headers['Retry-After'])
-                self.logger.warn('Ratelimited. Sleeping %s', retry_after)
+                self.logger.debug('Ratelimited. Sleeping %s', retry_after)
                 time.sleep(retry_after)
                 continue
             messages += payload['messages']
@@ -249,8 +249,8 @@ class Slacker(WithLogger):
             'text': message.encode('utf-8')
         }
 
-        bot_name = self.config.get('bot_name')
-        bot_avatar_url = self.config.get('bot_avatar_url')
+        bot_name = self.config.bot_name
+        bot_avatar_url = self.config.bot_avatar_url
         if bot_name or bot_avatar_url:
             post_data['as_user'] = False
             if bot_name:

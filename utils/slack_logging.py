@@ -1,5 +1,4 @@
 import logging
-import os
 
 from config import Config
 
@@ -24,6 +23,7 @@ class SlackHandler(logging.Handler):
         """Do whatever it takes to actually log the specified logging record."""
         self.slackbot.say(self.log_channel, record.getMessage())
 
+
 def set_up_slack_logger(slackbot=None):
     """
     Sets up a handler and formatter on a given `logging.Logger` object.
@@ -41,18 +41,14 @@ def set_up_slack_logger(slackbot=None):
         return
 
     config = Config()
-    log_level_env_var = 'DESTALINATOR_LOG_LEVEL'
-    log_to_slack_env_var = 'DESTALINATOR_LOG_TO_CHANNEL'
 
-    default_level='INFO'
-    slack_log_level = getattr(logging, os.getenv(log_level_env_var, default_level).upper(), getattr(logging, default_level))
+    slack_log_level = getattr(logging, config.log_level.upper(), logging.INFO)
 
-    has_log_to_slack_env_var = os.getenv(config.output_debug_env_varname) or os.getenv(log_to_slack_env_var)
+    has_log_to_slack_env_var = config.log_to_channel
 
     log_channel = config.log_channel
 
     formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
-
 
     logger.setLevel(logging.DEBUG)
 
