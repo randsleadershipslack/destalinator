@@ -33,12 +33,6 @@ class Slacker(WithLogger):
         payload = self.session.get(url).json()
         return payload
 
-    # TODO: Why is this unused?
-    def get_user(self, uid):
-        url = self.url + "users.info?token={}&user={}".format(self.token, uid)
-        payload = self.session.get(url).json()
-        return payload
-
     def get_users(self):
         users = self.get_all_user_objects()
         self.users_by_id = {x['id']: x['name'] for x in users}
