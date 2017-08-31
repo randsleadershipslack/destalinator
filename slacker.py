@@ -74,7 +74,7 @@ class Slacker(WithLogger):
             payload = response.json()
             if payload.get('error') == 'ratelimited':
                 retry_after = int(response.headers['Retry-After'])
-                self.logger.warn('Ratelimited. Sleeping %s', retry_after)
+                self.logger.debug('Ratelimited. Sleeping %s', retry_after)
                 time.sleep(retry_after)
                 continue
             messages += payload['messages']
