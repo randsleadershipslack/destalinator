@@ -538,7 +538,3 @@ class DestalinatorWarnTestCase(unittest.TestCase):
         ]
         self.destalinator.warn("stalinists", 30)
         self.assertFalse(mock_slacker.post_message.called)
-
-
-if __name__ == '__main__':
-    unittest.main()
