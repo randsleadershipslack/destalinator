@@ -11,5 +11,4 @@ class Archiver(executor.Executor):
 
 
 if __name__ == "__main__":
-    archiver = Archiver()
-    archiver.archive()
+    Archiver().archive()

@@ -234,5 +234,4 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", default=False)
     args = parser.parse_args()
 
-    flagger = Flagger(debug=args.debug)
-    flagger.flag()
+    Flagger(debug=args.debug).flag()
