@@ -36,7 +36,6 @@ class Destalinator(WithLogger):
 
         self.earliest_archive_date = self.get_earliest_archive_date()
 
-        self.cache = {}
         self.now = int(time.time())
 
     # utility & data fetch methods
@@ -59,13 +58,6 @@ class Destalinator(WithLogger):
         age = age / 86400
         return age > days
 
-    def flush_channel_cache(self, channel_name):
-        """Flush all internal caches for this channel name."""
-        cid = self.slacker.get_channelid(channel_name)
-        if cid in self.cache:
-            self.logger.debug("Purging cache for %s", channel_name)
-            del self.cache[cid]
-
     def get_earliest_archive_date(self):
         """Return a datetime.date object representing the earliest archive date."""
         date_string = self.config.earliest_archive_date \
@@ -73,23 +65,15 @@ class Destalinator(WithLogger):
         return datetime.strptime(date_string, "%Y-%m-%d").date()
 
     def get_messages(self, channel_name, days):
-        """Return `days` worth of messages for channel `channel_name`. Caches messages per channel & days."""
+        """Return `days` worth of messages for channel `channel_name`."""
         oldest = self.now - days * 86400
         cid = self.slacker.get_channelid(channel_name)
-
-        if oldest in self.cache.get(cid, {}):
-            self.logger.debug("Returning %s cached messages for #%s over %s days", len(self.cache[cid][oldest]), channel_name, days)
-            return self.cache[cid][oldest]
 
         messages = self.slacker.get_messages_in_time_range(oldest, cid)
         self.logger.debug("Fetched %s messages for #%s over %s days", len(messages), channel_name, days)
 
         messages = [x for x in messages if x.get("subtype") is None or x.get("subtype") in self.config.included_subtypes]
         self.logger.debug("Filtered down to %s messages based on included_subtypes: %s", len(messages), ", ".join(self.config.included_subtypes))
-
-        if cid not in self.cache:
-            self.cache[cid] = {}
-        self.cache[cid][oldest] = messages
 
         return messages
 
@@ -189,7 +173,6 @@ class Destalinator(WithLogger):
             if self.stale(channel, days):
                 self.logger.debug("Attempting to safe-archive #%s", channel)
                 self.safe_archive(channel)
-            self.flush_channel_cache(channel)
 
     def warn(self, channel_name, days, force_warn=False):
         """
@@ -234,7 +217,6 @@ class Destalinator(WithLogger):
             if self.stale(channel, days):
                 if self.warn(channel, days, force_warn):
                     stale.append(channel)
-            self.flush_channel_cache(channel)
 
         if stale and self.config.general_message_channel:
             self.logger.debug("Notifying #%s of warned channels", self.config.general_message_channel)
