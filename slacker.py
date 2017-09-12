@@ -59,20 +59,13 @@ class Slacker(WithLogger):
             if fail_silently:
                 return "#{}".format(channel_name)
 
-    def get_messages_in_time_range(self, oldest, cid, latest=None):
-        assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
-        cname = self.channels_by_id[cid]
-        messages = []
-        done = False
+    def get_with_retry_to_json(self, url):
+        # TODO: extract class
         retry_attempts = 0
         max_retry_attempts = 10
-        while not done:
-            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
-            if latest:
-                murl += "&latest={}".format(latest)
-            else:
-                murl += "&latest={}".format(int(time.time()))
-            response = self.session.get(murl)
+        payload = None
+        while not payload:
+            response = self.session.get(url)
 
             try:
                 response.raise_for_status()
@@ -88,8 +81,22 @@ class Slacker(WithLogger):
                     self.logger.debug('Unknown requests error. Sleeping %s. %s/%s retry attempts.', retry_after, retry_attempts, max_retry_attempts)
                 time.sleep(retry_after)
                 continue
-
             payload = response.json()
+
+        return payload
+
+    def get_messages_in_time_range(self, oldest, cid, latest=None):
+        assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
+        cname = self.channels_by_id[cid]
+        messages = []
+        done = False
+        while not done:
+            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
+            if latest:
+                murl += "&latest={}".format(latest)
+            else:
+                murl += "&latest={}".format(int(time.time()))
+            payload = self.get_with_retry_to_json(murl)
             messages += payload['messages']
             if payload['has_more'] is False:
                 done = True
