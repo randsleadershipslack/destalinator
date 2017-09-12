@@ -170,8 +170,7 @@ class Slacker(WithLogger):
     def delete_message(self, cid, message_timestamp):
         url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
         url = url_template.format(self.token, cid, message_timestamp)
-        # TODO: Why is this a GET?
-        ret = self.session.get(url).json()
+        ret = self.session.post(url).json()
         if not ret['ok']:
             self.logger.error("Failed to delete message; error: %s", ret)
         return ret['ok']
@@ -241,8 +240,7 @@ class Slacker(WithLogger):
         url_template = self.url + "channels.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
-        # TODO: Why is this a GET?
-        request = self.session.get(url)
+        request = self.session.post(url)
         payload = request.json()
         return payload
 
