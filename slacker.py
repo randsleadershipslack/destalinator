@@ -30,13 +30,11 @@ class Slacker(WithLogger):
 
     def get_emojis(self):
         url = self.url + "emoji.list?token={}".format(self.token)
-        payload = self.session.get(url).json()
-        return payload
+        return self.get_with_retry_to_json(url)
 
     def get_user(self, uid):
         url = self.url + "users.info?token={}&user={}".format(self.token, uid)
-        payload = self.session.get(url).json()
-        return payload
+        return self.get_with_retry_to_json(url)
 
     def get_users(self):
         users = self.get_all_user_objects()
@@ -172,6 +170,7 @@ class Slacker(WithLogger):
     def delete_message(self, cid, message_timestamp):
         url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
         url = url_template.format(self.token, cid, message_timestamp)
+        # TODO: Why is this a GET?
         ret = self.session.get(url).json()
         if not ret['ok']:
             self.logger.error("Failed to delete message; error: %s", ret)
@@ -208,7 +207,7 @@ class Slacker(WithLogger):
         cid = self.get_channelid(channel_name)
         now = int(time.time())
         url = url_template.format(self.token, cid)
-        ret = self.session.get(url).json()
+        ret = self.get_with_retry_to_json(url)
         if ret['ok'] is not True:
             m = "Attempted to get channel info for {}, but return was {}"
             m = m.format(channel_name, ret)
@@ -230,19 +229,19 @@ class Slacker(WithLogger):
         else:
             exclude_archived = 0
         url = url_template.format(exclude_archived, self.token)
-        request = self.session.get(url)
-        payload = request.json()
+        payload = self.get_with_retry_to_json(url)
         assert 'channels' in payload
         return payload['channels']
 
     def get_all_user_objects(self):
         url = self.url + "users.list?token=" + self.token
-        return self.session.get(url).json()['members']
+        return self.get_with_retry_to_json(url)['members']
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
+        # TODO: Why is this a GET?
         request = self.session.get(url)
         payload = request.json()
         return payload
