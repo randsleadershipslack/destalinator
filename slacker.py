@@ -31,15 +31,9 @@ class Slacker(WithLogger, WithConfig):
         payload = self.session.get(url).json()
         return payload
 
-    def get_user(self, uid):
-        url = self.url + "users.info?token={}&user={}".format(self.token, uid)
-        payload = self.session.get(url).json()
-        return payload
-
     def get_users(self):
         users = self.get_all_user_objects()
         self.users_by_id = {x['id']: x['name'] for x in users}
-        self.users_by_name = {x['name']: x['id'] for x in users}
         self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
         self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
@@ -159,14 +153,6 @@ class Slacker(WithLogger, WithConfig):
             return self.channels_by_name[channel]
         except KeyError:  # channel not found
             return None
-
-    def delete_message(self, cid, message_timestamp):
-        url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
-        url = url_template.format(self.token, cid, message_timestamp)
-        ret = self.session.get(url).json()
-        if not ret['ok']:
-            self.logger.error("Failed to delete message; error: %s", ret)
-        return ret['ok']
 
     def get_channel_members_ids(self, channel_name):
         """

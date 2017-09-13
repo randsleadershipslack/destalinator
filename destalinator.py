@@ -92,15 +92,6 @@ class Destalinator(WithLogger, WithConfig):
 
         return messages
 
-    def get_stale_channels(self, days):
-        """Return a list of channel names that have been stale for `days`."""
-        ret = []
-        for channel in sorted(self.slacker.channels_by_name.keys()):
-            if self.stale(channel, days):
-                ret.append(channel)
-        self.logger.debug("%s channels quiet for %s days: %s", len(ret), days, ret)
-        return ret
-
     def ignore_channel(self, channel_name):
         """Return True if `channel_name` is a channel we should ignore based on config settings."""
         if channel_name in self.config.ignore_channels:
