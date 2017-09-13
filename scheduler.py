@@ -32,8 +32,8 @@ def destalinate_job():
         )
     else:
         try:
-            warner.Warner().warn()
             archiver.Archiver().archive()
+            warner.Warner().warn()
             announcer.Announcer().announce()
             flagger.Flagger().flag()
             logging.info("OK: destalinated")
