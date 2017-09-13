@@ -6,12 +6,11 @@ import time
 
 import requests
 
-import config
-
+from config import WithConfig
 from utils.with_logger import WithLogger
 
 
-class Slacker(WithLogger):
+class Slacker(WithLogger, WithConfig):
 
     def __init__(self, slack_name, token, init=True):
         """
@@ -22,7 +21,6 @@ class Slacker(WithLogger):
         self.token = token
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
-        self.config = config.Config()
         self.session = requests.Session()
         if init:
             self.get_users()
@@ -58,6 +56,8 @@ class Slacker(WithLogger):
         cname = self.channels_by_id[cid]
         messages = []
         done = False
+        retry_attempts = 0
+        max_retry_attempts = 10
         while not done:
             murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
             if latest:
@@ -65,12 +65,23 @@ class Slacker(WithLogger):
             else:
                 murl += "&latest={}".format(int(time.time()))
             response = self.session.get(murl)
-            payload = response.json()
-            if payload.get('error') == 'ratelimited':
-                retry_after = int(response.headers['Retry-After'])
-                self.logger.warn('Ratelimited. Sleeping %s', retry_after)
+
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as e:
+                if retry_attempts >= max_retry_attempts:
+                    raise e
+                if 'Retry-After' in response.headers:
+                    retry_after = int(response.headers['Retry-After']) * 2
+                    self.logger.debug('Ratelimited. Sleeping %s', retry_after)
+                else:
+                    retry_attempts += 1
+                    retry_after = retry_attempts * 5
+                    self.logger.debug('Unknown requests error. Sleeping %s. %s/%s retry attempts.', retry_after, retry_attempts, max_retry_attempts)
                 time.sleep(retry_after)
                 continue
+
+            payload = response.json()
             messages += payload['messages']
             if payload['has_more'] is False:
                 done = True

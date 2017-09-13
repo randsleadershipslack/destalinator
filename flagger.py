@@ -16,10 +16,7 @@ except ImportError:
     import HTMLParser
     HTML_UNESCAPER = HTMLParser.HTMLParser()
 
-import config as _config
 import executor
-
-config = _config.Config()
 
 
 class Flagger(executor.Executor):
@@ -58,7 +55,7 @@ class Flagger(executor.Executor):
         """
         sets up known control configuration based on control channel messages
         """
-        channel = config.control_channel
+        channel = self.config.control_channel
         if not self.slacker.channel_exists(channel):
             self.logger.warning("Flagger control channel does not exist, cannot run. Please create #%s.", channel)
             return False
@@ -196,7 +193,6 @@ class Flagger(executor.Executor):
 
     def announce_interesting_messages(self):
         messages = self.get_interesting_messages()
-        slack_name = config.slack_name
         for message, channels in messages:
             ts = message["ts"].replace(".", "")
             channel = message["channel"]
@@ -204,13 +200,13 @@ class Flagger(executor.Executor):
             author_name = self.slacker.users_by_id[author]
             text = self.slacker.asciify(message["text"])
             text = self.slacker.detokenize(text)
-            url = "http://{}.slack.com/archives/{}/p{}".format(slack_name, channel, ts)
+            url = "http://{}.slack.com/archives/{}/p{}".format(self.config.slack_name, channel, ts)
             m = "*@{}* said in *#{}* _'{}'_ ({})".format(author_name, channel, text, url)
             for output_channel in channels:
                 if self.slacker.channel_exists(output_channel["output"]):
                     md = "Saying {} to {}".format(m, output_channel["output"])
                     self.logger.debug(md)
-                    if not self.debug and self.activated:  # TODO: rename debug to dry run?
+                    if not self.debug and self.config.activated:  # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
                     self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(
@@ -234,5 +230,4 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", default=False)
     args = parser.parse_args()
 
-    flagger = Flagger(debug=args.debug)
-    flagger.flag()
+    Flagger(debug=args.debug).flag()
