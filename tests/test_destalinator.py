@@ -253,6 +253,7 @@ class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
+        mock_slacker.channel_has_only_restricted_members.return_value = False
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertEqual(len(self.destalinator.get_stale_channels(30)), 0)
 
@@ -262,6 +263,7 @@ class DestalinatorGetStaleChannelsTestCase(unittest.TestCase):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         mock_slacker.channels_by_name = {'leninists': 'C012839', 'stalinists': 'C102843'}
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
+        mock_slacker.channel_has_only_restricted_members.return_value = False
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertEqual(len(self.destalinator.get_stale_channels(30)), 2)
 
@@ -347,6 +349,7 @@ class DestalinatorStaleTestCase(unittest.TestCase):
     def test_with_all_users_ignored(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         mock_slacker.get_channel_info.return_value = {'age': 60 * 86400}
+        mock_slacker.channel_has_only_restricted_members.return_value = False
         self.destalinator.get_messages = mock.MagicMock(return_value=sample_slack_messages)
         self.assertTrue(self.destalinator.stale('stalinists', 30))
 
@@ -363,6 +366,7 @@ class DestalinatorStaleTestCase(unittest.TestCase):
                 "ts": "1355517523.000005"
             }
         ]
+        mock_slacker.channel_has_only_restricted_members.return_value = False
         self.destalinator.get_messages = mock.MagicMock(return_value=messages)
         self.assertTrue(self.destalinator.stale('stalinists', 30))
 

@@ -17,7 +17,7 @@ raven_client = RavenClient()
 if _config.test_schedule:
     schedule_kwargs = {"hour": "*", "minute": "*/10"}
 else:
-    schedule_kwargs = {"hour": 4}
+    schedule_kwargs = {"hour": _config.schedule_hour}
 
 sched = BlockingScheduler()
 
@@ -32,8 +32,8 @@ def destalinate_job():
         )
     else:
         try:
-            warner.Warner().warn()
             archiver.Archiver().archive()
+            warner.Warner().warn()
             announcer.Announcer().announce()
             flagger.Flagger().flag()
             logging.info("OK: destalinated")

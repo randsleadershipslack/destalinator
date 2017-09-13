@@ -95,7 +95,17 @@ will then be pulled from `log_channel` in `configuration.yaml`.
 If you don't want to start archiving channels until a certain date right after introducing destalinator to your team,
 you can set an ISO-8601 date here (`YYYY-mm-dd`).
 
-#### `DESTALINATOR_SENTRY_DSN` (Optional)
+#### `DESTALINATOR_FLAGGER_DISABLED` (Optional)
+
+Disable the Flagger by setting `DESTALINATOR_FLAGGER_DISABLED` to `true`
+
+#### `DESTALINATOR_SCHEDULE_HOUR` (Optional)
+
+When should the destalinator run? Defaults to 4. Which time that means depends on your operating system time zone. Good luck!
+
+#### `SENTRY_DSN` (Optional)
+
+*Note:* No `DESTALINATOR_` prefix! The Sentry plugin uses this environment variable on its own.
 
 If you would like to configure exception handling & tracking with [Sentry](https://sentry.io/), set up a Sentry account
 and configure this environment variable with the appropriate DSN value.
@@ -103,10 +113,6 @@ and configure this environment variable with the appropriate DSN value.
 If you're on Heroku, you can provision this with:
 
     heroku addons:create sentry:f1
-
-#### `DESTALINATOR_FLAGGER_DISABLED` (Optional)
-
-Disable the Flagger by setting `DESTALINATOR_FLAGGER_DISABLED` to `true`
 
 ## Code of Conduct
 

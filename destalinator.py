@@ -119,7 +119,12 @@ class Destalinator(WithLogger, WithConfig):
         Definition of stale is: no messages in the last `days` which are not from config.ignore_users.
         """
         if not self.channel_minimum_age(channel_name, days):
-            self.logger.debug("Channel #%s is not yet of minimum_age; skipping stale messages check", channel_name)
+            return False
+
+        if self.ignore_channel(channel_name):
+            return False
+
+        if self.slacker.channel_has_only_restricted_members(channel_name):
             return False
 
         messages = self.get_messages(channel_name, days)
@@ -128,6 +133,7 @@ class Destalinator(WithLogger, WithConfig):
         return not any(
             # the message is not from an ignored user
             x.get("user") not in self.config.ignore_users \
+            and x.get("username") not in self.config.ignore_users \
             and (
                 # the message must have text that doesn't include ignored words
                 (x.get("text") and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore')) \
@@ -140,6 +146,7 @@ class Destalinator(WithLogger, WithConfig):
 
     def archive(self, channel_name):
         """Archive the given channel name, returning the Slack API response as a JSON string."""
+        # Might not need to do this since we now do this in `stale`
         if self.ignore_channel(channel_name):
             self.logger.debug("Not archiving #%s because it's in ignore_channels", channel_name)
             return
@@ -171,6 +178,7 @@ class Destalinator(WithLogger, WithConfig):
         """
         self.logger.debug("Evaluating #%s for archival", channel_name)
 
+        # Might not need to do this since we now do this in `stale`
         if self.slacker.channel_has_only_restricted_members(channel_name):
             self.logger.debug("Would have archived #%s but it contains only restricted users", channel_name)
             return
@@ -196,10 +204,12 @@ class Destalinator(WithLogger, WithConfig):
         Using `force_warn=True` will warn even if a previous warning exists.
         Return True if we actually warned, otherwise False.
         """
+        # Might not need to do this since we now do this in `stale`
         if self.slacker.channel_has_only_restricted_members(channel_name):
             self.logger.debug("Would have warned #%s but it contains only restricted users", channel_name)
             return False
 
+        # Might not need to do this since we now do this in `stale`
         if self.ignore_channel(channel_name):
             self.logger.debug("Not warning #%s because it's in ignore_channels", channel_name)
             return False

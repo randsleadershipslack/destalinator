@@ -38,5 +38,4 @@ class Announcer(executor.Executor):
 
 
 if __name__ == "__main__":
-    announcer = Announcer()
-    announcer.announce()
+    Announcer().announce()
