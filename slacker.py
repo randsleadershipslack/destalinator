@@ -6,12 +6,11 @@ import time
 
 import requests
 
-import config
-
+from config import WithConfig
 from utils.with_logger import WithLogger
 
 
-class Slacker(WithLogger):
+class Slacker(WithLogger, WithConfig):
 
     def __init__(self, slack_name, token, init=True):
         """
@@ -22,7 +21,6 @@ class Slacker(WithLogger):
         self.token = token
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
-        self.config = config.Config()
         self.session = requests.Session()
         if init:
             self.get_users()
@@ -32,14 +30,9 @@ class Slacker(WithLogger):
         url = self.url + "emoji.list?token={}".format(self.token)
         return self.get_with_retry_to_json(url)
 
-    def get_user(self, uid):
-        url = self.url + "users.info?token={}&user={}".format(self.token, uid)
-        return self.get_with_retry_to_json(url)
-
     def get_users(self):
         users = self.get_all_user_objects()
         self.users_by_id = {x['id']: x['name'] for x in users}
-        self.users_by_name = {x['name']: x['id'] for x in users}
         self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
         self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
@@ -166,14 +159,6 @@ class Slacker(WithLogger):
             return self.channels_by_name[channel]
         except KeyError:  # channel not found
             return None
-
-    def delete_message(self, cid, message_timestamp):
-        url_template = self.url + "chat.delete?token={}&channel={}&ts={}"
-        url = url_template.format(self.token, cid, message_timestamp)
-        ret = self.session.post(url).json()
-        if not ret['ok']:
-            self.logger.error("Failed to delete message; error: %s", ret)
-        return ret['ok']
 
     def get_channel_members_ids(self, channel_name):
         """

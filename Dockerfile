@@ -13,6 +13,9 @@ ADD configuration.yaml .
 ADD utils/*.py utils/
 ADD tests/* tests/
 RUN flake8 --ignore=E501
+# Skip tests/test_destalinator.py due to heavy mocking. See https://github.com/jendrikseipp/vulture/issues/95
+# Skip utils/slack_logging.py due to implementing Handler#emit but never calling directly
+RUN vulture . --exclude=tests/test_destalinator.py,utils/slack_logging.py
 RUN coverage run --branch --source=. -m unittest discover -f
 RUN coverage report -m --skip-covered --fail-under=71
 ENV DESTALINATOR_LOG_LEVEL WARNING
