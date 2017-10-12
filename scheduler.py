@@ -9,23 +9,24 @@ import announcer
 import flagger
 from config import get_config
 
-_config = get_config()
 
-raven_client = RavenClient()
+def schedule_job():
+    # When testing changes, set the "TEST_SCHEDULE" envvar to run more often
+    if get_config().test_schedule:
+        schedule_kwargs = {"hour": "*", "minute": "*/10"}
+    else:
+        schedule_kwargs = {"hour": get_config().schedule_hour}
 
-# When testing changes, set the "TEST_SCHEDULE" envvar to run more often
-if _config.test_schedule:
-    schedule_kwargs = {"hour": "*", "minute": "*/10"}
-else:
-    schedule_kwargs = {"hour": _config.schedule_hour}
-
-sched = BlockingScheduler()
+    sched = BlockingScheduler()
+    sched.add_job(destalinate_job, "cron", **schedule_kwargs)
+    sched.start()
 
 
-@sched.scheduled_job("cron", **schedule_kwargs)
 def destalinate_job():
+    raven_client = RavenClient()
+
     logging.info("Destalinating")
-    if not _config.sb_token or not _config.api_token:
+    if not get_config().sb_token or not get_config().api_token:
         logging.error(
             "Missing at least one required Slack environment variable.\n"
             "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_API_TOKEN."
@@ -39,14 +40,18 @@ def destalinate_job():
             logging.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
-            if not _config.sentry_dsn:
+            if not get_config().sentry_dsn:
                 raise e
     logging.info("END: destalinate_job")
 
 
-if __name__ == "__main__":
+def main():
     # Use RUN_ONCE to only run the destalinate job once immediately
-    if _config.run_once:
+    if get_config().run_once:
         destalinate_job()
     else:
-        sched.start()
+        schedule_job()
+
+
+if __name__ == "__main__":
+    main()
