@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:alpine3.6
 WORKDIR /destalinator
 ADD bin/* bin/
 ADD build-requirements.txt .
