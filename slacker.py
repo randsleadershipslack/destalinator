@@ -28,8 +28,7 @@ class Slacker(WithLogger, WithConfig):
 
     def get_emojis(self):
         url = self.url + "emoji.list?token={}".format(self.token)
-        payload = self.session.get(url).json()
-        return payload
+        return self.get_with_retry_to_json(url)
 
     def get_users(self):
         users = self.get_all_user_objects()
@@ -51,20 +50,13 @@ class Slacker(WithLogger, WithConfig):
             if fail_silently:
                 return "#{}".format(channel_name)
 
-    def get_messages_in_time_range(self, oldest, cid, latest=None):
-        assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
-        cname = self.channels_by_id[cid]
-        messages = []
-        done = False
+    def get_with_retry_to_json(self, url):
+        # TODO: extract class
         retry_attempts = 0
         max_retry_attempts = 10
-        while not done:
-            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
-            if latest:
-                murl += "&latest={}".format(latest)
-            else:
-                murl += "&latest={}".format(int(time.time()))
-            response = self.session.get(murl)
+        payload = None
+        while not payload:
+            response = self.session.get(url)
 
             try:
                 response.raise_for_status()
@@ -80,8 +72,22 @@ class Slacker(WithLogger, WithConfig):
                     self.logger.debug('Unknown requests error. Sleeping %s. %s/%s retry attempts.', retry_after, retry_attempts, max_retry_attempts)
                 time.sleep(retry_after)
                 continue
-
             payload = response.json()
+
+        return payload
+
+    def get_messages_in_time_range(self, oldest, cid, latest=None):
+        assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
+        cname = self.channels_by_id[cid]
+        messages = []
+        done = False
+        while not done:
+            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
+            if latest:
+                murl += "&latest={}".format(latest)
+            else:
+                murl += "&latest={}".format(int(time.time()))
+            payload = self.get_with_retry_to_json(murl)
             messages += payload['messages']
             if payload['has_more'] is False:
                 done = True
@@ -185,7 +191,7 @@ class Slacker(WithLogger, WithConfig):
         cid = self.get_channelid(channel_name)
         now = int(time.time())
         url = url_template.format(self.token, cid)
-        ret = self.session.get(url).json()
+        ret = self.get_with_retry_to_json(url)
         if ret['ok'] is not True:
             m = "Attempted to get channel info for {}, but return was {}"
             m = m.format(channel_name, ret)
@@ -207,20 +213,19 @@ class Slacker(WithLogger, WithConfig):
         else:
             exclude_archived = 0
         url = url_template.format(exclude_archived, self.token)
-        request = self.session.get(url)
-        payload = request.json()
+        payload = self.get_with_retry_to_json(url)
         assert 'channels' in payload
         return payload['channels']
 
     def get_all_user_objects(self):
         url = self.url + "users.list?token=" + self.token
-        return self.session.get(url).json()['members']
+        return self.get_with_retry_to_json(url)['members']
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
-        request = self.session.get(url)
+        request = self.session.post(url)
         payload = request.json()
         return payload
 
