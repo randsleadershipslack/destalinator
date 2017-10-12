@@ -12,8 +12,29 @@ You'll also need to change `configuration.yaml` appropriately. `warner.py` and `
 
 That said, if you're running on Heroku, you can create a single `clock` process that runs `python scheduler.py`.
 
+# Development
+
+We recommend using `virtualenv` to manage your development environment.
+
+    pip install virtualenv
+    virtualenv env
+    source env/bin/activate
+
+In addition to `requirements.txt`, there's also `build-requirements.txt` for development environments. `./bin/install` will install both.
+
 ### Docker
+
+Build a local docker image:
+
+    docker build . -t destalinator
+
 You can also use the prebuilt Docker image at [randsleadershipslack/destalinator](https://hub.docker.com/r/randsleadershipslack/destalinator/).
+
+#### Checking code coverage locally
+
+    docker run -it -p 8080:80 destalinator sh -c "coverage html --skip-covered && python -m http.server 80"
+
+    open http://localhost:8080/htmlcov/
 
 ## Components
 
