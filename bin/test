@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 set -eux
 
 flake8 --ignore=E501
@@ -8,8 +8,8 @@ flake8 --ignore=E501
 vulture . --exclude=tests/test_destalinator.py,utils/slack_logging.py
 
 coverage run --branch --source=. -m unittest discover -f
-coverage report -m --skip-covered --fail-under=71
+coverage report -m --skip-covered --fail-under=70
 
-if [[ -v TRAVIS ]]; then
+if [ ${TRAVIS:-false} = 'true' ]; then
   coveralls
 fi

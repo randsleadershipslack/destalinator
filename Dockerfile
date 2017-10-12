@@ -1,6 +1,6 @@
 FROM python:alpine3.6
 WORKDIR /destalinator
-ADD bin/* bin/
+ADD bin/install bin/
 ADD build-requirements.txt .
 ADD requirements.txt .
 RUN ./bin/install
@@ -12,6 +12,7 @@ ADD LICENSE .
 ADD configuration.yaml .
 ADD utils/*.py utils/
 ADD tests/* tests/
+ADD bin/test bin/
 RUN ./bin/test
 ENV DESTALINATOR_LOG_LEVEL WARNING
 CMD python scheduler.py
