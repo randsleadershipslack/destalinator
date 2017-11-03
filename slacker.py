@@ -50,11 +50,18 @@ class Slacker(WithLogger, WithConfig):
             if fail_silently:
                 return "#{}".format(channel_name)
 
+    def sleep_for_slack(self):
+        self.logger.debug('Slack requests can be at most once per second. Sleeping 1.')
+        time.sleep(1)
+
     def get_with_retry_to_json(self, url):
         # TODO: extract class
         retry_attempts = 0
         max_retry_attempts = 10
         payload = None
+
+        self.sleep_for_slack()
+
         while not payload:
             response = self.session.get(url)
 
@@ -221,11 +228,15 @@ class Slacker(WithLogger, WithConfig):
         url = self.url + "users.list?token=" + self.token
         return self.get_with_retry_to_json(url)['members']
 
+    def post(self, *args, **kwargs):
+        self.sleep_for_slack()
+        self.session.post(*args, **kwargs)
+
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
-        request = self.session.post(url)
+        request = self.post(url)
         payload = request.json()
         return payload
 
@@ -258,5 +269,5 @@ class Slacker(WithLogger, WithConfig):
         if message_type:
             post_data['attachments'] = json.dumps([{'fallback': message_type}], encoding='utf-8')
 
-        p = self.session.post(self.url + "chat.postMessage", data=post_data)
+        p = self.post(self.url + "chat.postMessage", data=post_data)
         return p.json()
