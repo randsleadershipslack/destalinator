@@ -230,7 +230,7 @@ class Slacker(WithLogger, WithConfig):
 
     def post(self, *args, **kwargs):
         self.sleep_for_slack()
-        self.session.post(*args, **kwargs)
+        return self.session.post(*args, **kwargs)
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
