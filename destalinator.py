@@ -97,7 +97,7 @@ class Destalinator(WithLogger, WithConfig):
         if channel_name in self.config.ignore_channels:
             return True
         for pat in self.config.ignore_channel_patterns:
-            if re.match(pat, channel_name):
+            if re.search(pat, channel_name):
                 return True
         return False
 
