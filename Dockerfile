@@ -1,4 +1,4 @@
-FROM python:2.7-alpine
+FROM python:2.7
 WORKDIR /destalinator
 ADD bin/install bin/
 ADD build-requirements.txt .
