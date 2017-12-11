@@ -254,17 +254,27 @@ class DestalinatorIgnoreChannelTestCase(unittest.TestCase):
         self.assertTrue(self.destalinator.ignore_channel('stalinists'))
 
     @mock.patch.object(get_config(), 'ignore_channel_patterns', ['^stal'])
-    def test_with_matching_ignore_channel_pattern(self):
+    def test_with_ignore_channel_pattern_matching_beginning_of_channel_name(self):
+        self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
+        self.assertTrue(self.destalinator.ignore_channel('stalinists'))
+
+    @mock.patch.object(get_config(), 'ignore_channel_patterns', ['linists$'])
+    def test_with_ignore_channel_pattern_matching_end_of_channel_name(self):
+        self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
+        self.assertTrue(self.destalinator.ignore_channel('stalinists'))
+
+    @mock.patch.object(get_config(), 'ignore_channel_patterns', ['lini'])
+    def test_with_ignore_channel_pattern_matching_middle_of_channel_name(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
         self.assertTrue(self.destalinator.ignore_channel('stalinists'))
 
     @mock.patch.object(get_config(), 'ignore_channel_patterns', ['^len'])
     @mock.patch('tests.test_destalinator.SlackerMock')
-    def test_with_non_mathing_ignore_channel_pattern(self, mock_slacker):
+    def test_with_non_matching_ignore_channel_pattern(self, mock_slacker):
         self.destalinator = destalinator.Destalinator(mock_slacker, self.slackbot, activated=True)
         self.assertFalse(self.destalinator.ignore_channel('stalinists'))
 
-    @mock.patch.object(get_config(), 'ignore_channel_patterns', ['^len', 'lin', '^st'])
+    @mock.patch.object(get_config(), 'ignore_channel_patterns', ['^len', 'lin', 'ists$'])
     def test_with_many_matching_ignore_channel_patterns(self):
         self.destalinator = destalinator.Destalinator(self.slacker, self.slackbot, activated=True)
         self.assertTrue(self.destalinator.ignore_channel('stalinists'))
