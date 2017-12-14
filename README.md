@@ -72,7 +72,7 @@ These channels need to be manually created by you in your Slack.
 
 ### Environment variables
 
-All configs in `configuration.yaml` are overrideable through environment variables with the same name prefixed by `DESTALINATOR_` (e.g. `activated` -> `DESTALINATOR_ACTIVATED`). Set array environment variables (e.g. `DESTALINATOR_IGNORE_CHANNELS`) by comma delimiting items
+All configs in `configuration.yaml` are overrideable through environment variables with the same name prefixed by `DESTALINATOR_` (e.g. `activated` -> `DESTALINATOR_ACTIVATED`). Set array environment variables (e.g. `DESTALINATOR_IGNORE_CHANNELS`) by comma delimiting items. If you only have one value for an array type environment variable add a training comma to denote the variable as a list.
 
 #### `DESTALINATOR_SB_TOKEN` (Required)
 
