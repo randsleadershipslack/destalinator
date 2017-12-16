@@ -25,7 +25,7 @@ class Config(WithLogger):
         else:
             envvar = os.getenv('DESTALINATOR_' + upper_attrname)
         if envvar is not None:
-            return envvar.split(',') if ',' in envvar else envvar
+            return [x for x in envvar.split(',') if x] if ',' in envvar else envvar
 
         return self.config.get(attrname, '')
 
