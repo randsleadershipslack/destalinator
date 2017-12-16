@@ -11,4 +11,4 @@ class ConfigTest(unittest.TestCase):
 
     def test_environment_variable_configs(self):
         self.assertEqual(get_config().string_variable, 'test')
-        self.assertEqual(get_config().list_variable, ['test'])
+        self.assertListEqual(get_config().list_variable, ['test'])
