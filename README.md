@@ -28,8 +28,6 @@ Build a local docker image:
 
     docker build . -t destalinator
 
-You can also use the prebuilt Docker image at [randsleadershipslack/destalinator](https://hub.docker.com/r/randsleadershipslack/destalinator/).
-
 #### Checking code coverage locally
 
     docker run -it -p 8080:80 destalinator sh -c "coverage html --skip-covered && python -m http.server 80"
