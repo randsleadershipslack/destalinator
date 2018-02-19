@@ -20,7 +20,7 @@ warn_threshold: 30
 archive_threshold: 60
 
 # Where should we post "general" announcement messages?
-general_message_channel: "general"
+general_message_channel: "announcements"
 
 # Where should we announce new channels?
 announce_channel: "zmeta-new-channels"
