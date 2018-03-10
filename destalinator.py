@@ -161,6 +161,8 @@ class Destalinator(WithLogger, WithConfig):
                 self.logger.error("Failed to archive %s: %s. See https://api.slack.com/methods/channels.archive for more context.", channel_name, error)
 
             return payload
+        else:
+            self.logger.info("Archived %s", channel_name)
 
     def safe_archive(self, channel_name):
         """

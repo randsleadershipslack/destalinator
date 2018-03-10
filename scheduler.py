@@ -8,6 +8,7 @@ import archiver
 import announcer
 import flagger
 from config import get_config
+from utils.slack_logging import set_up_slack_logger
 
 
 def schedule_job():
@@ -46,6 +47,7 @@ def destalinate_job():
 
 
 def main():
+    set_up_slack_logger()
     # Use RUN_ONCE to only run the destalinate job once immediately
     if get_config().run_once:
         destalinate_job()
