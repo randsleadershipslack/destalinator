@@ -45,7 +45,7 @@ def set_up_slack_logger(slackbot=None):
 
     formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
 
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)

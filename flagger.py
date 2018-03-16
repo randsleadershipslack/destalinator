@@ -206,7 +206,7 @@ class Flagger(executor.Executor):
                 if self.slacker.channel_exists(output_channel["output"]):
                     md = "Saying {} to {}".format(m, output_channel["output"])
                     self.logger.debug(md)
-                    if not self.debug and self.config.activated:  # TODO: rename debug to dry run?
+                    if not self.debug and (self.config.activated or self.config.flagger_activated):  # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
                     self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(

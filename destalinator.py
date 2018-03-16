@@ -142,7 +142,7 @@ class Destalinator(WithLogger, WithConfig):
             self.logger.debug("Not archiving #%s because it's in ignore_channels", channel_name)
             return
 
-        if self.config.activated:
+        if self.config.activated or self.config.archiver_activated:
             self.logger.debug("Announcing channel closure in #%s", channel_name)
             self.post_marked_up_message(channel_name, self.closure_text, message_type='channel_archive')
 
@@ -155,12 +155,14 @@ class Destalinator(WithLogger, WithConfig):
             payload = self.slacker.archive(channel_name)
             if payload['ok']:
                 self.logger.debug("Slack API response to archive: %s", json.dumps(payload, indent=4))
-                self.logger.info("Archived %s", channel_name)
+                self.action("Archived %s", channel_name)
             else:
                 error = payload.get('error', '!! No error found in payload %s !!' % payload)
                 self.logger.error("Failed to archive %s: %s. See https://api.slack.com/methods/channels.archive for more context.", channel_name, error)
 
             return payload
+        else:
+            self.action("[DRY RUN] Archived %s", channel_name)
 
     def safe_archive(self, channel_name):
         """
@@ -213,9 +215,11 @@ class Destalinator(WithLogger, WithConfig):
             self.logger.debug("Not warning #%s because we found a prior warning", channel_name)
             return False
 
-        if self.config.activated:
+        if self.config.activated or self.config.warner_activated:
             self.post_marked_up_message(channel_name, self.warning_text, message_type='channel_warning')
             self.action("Warned #{}".format(channel_name))
+        else
+            self.action("[DRY RUN] Warned #{}".format(channel_name))
 
         return True
 
