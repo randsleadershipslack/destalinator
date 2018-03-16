@@ -1,6 +1,16 @@
 # Name of your Slack (Deprecated in favour of the slack_name env var)
 slack_name: detroitlabs
 
+run_once: true
+
+archiver_activated: false
+
+warner_activated: false
+
+announcer_activated: false
+
+flagger_activated: false
+
 # Name of environment variable that determines if destalinator should
 # actually do things to a live slack. Without this environment variable,
 # everything will output in a "dry run" fashion (debug messages should take place,
