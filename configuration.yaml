@@ -39,6 +39,7 @@ ignore_channels:
 ignore_channel_patterns:
   - ^zmeta-
   - rands
+  - calibrate
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
