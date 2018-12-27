@@ -20,7 +20,7 @@ warn_threshold: 30
 archive_threshold: 60
 
 # Where should we post "general" announcement messages?
-general_message_channel: "general"
+general_message_channel: "stale-channels"
 
 # Where should we announce new channels?
 announce_channel: "zmeta-new-channels"
@@ -38,6 +38,8 @@ ignore_channels:
 # Regular expression patterns for additional channels to ignore during archiving
 ignore_channel_patterns:
   - ^zmeta-
+  - rands
+  - calibrate
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
