@@ -20,7 +20,7 @@ class SlackHandler(logging.Handler, WithLogger):
 
     def emit(self, record):
         """Do whatever it takes to actually log the specified logging record."""
-        self.slackbot.say(self.config.log_channel, record.getMessage())
+        self.slackbot.say(get_config().log_channel, record.getMessage())
 
 
 def set_up_slack_logger(slackbot=None):
@@ -35,7 +35,7 @@ def set_up_slack_logger(slackbot=None):
     """
     logger = logging.getLogger()
 
-    if logger.handlers:
+    if len(logger.handlers) > 1:
         # We've likely already ran through the rest of this method:
         return
 
