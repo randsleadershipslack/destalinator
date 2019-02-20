@@ -206,6 +206,8 @@ class Slacker(WithLogger, WithConfig):
         return all channels
         if exclude_archived (default: True), only shows non-archived channels
         """
+        next_page = True
+        channels = []
 
         url_template = self.url + "channels.list?exclude_archived={}&token={}"
         if exclude_archived:
@@ -213,13 +215,51 @@ class Slacker(WithLogger, WithConfig):
         else:
             exclude_archived = 0
         url = url_template.format(exclude_archived, self.token)
-        payload = self.get_with_retry_to_json(url)
-        assert 'channels' in payload
-        return payload['channels']
+        orig_url = url
+
+        while next_page is True:
+            response = self.get_with_retry_to_json(url)
+            channels += response['channels']
+
+            if 'response_metadata' in response:
+                if 'next_cursor' in response['response_metadata']:
+                    if response['response_metadata']['next_cursor']:
+                        cursor = response['response_metadata']['next_cursor']
+
+            if cursor:
+                url = orig_url + "&cursor=" + response['response_metadata']['next_cursor']
+            else:
+                next_page = False
+
+            cursor = None
+
+        return channels
 
     def get_all_user_objects(self):
+        next_page = True
+        members = []
+
         url = self.url + "users.list?token=" + self.token
-        return self.get_with_retry_to_json(url)['members']
+        orig_url = url
+
+        while next_page is True:
+            response = self.get_with_retry_to_json(url)
+            members += response['members']
+
+            if 'response_metadata' in response:
+                if 'next_cursor' in response['response_metadata']:
+                    if response['response_metadata']['next_cursor']:
+                        cursor = response['response_metadata']['next_cursor']
+
+            if cursor:
+                url = orig_url + "&cursor=" \
+                    + response['response_metadata']['next_cursor']
+            else:
+                next_page = False
+
+            cursor = None
+
+        return members
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
