@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from raven.base import Client as RavenClient
@@ -41,7 +42,7 @@ def destalinate_job():
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
             if not get_config().sentry_dsn:
-                raise e
+                raise traceback.format_exc()
     logging.info("END: destalinate_job")
 
 
