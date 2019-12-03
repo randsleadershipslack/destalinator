@@ -22,6 +22,10 @@ def schedule_job():
     sched.start()
 
 
+def destalinate_lambda(event, context):
+    destalinate_job()
+
+
 def destalinate_job():
     raven_client = RavenClient()
 
