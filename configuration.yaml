@@ -42,6 +42,7 @@ ignore_channel_patterns:
   - rands
   - calibrate
   - ^faq-
+  - black-leaders
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
