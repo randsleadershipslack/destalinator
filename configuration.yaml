@@ -42,6 +42,7 @@ ignore_channel_patterns:
   - rands
   - calibrate
   - ^faq-
+  - colocated-teams
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
