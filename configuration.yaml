@@ -43,6 +43,8 @@ ignore_channel_patterns:
   - calibrate
   - ^faq-
   - black-leaders
+  - people-of-color
+  - ^announcements
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
