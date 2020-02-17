@@ -43,6 +43,8 @@ ignore_channel_patterns:
   - calibrate
   - ^faq-
   - colocated-teams
+  - people-of-color
+  - ^announcements
 
 # Users to ignore when considering if a channel is stale
 ignore_users:
