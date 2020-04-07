@@ -35,13 +35,14 @@ def set_up_slack_logger(slackbot=None):
     """
     logger = logging.getLogger()
 
-    if logger.handlers:
-        # We've likely already ran through the rest of this method:
-        return
-
     _config = get_config()
 
     slack_log_level = getattr(logging, _config.log_level.upper(), logging.INFO)
+    logger.setLevel(slack_log_level)
+
+    if logger.handlers:
+        # We've likely already ran through the rest of this method:
+        return
 
     formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
 

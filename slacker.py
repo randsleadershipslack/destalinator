@@ -219,7 +219,14 @@ class Slacker(WithLogger, WithConfig):
 
     def get_all_user_objects(self):
         url = self.url + "users.list?token=" + self.token
-        return self.get_with_retry_to_json(url)['members']
+        user_json = self.get_with_retry_to_json(url)
+
+        members = user_json['members']
+        while user_json['response_metadata']['next_cursor']:
+            user_json = self.get_with_retry_to_json(url + "&cursor=" + user_json['response_metadata']['next_cursor'])
+            members += user_json['members']
+
+        return members
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
