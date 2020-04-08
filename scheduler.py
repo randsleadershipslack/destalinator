@@ -30,10 +30,10 @@ def destalinate_job():
     raven_client = RavenClient()
 
     logging.info("Destalinating")
-    if not get_config().sb_token or not get_config().api_token:
+    if not get_config().sb_token or not get_config().api_user_token or not get_config().api_bot_token:
         logging.error(
             "Missing at least one required Slack environment variable.\n"
-            "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_API_TOKEN."
+            "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_USER_API_TOKEN and DESTALINATOR_BOT_API_TOKEN."
         )
     else:
         try:

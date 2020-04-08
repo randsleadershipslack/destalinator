@@ -25,8 +25,8 @@ class Destalinator(WithLogger, WithConfig):
         slackbot should be an initialized slackbot.Slackbot() object
         activated is a boolean indicating whether destalinator should do dry runs or real runs
         """
-        self.closure_text = utils.get_local_file_content(self.closure_text_fname)
-        self.warning_text = utils.get_local_file_content(self.warning_text_fname)
+        self.closure_text = self.config.closure_text or utils.get_local_file_content(self.closure_text_fname)
+        self.warning_text = self.config.warning_text or utils.get_local_file_content(self.warning_text_fname)
         self.slacker = slacker
         self.slackbot = slackbot
 
