@@ -27,7 +27,7 @@ class Config(WithLogger):
             self.logger.debug("env var [%s] value: [%s]", attrname, envvar)
         if envvar is not None:
             # allow certain types (e.g. warning, closure text) to be used as-is
-            if "RAW" in envvar:
+            if "RAW" in upper_attrname:
                 return envvar
             else:
                 split_envvar = [x.strip() for x in envvar.split(',') if x] if ',' in envvar else envvar
