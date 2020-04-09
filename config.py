@@ -31,7 +31,7 @@ class Config(WithLogger):
             return split_envvar
 
         file_based_config = self.config.get(attrname, '')
-        self.logger.debug("using file based config for: [%s] with value [%s]", attrname, file_based_config)
+        self.logger.debug("using file based config for: [%s] with value [%s]", attrname, file_based_config or "")
         return file_based_config
 
     def get(self, attrname, fallback=None):
