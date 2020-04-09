@@ -217,16 +217,21 @@ class Slacker(WithLogger, WithConfig):
         url = url_template.format(exclude_archived, self.user_token)
         payload = self.get_with_retry_to_json(url)
         assert 'channels' in payload
-        return payload['channels']
+
+        channels = payload['channels']
+        while payload['response_metadata']['next_cursor']:
+            payload = self.get_with_retry_to_json(url + "&cursor=" + payload['response_metadata']['next_cursor'])
+            channels += payload['channels']
+        return channels
 
     def get_all_user_objects(self):
         url = self.url + "users.list?token=" + self.user_token
-        user_json = self.get_with_retry_to_json(url)
+        payload = self.get_with_retry_to_json(url)
 
-        members = user_json['members']
-        while user_json['response_metadata']['next_cursor']:
-            user_json = self.get_with_retry_to_json(url + "&cursor=" + user_json['response_metadata']['next_cursor'])
-            members += user_json['members']
+        members = payload['members']
+        while payload['response_metadata']['next_cursor']:
+            payload = self.get_with_retry_to_json(url + "&cursor=" + payload['response_metadata']['next_cursor'])
+            members += payload['members']
 
         return members
 
