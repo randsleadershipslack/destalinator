@@ -24,10 +24,15 @@ class Config(WithLogger):
             self.logger.warning("The `%s` environment variable is deprecated in favor of the `DESTALINATOR_%s` environment variable", upper_attrname, upper_attrname)
         else:
             envvar = os.getenv('DESTALINATOR_' + upper_attrname)
+            self.logger.debug("Trying to find config in env as: [%s] for [%s]", envvar, attrname)
         if envvar is not None:
-            return [x for x in envvar.split(',') if x] if ',' in envvar else envvar
+            split_envvar = [x for x in envvar.split(',') if x] if ',' in envvar else envvar
+            self.logger.debug("env found, and split to: [%s] for [%s]", split_envvar, attrname)
+            return split_envvar
 
-        return self.config.get(attrname, '')
+        file_based_config = self.config.get(attrname, '')
+        self.logger.debug("using file based config: [%s] for: [%s]", file_based_config, attrname)
+        return file_based_config
 
     def get(self, attrname, fallback=None):
         return self.config.get(attrname, fallback)
