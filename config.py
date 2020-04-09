@@ -26,9 +26,13 @@ class Config(WithLogger):
             envvar = os.getenv('DESTALINATOR_' + upper_attrname)
             self.logger.debug("env var [%s] value: [%s]", attrname, envvar)
         if envvar is not None:
-            split_envvar = [x.strip() for x in envvar.split(',') if x] if ',' in envvar else envvar
-            self.logger.debug("env var [%s] found, and split to: %s", attrname, split_envvar)
-            return split_envvar
+            # allow certain types (e.g. warning, closure text) to be used as-is
+            if "RAW" in envvar:
+                return envvar
+            else:
+                split_envvar = [x.strip() for x in envvar.split(',') if x] if ',' in envvar else envvar
+                self.logger.debug("env var [%s] found, and split to: %s", attrname, split_envvar)
+                return split_envvar
 
         file_based_config = self.config.get(attrname, '')
         self.logger.debug("using file based config for: [%s] with value [%s]", attrname, file_based_config or "")
