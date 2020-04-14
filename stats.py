@@ -20,7 +20,7 @@ class Stats(executor.Executor):
         super(self.__class__, self).__init__(*args, **kwargs)
         self.now = int(time.time())
 
-    def emit_stats(self):
+    def stats(self):
         if self.config.get("stats_enabled", True):
             channel_message_counts, user_message_counts = self.get_stats()
 
@@ -72,4 +72,4 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", default=False)
     args = parser.parse_args()
 
-    Stats(debug=args.debug).emit_stats()
+    Stats(debug=args.debug).stats()

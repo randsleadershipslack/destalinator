@@ -7,6 +7,7 @@ import warner
 import archiver
 import announcer
 import flagger
+import stats
 from config import get_config
 
 
@@ -41,6 +42,7 @@ def destalinate_job():
             warner.Warner().warn()
             announcer.Announcer().announce()
             flagger.Flagger().flag()
+            stats.Stats.stats()
             logging.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()
