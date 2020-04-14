@@ -50,4 +50,11 @@ name of an existing rule
 
 `flag content rule NAME delete`
 
-Will delete the content rule with the given name
+Will delete the content rule with the given name\
+
+## Custom Aliases
+
+`alias :thumbsup::skin-tone-2: :thumbsup_all:`
+
+Will set an alias, such that `:thumbsup::skin-tone-2:` is equal to `:thumbsup_all:`. You can then set a rule on `:thumbsup_all:`, for example.
+
