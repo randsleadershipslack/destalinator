@@ -104,7 +104,7 @@ class Destalinator(WithLogger, WithConfig):
         if not self.channel_minimum_age(channel_name, days):
             return False
 
-        if self.ignore_channel(self.config, channel_name):
+        if ignore_channel(self.config, channel_name):
             return False
 
         if self.slacker.channel_has_only_restricted_members(channel_name):
@@ -130,7 +130,7 @@ class Destalinator(WithLogger, WithConfig):
     def archive(self, channel_name):
         """Archive the given channel name, returning the Slack API response as a JSON string."""
         # Might not need to do this since we now do this in `stale`
-        if self.ignore_channel(self.config, channel_name):
+        if ignore_channel(self.config, channel_name):
             self.logger.debug("Not archiving #%s because it's in ignore_channels", channel_name)
             return
 
