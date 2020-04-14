@@ -41,6 +41,9 @@ class Slacker(WithLogger, WithConfig):
         self.logger.debug("All restricted user names: %s", ', '.join([self.users_by_id[x] for x in self.all_restricted_users]))
         return users
 
+    def get_users_by_id(self):
+        return self.users_by_id
+
     def asciify(self, text):
         return ''.join([x for x in list(text) if ord(x) in range(128)])
 
