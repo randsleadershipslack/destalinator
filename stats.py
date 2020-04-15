@@ -63,7 +63,7 @@ class Stats(executor.Executor):
             for message in cur_messages:
                 if message.get('user'):
                     user_name = self.slacker.users_by_id[message['user']]
-                    if not user_name in self.config.get('stats_ignore_users', []):
+                    if not self.config.stats_ignore_users or not user_name in self.config.stats_ignore_users:
                         if user_message_counts.get(user_name):
                             user_message_counts[user_name] = user_message_counts[user_name] + 1
                         else:
