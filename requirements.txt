@@ -1,4 +1,4 @@
-APScheduler>=3.0.5
+APScheduler==3.0.5
 requests>=2.20.0
 PyYAML>=3.11
-raven>=6.1.0
+raven==6.1.0
