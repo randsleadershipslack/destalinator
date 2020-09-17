@@ -25,8 +25,24 @@ general_message_channel: "stale-channels"
 # Where should we announce new channels?
 announce_channel: "zmeta-new-channels"
 
+# where are stats emitted?
+stats_channel: "zmeta-statistics"
+
+# users to ignore for stats collection
+stats_ignore_users:
+  - example_bot_user
+
+# is stats collection enabled?
+stats_enabled: true
+
 # Where do we send control messages?
 control_channel: "zmeta-control"
+
+# Where do flagged messages go?
+flagger_channel: "zmeta-flagged"
+
+# How many total reactions a message needs to be flagged
+flagger_total_reaction_min: 5
 
 # Where to send destalinator debug logs
 log_channel: "destalinator-log"

@@ -162,9 +162,22 @@ class Flagger(executor.Executor):
         emoji_set = set(self.emoji)
         current_reactions = {}
         self.logger.debug("reactions: %s", reactions)
-        self.logger.debug("emoji_equivalents:\n%s", json.dumps(self.emoji_equivalents, indent=4))
+
         if "floppy_disk" in self.emoji_equivalents.keys():
             self.logger.debug("floppy_disk: %s", self.emoji_equivalents['floppy_disk'])
+
+        total_reaction_count = sum(r['count'] for r in reactions)
+        self.logger.debug("total_reaction_count: %s", total_reaction_count)
+        if self.config.flagger_channel and self.config.flagger_total_reaction_min and total_reaction_count >= \
+            int(self.config.flagger_total_reaction_min):
+            channels.append(
+                {
+                    'output': self.config.flagger_channel,
+                    'count': total_reaction_count,
+                    'emoji': 'floppy_disk'
+                }
+            )
+
         for reaction in reactions:
             count = reaction['count']
             current_emoji = reaction['name'].split(":")[0]
@@ -198,6 +211,9 @@ class Flagger(executor.Executor):
         """
         returns [[message, [listofchannelstoannounce]]
         """
+
+        self.logger.debug("emoji_equivalents:\n%s", json.dumps(self.emoji_equivalents, indent=4))
+
         dayago = self.now - 86400
 
         messages = []
@@ -218,30 +234,34 @@ class Flagger(executor.Executor):
     def announce_interesting_messages(self):
         messages = self.get_interesting_messages()
         for message, channels in messages:
-            ts = message["ts"].replace(".", "")
-            channel = message["channel"]
-            author = message["user"]
-            author_name = self.slacker.users_by_id[author]
-            text = self.slacker.asciify(message["text"])
-            text = self.slacker.detokenize(text)
-            url = "http://{}.slack.com/archives/{}/p{}".format(self.config.slack_name, channel, ts)
-            message_format = "*@{}* said in *#{}*:\n _{}_\nThey got *{}* :{}: reactions.\nURL to conversation: (" \
-                             "{})"
-            for output_channel in channels:
-                if self.slacker.channel_exists(output_channel["output"]):
-                    m = message_format.format(author_name, channel, text, output_channel["count"], output_channel[
-                        "emoji"], url)
-                    md = "Saying {} to {}".format(m, output_channel["output"])
-                    self.logger.debug(md)
-                    if not self.debug and self.config.activated:  # TODO: rename debug to dry run?
-                        self.slackbot.say(output_channel["output"], m)
-                else:
-                    self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(
-                        output_channel["output"],
-                        output_channel["emoji"],
-                        output_channel["comparator"],
-                        output_channel["threshold"]
-                    ))
+            if message.get("ts") and message.get("channel") and message.get("user"):
+                ts = message["ts"].replace(".", "")
+                channel = message["channel"]
+                author = message["user"]
+                author_name = self.slacker.users_by_id[author]
+                text = self.slacker.asciify(message["text"])
+                text = self.slacker.detokenize(text)
+                url = "http://{}.slack.com/archives/{}/p{}".format(self.config.slack_name, channel, ts)
+                message_format = "*@{}* said in *#{}*:\n _{}_\nThey got *{}* :{}: reactions.\nURL to conversation: (" \
+                                 "{})"
+                for output_channel in channels:
+                    if self.slacker.channel_exists(output_channel["output"]):
+                        m = message_format.format(author_name, channel, text, output_channel["count"], output_channel[
+                            "emoji"], url)
+                        md = "Saying {} to {}".format(m, output_channel["output"])
+                        self.logger.debug(md)
+                        if not self.debug and self.config.activated:  # TODO: rename debug to dry run?
+                            self.slackbot.say(output_channel["output"], m)
+                    else:
+                        self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(
+                            output_channel["output"],
+                            output_channel["emoji"],
+                            output_channel["comparator"],
+                            output_channel["threshold"]
+                        ))
+            else:
+                self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but message was "
+                                    "missing info: %s.".format(message))
 
     def flag(self):
         if self.config.flagger_disabled:

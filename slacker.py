@@ -28,18 +28,25 @@ class Slacker(WithLogger, WithConfig):
             self.get_users()
             self.get_channels()
 
+    emojis = None
+
     def get_emojis(self):
-        url = self.url + "emoji.list?token={}".format(self.user_token)
-        return self.get_with_retry_to_json(url)
+        if not self.emojis:
+            url = self.url + "emoji.list?token={}".format(self.user_token)
+            self.emojis = self.get_with_retry_to_json(url)
+        return self.emojis
+
+    users = None
 
     def get_users(self):
-        users = self.get_all_user_objects()
-        self.users_by_id = {x['id']: x['name'] for x in users}
-        self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
-        self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
-        self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
-        self.logger.debug("All restricted user names: %s", ', '.join([self.users_by_id[x] for x in self.all_restricted_users]))
-        return users
+        if not self.users:
+            self.users = self.get_all_user_objects()
+            self.users_by_id = {x['id']: x['name'] for x in self.users}
+            self.restricted_users = [x['id'] for x in self.users if x.get('is_restricted')]
+            self.ultra_restricted_users = [x['id'] for x in self.users if x.get('is_ultra_restricted')]
+            self.all_restricted_users = set(self.restricted_users + self.ultra_restricted_users)
+            self.logger.debug("All restricted user names: %s", ', '.join([self.users_by_id[x] for x in self.all_restricted_users]))
+        return self.users
 
     def get_users_by_id(self):
         return self.users_by_id
@@ -81,29 +88,38 @@ class Slacker(WithLogger, WithConfig):
 
         return payload
 
+    messages_by_channel = {}
+
     def get_messages_in_time_range(self, oldest, cid, latest=None):
         assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
-        cname = self.channels_by_id[cid]
-        messages = []
-        done = False
-        while not done:
-            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.user_token, cid)
-            if latest:
-                murl += "&latest={}".format(latest)
-            else:
-                murl += "&latest={}".format(int(time.time()))
-            payload = self.get_with_retry_to_json(murl)
-            messages += payload['messages']
-            if payload['has_more'] is False:
-                done = True
-                continue
-            ts = [float(x['ts']) for x in messages]
-            earliest = min(ts)
-            latest = earliest
-        messages.sort(key=lambda x: float(x['ts']))
-        for message in messages:
-            message['channel'] = cname
-        return messages
+
+        if self.messages_by_channel.get(cid):
+            return self.messages_by_channel.get(cid)
+        else:
+            cname = self.channels_by_id[cid]
+            messages = []
+            done = False
+            while not done:
+                murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.user_token, cid)
+                if latest:
+                    murl += "&latest={}".format(latest)
+                else:
+                    murl += "&latest={}".format(int(time.time()))
+                payload = self.get_with_retry_to_json(murl)
+                messages += payload['messages']
+                if payload['has_more'] is False:
+                    done = True
+                    continue
+                ts = [float(x['ts']) for x in messages]
+                earliest = min(ts)
+                latest = earliest
+            messages.sort(key=lambda x: float(x['ts']))
+            for message in messages:
+                message['channel'] = cname
+
+            self.messages_by_channel[cid] = messages
+
+            return messages
 
     def replace_id(self, cid):
         """
@@ -206,37 +222,43 @@ class Slacker(WithLogger, WithConfig):
         ret['channel']['age'] = age
         return ret['channel']
 
+    channels = None
+
     def get_all_channel_objects(self, exclude_archived=True):
         """
         return all channels
         if exclude_archived (default: True), only shows non-archived channels
         """
 
-        url_template = self.url + "channels.list?exclude_archived={}&token={}"
-        if exclude_archived:
-            exclude_archived = 1
-        else:
-            exclude_archived = 0
-        url = url_template.format(exclude_archived, self.user_token)
-        payload = self.get_with_retry_to_json(url)
-        assert 'channels' in payload
+        if not self.channels:
+            url_template = self.url + "channels.list?exclude_archived={}&token={}"
+            if exclude_archived:
+                exclude_archived = 1
+            else:
+                exclude_archived = 0
+            url = url_template.format(exclude_archived, self.user_token)
+            payload = self.get_with_retry_to_json(url)
+            assert 'channels' in payload
 
-        channels = payload['channels']
-        while payload['response_metadata']['next_cursor']:
-            payload = self.get_with_retry_to_json(url + "&cursor=" + payload['response_metadata']['next_cursor'])
-            channels += payload['channels']
-        return channels
+            self.channels = payload['channels']
+            while payload['response_metadata']['next_cursor']:
+                payload = self.get_with_retry_to_json(url + "&cursor=" + payload['response_metadata']['next_cursor'])
+                self.channels += payload['channels']
+        return self.channels
 
+    members = None
     def get_all_user_objects(self):
-        url = self.url + "users.list?token=" + self.user_token
-        payload = self.get_with_retry_to_json(url)
 
-        members = payload['members']
-        while payload['response_metadata']['next_cursor']:
-            payload = self.get_with_retry_to_json(url + "&cursor=" + payload['response_metadata']['next_cursor'])
-            members += payload['members']
+        if not self.members:
+            url = self.url + "users.list?token=" + self.user_token
+            payload = self.get_with_retry_to_json(url)
 
-        return members
+            self.members = payload['members']
+            while payload['response_metadata']['next_cursor']:
+                payload = self.get_with_retry_to_json(url + "&cursor=" + payload['response_metadata']['next_cursor'])
+                self.members += payload['members']
+
+        return self.members
 
     def archive(self, channel_name):
         url_template = self.url + "channels.archive?token={}&channel={}"
