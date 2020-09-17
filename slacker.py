@@ -24,19 +24,22 @@ class Slacker(WithLogger, WithConfig):
         assert self.bot_token, "Bot token should not be blank"
         self.url = self.api_url()
         self.session = requests.Session()
+
         if init:
+            self.emojis = None
+            self.users = None
+            self.messages_by_channel = {}
+            self.channel_info = {}
+            self.channel_objects = []
+            self.members = None
             self.get_users()
             self.get_channels()
-
-    emojis = None
 
     def get_emojis(self):
         if not self.emojis:
             url = self.url + "emoji.list?token={}".format(self.user_token)
             self.emojis = self.get_with_retry_to_json(url)
         return self.emojis
-
-    users = None
 
     def get_users(self):
         if not self.users:
@@ -87,8 +90,6 @@ class Slacker(WithLogger, WithConfig):
             payload = response.json()
 
         return payload
-
-    messages_by_channel = {}
 
     def get_messages_in_time_range(self, oldest, cid, latest=None):
         assert cid in self.channels_by_id, "Unknown channel ID {}".format(cid)
@@ -157,12 +158,12 @@ class Slacker(WithLogger, WithConfig):
     def api_url(self):
         return "https://{}.slack.com/api/".format(self.slack_name)
 
-    def get_channels(self, exclude_archived=True):
+    def get_channels(self):
         """
         return a {channel_name: channel_id} dictionary
         if exclude_archived (default: True), only shows non-archived channels
         """
-        channels = self.get_all_channel_objects(exclude_archived=exclude_archived)
+        channels = self.get_all_channel_objects()
         self.channels_by_id = {x['id']: x['name'] for x in channels}
         self.channels_by_name = {x['name']: x['id'] for x in channels}
         self.channels = self.channels_by_name
@@ -208,45 +209,40 @@ class Slacker(WithLogger, WithConfig):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
         """
-        url_template = self.url + "channels.info?token={}&channel={}"
-        cid = self.get_channelid(channel_name)
-        now = int(time.time())
-        url = url_template.format(self.user_token, cid)
-        ret = self.get_with_retry_to_json(url)
-        if ret['ok'] is not True:
-            m = "Attempted to get channel info for {}, but return was {}"
-            m = m.format(channel_name, ret)
-            raise RuntimeError(m)
-        created = ret['channel']['created']
-        age = now - created
-        ret['channel']['age'] = age
-        return ret['channel']
+        if not self.channel_info.get(channel_name):
+            url_template = self.url + "channels.info?token={}&channel={}"
+            cid = self.get_channelid(channel_name)
+            now = int(time.time())
+            url = url_template.format(self.user_token, cid)
+            ret = self.get_with_retry_to_json(url)
+            if ret['ok'] is not True:
+                m = "Attempted to get channel info for {}, but return was {}"
+                m = m.format(channel_name, ret)
+                raise RuntimeError(m)
+            created = ret['channel']['created']
+            age = now - created
+            ret['channel']['age'] = age
+            self.channel_info[channel_name] = ret['channel']
+        return self.channel_info[channel_name]
 
-    channels = None
-
-    def get_all_channel_objects(self, exclude_archived=True):
+    def get_all_channel_objects(self):
         """
         return all channels
         if exclude_archived (default: True), only shows non-archived channels
         """
 
-        if not self.channels:
-            url_template = self.url + "channels.list?exclude_archived={}&token={}"
-            if exclude_archived:
-                exclude_archived = 1
-            else:
-                exclude_archived = 0
-            url = url_template.format(exclude_archived, self.user_token)
+        if not self.channel_objects:
+            url_template = self.url + "channels.list?exclude_archived=1&token={}"
+            url = url_template.format(self.user_token)
             payload = self.get_with_retry_to_json(url)
             assert 'channels' in payload
 
-            self.channels = payload['channels']
+            self.channel_objects = payload['channels']
             while payload['response_metadata']['next_cursor']:
                 payload = self.get_with_retry_to_json(url + "&cursor=" + payload['response_metadata']['next_cursor'])
-                self.channels += payload['channels']
-        return self.channels
+                self.channel_objects += payload['channels']
+        return self.channel_objects
 
-    members = None
     def get_all_user_objects(self):
 
         if not self.members:

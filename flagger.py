@@ -177,34 +177,34 @@ class Flagger(executor.Executor):
                     'emoji': 'floppy_disk'
                 }
             )
-
-        for reaction in reactions:
-            count = reaction['count']
-            current_emoji = reaction['name'].split(":")[0]
-            self.logger.debug("current_emoji: %s", current_emoji)
-            equivalents = copy.copy(self.emoji_equivalents.get(current_emoji, []))
-            self.logger.debug("equivalents: %s", equivalents)
-            equivalents.append(current_emoji)
-            self.logger.debug("equivalents: %s", equivalents)
-            current_set = set(equivalents)
-            i = current_set.intersection(emoji_set)
-            if not i:
-                continue
-            for ce in equivalents:
-                current_reactions[ce] = current_reactions.get(ce, 0) + count
-            # if we're here, at least one emoji matches (but count may still not be right)
-        self.logger.debug("Current reactions: {}".format(current_reactions))
-        for uuid in self.control:
-            rule = self.control[uuid]
-            for ce in current_reactions:
-                if ce == rule['emoji']:
-                    count = current_reactions[ce]
-                    threshold = rule['threshold']
-                    comparator = rule['comparator']
-                    op = self.operators[comparator]
-                    if op(count, threshold):
-                        rule["count"] = count
-                        channels.append(rule)
+        else:
+            for reaction in reactions:
+                count = reaction['count']
+                current_emoji = reaction['name'].split(":")[0]
+                self.logger.debug("current_emoji: %s", current_emoji)
+                equivalents = copy.copy(self.emoji_equivalents.get(current_emoji, []))
+                self.logger.debug("equivalents: %s", equivalents)
+                equivalents.append(current_emoji)
+                self.logger.debug("equivalents: %s", equivalents)
+                current_set = set(equivalents)
+                i = current_set.intersection(emoji_set)
+                if not i:
+                    continue
+                for ce in equivalents:
+                    current_reactions[ce] = current_reactions.get(ce, 0) + count
+                # if we're here, at least one emoji matches (but count may still not be right)
+            self.logger.debug("Current reactions: {}".format(current_reactions))
+            for uuid in self.control:
+                rule = self.control[uuid]
+                for ce in current_reactions:
+                    if ce == rule['emoji']:
+                        count = current_reactions[ce]
+                        threshold = rule['threshold']
+                        comparator = rule['comparator']
+                        op = self.operators[comparator]
+                        if op(count, threshold):
+                            rule["count"] = count
+                            channels.append(rule)
         return channels
 
     def get_interesting_messages(self):
