@@ -82,7 +82,7 @@ class Slacker(WithLogger, WithConfig):
         messages = []
         done = False
         while not done:
-            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
+            murl = self.url + "conversations.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
             if latest:
                 murl += "&latest={}".format(latest)
             else:
@@ -187,7 +187,7 @@ class Slacker(WithLogger, WithConfig):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
         """
-        url_template = self.url + "channels.info?token={}&channel={}"
+        url_template = self.url + "conversations.info?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         now = int(time.time())
         url = url_template.format(self.token, cid)
@@ -207,7 +207,7 @@ class Slacker(WithLogger, WithConfig):
         if exclude_archived (default: True), only shows non-archived channels
         """
 
-        url_template = self.url + "channels.list?exclude_archived={}&token={}"
+        url_template = self.url + "conversations.list?exclude_archived={}&token={}"
         if exclude_archived:
             exclude_archived = 1
         else:
@@ -222,7 +222,7 @@ class Slacker(WithLogger, WithConfig):
         return self.get_with_retry_to_json(url)['members']
 
     def archive(self, channel_name):
-        url_template = self.url + "channels.archive?token={}&channel={}"
+        url_template = self.url + "conversations.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
         request = self.session.post(url)
