@@ -101,7 +101,7 @@ class Slacker(WithLogger, WithConfig):
             messages = []
             done = False
             while not done:
-                murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.user_token, cid)
+                murl = self.url + "conversations.history?oldest={}&token={}&channel={}".format(oldest, self.user_token, cid)
                 if latest:
                     murl += "&latest={}".format(latest)
                 else:
@@ -203,14 +203,14 @@ class Slacker(WithLogger, WithConfig):
         returns an array of ["@member"] for members of the channel
         """
         members = self.get_channel_members_ids(channel_name)
-        return ["@" + self.users_by_id[x] for x in members]
+        return ["@" + self.users_by_id[x] for x in members if self.users_by_id.get(x, None)]
 
     def get_channel_info(self, channel_name):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
         """
         if not self.channel_info.get(channel_name):
-            url_template = self.url + "channels.info?token={}&channel={}"
+            url_template = self.url + "conversations.info?token={}&channel={}"
             cid = self.get_channelid(channel_name)
             now = int(time.time())
             url = url_template.format(self.user_token, cid)
@@ -222,6 +222,14 @@ class Slacker(WithLogger, WithConfig):
             created = ret['channel']['created']
             age = now - created
             ret['channel']['age'] = age
+
+            # slightly hacky workaround, to get members in the new conversations API
+            # that was removed from the channels API
+            url_template = self.url + "conversations.members?token={}&channel={}&limit=1000"
+            url = url_template.format(self.user_token, cid)
+            members_json = self.get_with_retry_to_json(url)
+            ret['channel']['members'] = members_json.get('members', [])
+
             self.channel_info[channel_name] = ret['channel']
         return self.channel_info[channel_name]
 
@@ -232,7 +240,7 @@ class Slacker(WithLogger, WithConfig):
         """
 
         if not self.channel_objects:
-            url_template = self.url + "channels.list?exclude_archived=1&token={}"
+            url_template = self.url + "conversations.list?exclude_archived=1&token={}"
             url = url_template.format(self.user_token)
             payload = self.get_with_retry_to_json(url)
             assert 'channels' in payload
@@ -257,7 +265,7 @@ class Slacker(WithLogger, WithConfig):
         return self.members
 
     def archive(self, channel_name):
-        url_template = self.url + "channels.archive?token={}&channel={}"
+        url_template = self.url + "conversations.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.user_token, cid)
         request = self.session.post(url)

@@ -110,7 +110,10 @@ class Destalinator(WithLogger, WithConfig):
         if self.slacker.channel_has_only_restricted_members(channel_name):
             return False
 
-        messages = self.get_messages(channel_name, days)
+        all_messages = self.get_messages(channel_name, days)
+
+        # filter out the warning text messages
+        filtered_messages = [msg for msg in all_messages if msg.get("text") != self.config.warning_text_raw]
 
         # return True (stale) if none of the messages match the criteria below
         return not any(
@@ -122,7 +125,7 @@ class Destalinator(WithLogger, WithConfig):
                 (x.get("text") and b":dolphin:" not in x.get("text").encode('utf-8', 'ignore')) \
                 or x.get("attachments")  # or the message must have attachments
             )
-            for x in messages
+            for x in filtered_messages
         )
 
     # channel actions
