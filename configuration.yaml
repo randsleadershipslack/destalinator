@@ -38,11 +38,16 @@ ignore_channels:
   - black-leaders
   - women-in-leadership
   - sf-wine-meetup
+  - stale-channels
 
 # Regular expression patterns for additional channels to ignore during archiving
 ignore_channel_patterns:
   - ^zmeta-
   - rands
+  - calibrate
+  - ^faq-
+  - people-of-color
+  - ^announcements
 
 # Users to ignore when considering if a channel is stale
 ignore_users:

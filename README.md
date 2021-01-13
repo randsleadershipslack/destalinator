@@ -12,6 +12,19 @@ You'll also need to change `configuration.yaml` appropriately. `warner.py` and `
 
 That said, if you're running on Heroku, you can create a single `clock` process that runs `python scheduler.py`.
 
+## AWS Lambda
+You can also run Destalinator using AWS Lambda.
+
+Steps
+```
+pip install -r requirements.txt -t . --upgrade
+zip -r destalinator.zip .
+```
+
+Upload this folder to a Python 2.7 Lambda function. Use Lambda Environment Variables to control your configuration (See the Environment variables section below). Make sure to use the `RUN_ONCE=true` flag as well. Set the function handler to `scheduler.destalinate_lambda`. Also set the function timeout to 15 minutes. Finally, create a CloudWatch Events cron trigger to run your function once a day. Create a cron called `Daily` with the cron expression `cron(0 10 * * ? *)`.
+
+NOTE: Destalinator logging is to a local file so the CloudWatch logs will be sparse. This can make debugging difficult.
+
 # Development
 
 We recommend using `virtualenv` to manage your development environment.
@@ -27,8 +40,6 @@ In addition to `requirements.txt`, there's also `build-requirements.txt` for dev
 Build a local docker image:
 
     docker build . -t destalinator
-
-You can also use the prebuilt Docker image at [randsleadershipslack/destalinator](https://hub.docker.com/r/randsleadershipslack/destalinator/).
 
 #### Checking code coverage locally
 
