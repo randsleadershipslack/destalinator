@@ -34,6 +34,9 @@ log_channel: "destalinator-log"
 # Channels to ignore when archiving (i.e. they can be silent and not get archived)
 ignore_channels:
   - destalinator-log
+  - lgbt
+  - black-leaders
+  - women-in-leadership
 
 # Regular expression patterns for additional channels to ignore during archiving
 ignore_channel_patterns:
