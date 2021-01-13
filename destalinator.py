@@ -158,7 +158,7 @@ class Destalinator(WithLogger, WithConfig):
                 self.logger.info("Archived %s", channel_name)
             else:
                 error = payload.get('error', '!! No error found in payload %s !!' % payload)
-                self.logger.error("Failed to archive %s: %s. See https://api.slack.com/methods/channels.archive for more context.", channel_name, error)
+                self.logger.error("Failed to archive %s: %s. See https://api.slack.com/methods/conversations.archive for more context.", channel_name, error)
 
             return payload
 
