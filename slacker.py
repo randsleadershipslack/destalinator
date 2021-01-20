@@ -164,7 +164,31 @@ class Slacker(WithLogger, WithConfig):
         """
         returns an array of member IDs for channel_name
         """
-        return self.get_channel_info(channel_name)['members']
+        cid = self.get_channelid(channel_name)
+        members = []
+
+        url_template = self.url + "conversations.members?token={}&channel={}"
+        url = url_template.format(self.token, cid)
+
+        while True:
+            ret = self.get_with_retry_to_json(url)
+            if ret['ok'] is not True:
+                m = "Attempted get_channel_members_ids() for {}, but return was {}"
+                m = m.format(channel_name, ret)
+                raise RuntimeError(m)
+
+            # append members to the end of the existing members list
+            members += ret['members']
+
+            # once through the loop once, update the url to call to include the cursor
+            if ret['response_metadata']['next_cursor']:
+                url_template = self.url + "conversations.members?token={}&channel={}&cursor={}"
+                url = url_template.format(self.token, cid, ret['response_metadata']['next_cursor'])
+            # no more members to iterate over
+            else:
+                break
+
+        return members
 
     def channel_has_only_restricted_members(self, channel_name):
         """
