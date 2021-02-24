@@ -256,7 +256,7 @@ class Slacker(WithLogger, WithConfig):
             if ret['response_metadata']['next_cursor']:
                 url_template = self.url + "conversations.list?exclude_archived={}&token={}&cursor={}"
                 url = url_template.format(exclude_archived, self.token, ret['response_metadata']['next_cursor'])
-            
+
             # no more channels to iterate over
             else:
                 break
