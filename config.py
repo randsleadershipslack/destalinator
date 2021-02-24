@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import os
-import yaml
+from ruamel.yaml import YAML
 
 from utils.with_logger import WithLogger
 
