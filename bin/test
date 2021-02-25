@@ -9,7 +9,7 @@ flake8 --ignore=E501
 vulture . --exclude=tests/test_destalinator.py,utils/slack_logging.py,scheduler.py
 
 coverage run --branch --source=. -m unittest discover -f
-coverage report -m --skip-covered --fail-under=70
+coverage report -m --skip-covered --fail-under=60
 
 if [ ${TRAVIS:-false} = 'true' ]; then
   coveralls
