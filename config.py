@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import os
-import yaml
+from ruamel.yaml import YAML
 
 from utils.with_logger import WithLogger
 
@@ -14,6 +14,7 @@ class Config(WithLogger):
         fo = open(config_fname, "r")
         blob = fo.read()
         fo.close()
+        yaml = YAML(typ='safe')
         self.config = yaml.load(blob)
 
     def __getattr__(self, attrname):

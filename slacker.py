@@ -231,15 +231,37 @@ class Slacker(WithLogger, WithConfig):
         if exclude_archived (default: True), only shows non-archived channels
         """
 
-        url_template = self.url + "conversations.list?exclude_archived={}&token={}"
+        # will hold all channels across pagination
+        channels = []
+
         if exclude_archived:
             exclude_archived = 1
         else:
             exclude_archived = 0
+
+        url_template = self.url + "conversations.list?exclude_archived={}&token={}"
         url = url_template.format(exclude_archived, self.token)
-        payload = self.get_with_retry_to_json(url)
-        assert 'channels' in payload
-        return payload['channels']
+
+        while True:
+            ret = self.get_with_retry_to_json(url)
+            if ret['ok'] is not True:
+                m = "Attempted get_all_channel_objects(), but return was {}"
+                m = m.format(ret)
+                raise RuntimeError(m)
+
+            channels += ret['channels']
+
+            # after going through the loop once, update the url to call to
+            #   include the pagination cursor
+            if ret['response_metadata']['next_cursor']:
+                url_template = self.url + "conversations.list?exclude_archived={}&token={}&cursor={}"
+                url = url_template.format(exclude_archived, self.token, ret['response_metadata']['next_cursor'])
+
+            # no more channels to iterate over
+            else:
+                break
+
+        return channels
 
     def get_all_user_objects(self):
         url = self.url + "users.list?token=" + self.token
