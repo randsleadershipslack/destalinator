@@ -173,9 +173,20 @@ class Slacker(WithLogger, WithConfig):
         while True:
             ret = self.get_with_retry_to_json(url)
             if ret['ok'] is not True:
+                # this will fail if there are no members in a channel
+                # example API response:
+                #   {
+                #       "ok": false,
+                #       "error": "fetch_members_failed",
+                #       "response_metadata": {
+                #           "messages": [
+                #               "[ERROR] Failed to fetch members for the channel."
+                #           ]
+                #       }
+                #   }
                 m = "Attempted get_channel_members_ids() for {}, but return was {}"
                 m = m.format(channel_name, ret)
-                raise RuntimeError(m)
+                break
 
             # append members to the end of the existing members list
             members += ret['members']
@@ -217,7 +228,7 @@ class Slacker(WithLogger, WithConfig):
         url = url_template.format(self.token, cid)
         ret = self.get_with_retry_to_json(url)
         if ret['ok'] is not True:
-            m = "Attempted to get channel info for {}, but return was {}"
+            m = "Attempted get_channel_info() for {}, but return was {}"
             m = m.format(channel_name, ret)
             raise RuntimeError(m)
         created = ret['channel']['created']
