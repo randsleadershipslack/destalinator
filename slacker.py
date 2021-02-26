@@ -160,11 +160,27 @@ class Slacker(WithLogger, WithConfig):
         except KeyError:  # channel not found
             return None
 
+    def get_channel_member_count(self, channel_name):
+        """
+        returns the number of members on a channel
+        """
+        channel_info = self.get_channel_info(channel_name)
+        if not channel_info:
+            return 0
+        return channel_info.get("num_members", 0)
+
     def get_channel_members_ids(self, channel_name):
         """
         returns an array of member IDs for channel_name
         """
         cid = self.get_channelid(channel_name)
+
+        # if a channel has no members, return quickly with 0 and avoid any
+        #   potential errors trying to parse a non-existent member list
+        member_count = self.get_channel_member_count(channel_name)
+        if not member_count:
+            return 0
+
         members = []
 
         url_template = self.url + "conversations.members?token={}&channel={}"
@@ -173,20 +189,9 @@ class Slacker(WithLogger, WithConfig):
         while True:
             ret = self.get_with_retry_to_json(url)
             if ret['ok'] is not True:
-                # this will fail if there are no members in a channel
-                # example API response:
-                #   {
-                #       "ok": false,
-                #       "error": "fetch_members_failed",
-                #       "response_metadata": {
-                #           "messages": [
-                #               "[ERROR] Failed to fetch members for the channel."
-                #           ]
-                #       }
-                #   }
                 m = "Attempted get_channel_members_ids() for {}, but return was {}"
                 m = m.format(channel_name, ret)
-                break
+                raise RuntimeError(m)
 
             # append members to the end of the existing members list
             members += ret['members']
@@ -222,7 +227,8 @@ class Slacker(WithLogger, WithConfig):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
         """
-        url_template = self.url + "conversations.info?token={}&channel={}"
+        # ensure include_num_members is available for get_channel_member_count()
+        url_template = self.url + "conversations.info?token={}&channel={}&include_num_members=true"
         cid = self.get_channelid(channel_name)
         now = int(time.time())
         url = url_template.format(self.token, cid)
