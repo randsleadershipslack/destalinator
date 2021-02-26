@@ -181,7 +181,7 @@ class Slacker(WithLogger, WithConfig):
         #   potential errors trying to parse a non-existent member list
         member_count = self.get_channel_member_count(channel_name)
         if not member_count:
-            return members # should be an empty set
+            return members  # should be an empty set
 
         url_template = self.url + "conversations.members?token={}&channel={}"
         url = url_template.format(self.token, cid)
