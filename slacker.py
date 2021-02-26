@@ -173,15 +173,15 @@ class Slacker(WithLogger, WithConfig):
         """
         returns an array of member IDs for channel_name
         """
+        members = []
+
         cid = self.get_channelid(channel_name)
 
-        # if a channel has no members, return quickly with 0 and avoid any
+        # if a channel has no members, return quickly with [] and avoid any
         #   potential errors trying to parse a non-existent member list
         member_count = self.get_channel_member_count(channel_name)
         if not member_count:
-            return 0
-
-        members = []
+            return members  # should be an empty set
 
         url_template = self.url + "conversations.members?token={}&channel={}"
         url = url_template.format(self.token, cid)
