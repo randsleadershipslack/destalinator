@@ -76,18 +76,18 @@ sample_slack_messages = [
     }
 ]
 
-sample_warning_messages = [
-    {
-        "user": "U023BCDA1",
-        "text": "This is a channel warning! Put on your helmets!",
-        "username": "bot",
-        "bot_id": "B0T8EDVLY",
-        "attachments": [{"fallback": "channel_warning", "id": 1}],
-        "type": "message",
-        "subtype": "bot_message",
-        "ts": "1496855882.185855"
-    }
-]
+# sample_warning_messages = [
+#     {
+#         "user": "U023BCDA1",
+#         "text": "This is a channel warning! Put on your helmets!",
+#         "username": "bot",
+#         "bot_id": "B0T8EDVLY",
+#         "attachments": [{"fallback": "channel_warning", "id": 1}],
+#         "type": "message",
+#         "subtype": "bot_message",
+#         "ts": "1496855882.185855"
+#     }
+# ]
 
 
 class MockValidator(object):

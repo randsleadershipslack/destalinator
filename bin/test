@@ -6,7 +6,7 @@ flake8 --ignore=E501
 # Skip tests/test_destalinator.py due to heavy mocking. See https://github.com/jendrikseipp/vulture/issues/95
 # Skip utils/slack_logging.py due to implementing Handler#emit but never calling directly
 # Skip scheduler.py due to unused lambda entrypoint handler
-vulture . --exclude=tests/test_destalinator.py,utils/slack_logging.py,scheduler.py
+vulture . --ignore-names=destalinate_lambda
 
 coverage run --branch --source=. -m unittest discover -f
 coverage report -m --skip-covered --fail-under=60
