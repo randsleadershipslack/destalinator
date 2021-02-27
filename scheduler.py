@@ -22,7 +22,7 @@ def schedule_job():
     sched.start()
 
 
-def destalinate_lambda(event, context):
+def destalinate_lambda(_event, _context):
     destalinate_job()
 
 

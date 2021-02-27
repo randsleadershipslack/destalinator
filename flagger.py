@@ -40,8 +40,8 @@ class Flagger(executor.Executor):
         <int
         returns [comparator, int] or throws error if invalid
         """
-        comparator = re.sub("\d+$", "", token)
-        value = int(re.sub("\D*", "", token))
+        comparator = re.sub(r"\d+$", "", token)
+        value = int(re.sub(r"\D*", "", token))
         if comparator == '':  # no comparator specified
             comparator = '>='
 
@@ -83,7 +83,7 @@ class Flagger(executor.Executor):
                 emoji = tokens[5].replace(":", "")
                 output_channel_id = re.sub("[<>]", "", tokens[6])
                 if output_channel_id.find("|") != -1:
-                    cid, cname = output_channel_id.split("|")
+                    cid, _ = output_channel_id.split("|")
                     output_channel_id = cid
                 output_channel_name = self.slacker.replace_id(output_channel_id)
                 control[uuid] = {'threshold': threshold, "comparator": comparator,
@@ -209,7 +209,7 @@ class Flagger(executor.Executor):
                     if not self.debug and self.config.activated:  # TODO: rename debug to dry run?
                         self.slackbot.say(output_channel["output"], m)
                 else:
-                    self.logger.warning("Attempted to announce in %s because of rule :%s:%s%s, but channel does not exist.".format(
+                    self.logger.warning("Attempted to announce in {} because of rule :{}:{}{}, but channel does not exist.".format(
                         output_channel["output"],
                         output_channel["emoji"],
                         output_channel["comparator"],
