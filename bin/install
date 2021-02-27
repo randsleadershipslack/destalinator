@@ -1,11 +1,16 @@
 #!/bin/sh
 set -eux
 
-if command -v pip3 &> /dev/null
-then
-  pip3 install -r build-requirements.txt
-  pip3 install -r requirements.txt
-else
+if [ ${TRAVIS:-false} = 'true' ]; then
   pip install -r build-requirements.txt
   pip install -r requirements.txt
+else
+  if command -v pip3 &> /dev/null
+  then
+    pip3 install -r build-requirements.txt
+    pip3 install -r requirements.txt
+  else
+    pip install -r build-requirements.txt
+    pip install -r requirements.txt
+  fi
 fi
