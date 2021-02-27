@@ -2,5 +2,4 @@ coverage>=5.4
 coveralls>=3.0.0
 flake8>=3.8.4
 mock>=4.0.3
-six==1.15.0
 vulture>=2.3
