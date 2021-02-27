@@ -221,7 +221,7 @@ class Slacker(WithLogger, WithConfig):
         returns an array of ["@member"] for members of the channel
         """
         members = self.get_channel_members_ids(channel_name)
-        return ["@" + self.users_by_id[x] for x in members]
+        return ["@" + self.users_by_id[x] for x in members if x in self.users_by_id]
 
     def get_channel_info(self, channel_name):
         """
