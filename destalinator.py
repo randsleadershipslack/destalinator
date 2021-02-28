@@ -220,17 +220,6 @@ class Destalinator(WithLogger, WithConfig):
         Using `force_warn=True` will warn even if a previous warning exists.
         Return True if we actually warned, otherwise False.
         """
-        # Might not need to do this since we now do this in `stale`
-        if self.slacker.channel_has_only_restricted_members(channel_name):
-            self.logger.debug(
-                "Would have warned #%s but it contains only restricted users", channel_name)
-            return False
-
-        # Might not need to do this since we now do this in `stale`
-        if self.ignore_channel(channel_name):
-            self.logger.debug(
-                "Not warning #%s because it's in ignore_channels", channel_name)
-            return False
 
         messages = self.get_messages(channel_name, days)
         texts = [x.get("text").strip() for x in messages if x.get("text")]
@@ -259,23 +248,17 @@ class Destalinator(WithLogger, WithConfig):
 
         stale = []
         for channel in sorted(self.slacker.channels_by_name.keys()):
-            if self.ignore_channel(channel):
-                self.logger.debug(
-                    "Not warning #%s because it's in ignore_channels", channel)
-                continue
             if self.stale(channel, days):
                 if self.warn(channel, days, force_warn):
                     stale.append(channel)
             self.flush_channel_cache(channel)
 
-        if stale and self.config.general_message_channel:
+        if len(stale) > 0 and self.config.general_message_channel:
             self.logger.debug("Notifying #%s of warned channels",
                               self.config.general_message_channel)
             self.warn_in_general(stale)
 
     def warn_in_general(self, stale_channels):
-        if not stale_channels:
-            return
         if len(stale_channels) > 1:
             channel = "channels"
             being = "are"

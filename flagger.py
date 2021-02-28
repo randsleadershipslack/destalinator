@@ -26,7 +26,7 @@ class Flagger(executor.Executor):
 
     def __init__(self, *args, **kwargs):
         self.debug = kwargs.pop('debug', False)
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(Flagger, self).__init__(*args, **kwargs)
         self.now = int(time.time())
 
     def extract_threshold(self, token):
