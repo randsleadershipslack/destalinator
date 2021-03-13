@@ -26,8 +26,8 @@ class Destalinator(WithLogger, WithConfig):
         `activated` is a boolean indicating whether destalinator should do dry
             runs or real runs
         """
-        self.closure_text = utils.get_local_file_content( self.closure_text_fname)
-        self.warning_text = utils.get_local_file_content( self.warning_text_fname)
+        self.closure_text = utils.get_local_file_content(self.closure_text_fname)
+        self.warning_text = utils.get_local_file_content(self.warning_text_fname)
         self.slacker = slacker
         self.slackbot = slackbot
 
@@ -105,7 +105,7 @@ class Destalinator(WithLogger, WithConfig):
         return False
 
     def post_marked_up_message(self, channel_name, message, **kwargs):
-        self.slacker.post_message( channel_name, self.add_slack_channel_markup(message), **kwargs)
+        self.slacker.post_message(channel_name, self.add_slack_channel_markup(message), **kwargs)
 
     def stale(self, channel_name, days):
         """
@@ -143,7 +143,7 @@ class Destalinator(WithLogger, WithConfig):
         """Archive the given channel name, returning the Slack API response as a JSON string."""
         # Might not need to do this since we now do this in `stale`
         if self.ignore_channel(channel_name):
-            self.logger.debug( "Not archiving #%s because it's in ignore_channels", channel_name)
+            self.logger.debug("Not archiving #%s because it's in ignore_channels", channel_name)
             return
 
         if self.config.activated:
@@ -163,7 +163,7 @@ class Destalinator(WithLogger, WithConfig):
             else:
                 error = payload.get('error', '!! No error found in payload %s !!' % payload)
                 url = "https://api.slack.com/methods/conversations.archive"
-                self.logger.error("Failed to archive %s: %s. See "+ url +" for more context.", channel_name, error)
+                self.logger.error("Failed to archive %s: %s. See " + url + " for more context.", channel_name, error)
 
             return payload
 
@@ -248,5 +248,5 @@ class Destalinator(WithLogger, WithConfig):
         message += ", ".join(["#" + x for x in stale_channels])
         message = message.format(channel, being, there)
         if self.config.activated:
-            self.post_marked_up_message( self.config.general_message_channel, message, message_type='warn_in_general')
+            self.post_marked_up_message(self.config.general_message_channel, message, message_type='warn_in_general')
         self.logger.debug("Notified #%s with: %s", self.config.general_message_channel, message)
