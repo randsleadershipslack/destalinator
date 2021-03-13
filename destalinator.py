@@ -21,9 +21,10 @@ class Destalinator(WithLogger, WithConfig):
 
     def __init__(self, slacker, slackbot, activated):
         """
-        slacker is a Slacker() object
-        slackbot should be an initialized slackbot.Slackbot() object
-        activated is a boolean indicating whether destalinator should do dry runs or real runs
+        `slacker` is a Slacker() object
+        `slackbot` should be an initialized slackbot.Slackbot() object
+        `activated` is a boolean indicating whether destalinator should do dry
+            runs or real runs
         """
         self.closure_text = utils.get_local_file_content(self.closure_text_fname)
         self.warning_text = utils.get_local_file_content(self.warning_text_fname)
@@ -67,8 +68,7 @@ class Destalinator(WithLogger, WithConfig):
 
     def get_earliest_archive_date(self):
         """Return a datetime.date object representing the earliest archive date."""
-        date_string = self.config.earliest_archive_date \
-            or PAST_DATE_STRING
+        date_string = self.config.earliest_archive_date or PAST_DATE_STRING
         return datetime.strptime(date_string, "%Y-%m-%d").date()
 
     def get_messages(self, channel_name, days):
@@ -77,14 +77,17 @@ class Destalinator(WithLogger, WithConfig):
         cid = self.slacker.get_channelid(channel_name)
 
         if oldest in self.cache.get(cid, {}):
-            self.logger.debug("Returning %s cached messages for #%s over %s days", len(self.cache[cid][oldest]), channel_name, days)
+            self.logger.debug("Returning %s cached messages for #%s over %s days", len(
+                self.cache[cid][oldest]), channel_name, days)
             return self.cache[cid][oldest]
 
         messages = self.slacker.get_messages_in_time_range(oldest, cid)
         self.logger.debug("Fetched %s messages for #%s over %s days", len(messages), channel_name, days)
 
-        messages = [x for x in messages if x.get("subtype") is None or x.get("subtype") in self.config.included_subtypes]
-        self.logger.debug("Filtered down to %s messages based on included_subtypes: %s", len(messages), ", ".join(self.config.included_subtypes))
+        messages = [x for x in messages if x.get("subtype") is None or x.get(
+            "subtype") in self.config.included_subtypes]
+        self.logger.debug("Filtered down to %s messages based on included_subtypes: %s", len(
+            messages), ", ".join(self.config.included_subtypes))
 
         if cid not in self.cache:
             self.cache[cid] = {}
@@ -107,7 +110,8 @@ class Destalinator(WithLogger, WithConfig):
     def stale(self, channel_name, days):
         """
         Return True if channel represented by `channel_name` is stale.
-        Definition of stale is: no messages in the last `days` which are not from config.ignore_users.
+        Definition of stale is: no messages in the last `days` which are not
+        from config.ignore_users.
         """
         if not self.channel_minimum_age(channel_name, days):
             return False
@@ -158,7 +162,8 @@ class Destalinator(WithLogger, WithConfig):
                 self.logger.info("Archived %s", channel_name)
             else:
                 error = payload.get('error', '!! No error found in payload %s !!' % payload)
-                self.logger.error("Failed to archive %s: %s. See https://api.slack.com/methods/conversations.archive for more context.", channel_name, error)
+                url = "https://api.slack.com/methods/conversations.archive"
+                self.logger.error("Failed to archive %s: %s. See " + url + " for more context.", channel_name, error)
 
             return payload
 
@@ -195,21 +200,13 @@ class Destalinator(WithLogger, WithConfig):
         Using `force_warn=True` will warn even if a previous warning exists.
         Return True if we actually warned, otherwise False.
         """
-        # Might not need to do this since we now do this in `stale`
-        if self.slacker.channel_has_only_restricted_members(channel_name):
-            self.logger.debug("Would have warned #%s but it contains only restricted users", channel_name)
-            return False
-
-        # Might not need to do this since we now do this in `stale`
-        if self.ignore_channel(channel_name):
-            self.logger.debug("Not warning #%s because it's in ignore_channels", channel_name)
-            return False
 
         messages = self.get_messages(channel_name, days)
         texts = [x.get("text").strip() for x in messages if x.get("text")]
-        if (not force_warn and
-                (self.add_slack_channel_markup(self.warning_text) in texts or
-                 any(any(a.get('fallback') == 'channel_warning' for a in m.get('attachments', [])) for m in messages))):
+        warned_in_message = self.add_slack_channel_markup(self.warning_text) in texts
+        warned_in_attachment = any(any(a.get('fallback') == 'channel_warning' for a in m.get(
+            'attachments', [])) for m in messages)
+        if (not force_warn and (warned_in_message or warned_in_attachment)):
             self.logger.debug("Not warning #%s because we found a prior warning", channel_name)
             return False
 
@@ -228,21 +225,16 @@ class Destalinator(WithLogger, WithConfig):
 
         stale = []
         for channel in sorted(self.slacker.channels_by_name.keys()):
-            if self.ignore_channel(channel):
-                self.logger.debug("Not warning #%s because it's in ignore_channels", channel)
-                continue
             if self.stale(channel, days):
                 if self.warn(channel, days, force_warn):
                     stale.append(channel)
             self.flush_channel_cache(channel)
 
-        if stale and self.config.general_message_channel:
+        if len(stale) > 0 and self.config.general_message_channel:
             self.logger.debug("Notifying #%s of warned channels", self.config.general_message_channel)
             self.warn_in_general(stale)
 
     def warn_in_general(self, stale_channels):
-        if not stale_channels:
-            return
         if len(stale_channels) > 1:
             channel = "channels"
             being = "are"
