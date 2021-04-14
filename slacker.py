@@ -322,7 +322,7 @@ class Slacker(WithLogger, WithConfig):
                 post_data['icon_url'] = bot_avatar_url
 
         if message_type:
-            post_data['attachments'] = json.dumps([{'fallback': message_type}], encoding='utf-8')
+            post_data['attachments'] = json.dumps([{'fallback': message_type}])
 
         p = self.session.post(self.url + "chat.postMessage", data=post_data)
         return p.json()
