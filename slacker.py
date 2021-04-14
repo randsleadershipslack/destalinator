@@ -12,17 +12,23 @@ from utils.with_logger import WithLogger
 
 class Slacker(WithLogger, WithConfig):
 
-    def __init__(self, slack_name, token, init=True):
+    def __init__(self, slack_name, bot_token, user_token, init=True):
         """
         slack name is the short name of the slack (preceding '.slack.com')
-        token should be a Slack API Token.
+        bot_token should be a Slack API Bot Token.
+        user_token should be a Slack API User Token.
         """
         self.slack_name = slack_name
-        self.token = token
-        assert self.token, "Token should not be blank"
         self.url = self.api_url()
-        self.session = requests.Session()
-        self.session.headers.update({"Authorization": "Bearer " + token})
+
+        assert bot_token, "Bot Token should not be blank"
+        self.bot_session = requests.Session()
+        self.bot_session.headers.update({"Authorization": "Bearer " + bot_token})
+
+        assert user_token, "User Token should not be blank"
+        self.user_session = requests.Session()
+        self.user_session.headers.update({"Authorization": "Bearer " + user_token})
+
         if init:
             self.get_users()
             self.get_channels()
@@ -57,7 +63,7 @@ class Slacker(WithLogger, WithConfig):
         max_retry_attempts = 10
         payload = None
         while not payload:
-            response = self.session.get(url)
+            response = self.user_session.get(url)
 
             try:
                 response.raise_for_status()
@@ -292,7 +298,7 @@ class Slacker(WithLogger, WithConfig):
         url_template = self.url + "conversations.archive?channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(cid)
-        request = self.session.post(url)
+        request = self.user_session.post(url)
         payload = request.json()
         return payload
 
@@ -315,7 +321,6 @@ class Slacker(WithLogger, WithConfig):
         bot_name = self.config.bot_name
         bot_avatar_url = self.config.bot_avatar_url
         if bot_name or bot_avatar_url:
-            post_data['as_user'] = False
             if bot_name:
                 post_data['username'] = bot_name
             if bot_avatar_url:
@@ -324,5 +329,5 @@ class Slacker(WithLogger, WithConfig):
         if message_type:
             post_data['attachments'] = json.dumps([{'fallback': message_type}])
 
-        p = self.session.post(self.url + "chat.postMessage", data=post_data)
+        p = self.bot_session.post(self.url + "chat.postMessage", data=post_data)
         return p.json()

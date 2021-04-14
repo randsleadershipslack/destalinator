@@ -90,9 +90,9 @@ All configs in `configuration.yaml` are overrideable through environment variabl
 1. Make sure [the Slackbot app](https://slack.com/apps/A0F81R8ET-slackbot) is installed for your Slack
 2. Add a Slackbot integration, and copy the `token` parameter from the URL provided
 
-#### `DESTALINATOR_API_TOKEN` (Required)
+#### `DESTALINATOR_API_BOT_TOKEN` and `DESTALINATOR_API_USER_TOKEN`(Required)
 
-The best way to get an `API_TOKEN` is to [create a new Slack App](https://api.slack.com/apps/new).
+The best way to get the `API BOT_TOKEN` and `API_USER_TOKEN` is to [create a new Slack App](https://api.slack.com/apps/new).
 
 Once you create and name your app on your team, go to "OAuth & Permissions" to give it the following permission scopes:
 
@@ -104,7 +104,7 @@ Once you create and name your app on your team, go to "OAuth & Permissions" to g
 - `emoji:read`
 - `users:read`
 
-After saving, you can copy the OAuth Access Token value from the top of the same screen. It probably starts with `xox`.
+After saving, you can copy the OAuth Access Tokens value from the top of the same screen. It probably starts with `xox`.
 
 #### `DESTALINATOR_ACTIVATED` (Required)
 
