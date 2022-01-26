@@ -286,7 +286,12 @@ class Slacker(WithLogger, WithConfig):
 
     def get_all_user_objects(self):
         url = self.url + "users.list"
-        return self.get_with_retry_to_json(url)['members']
+        response = self.get_with_retry_to_json(url)
+        try:
+            return response['members']
+        except KeyError as e:
+            self.logger.debug(response)
+            raise e
 
     def archive(self, channel_name):
         url_template = self.url + "conversations.archive?channel={}"
