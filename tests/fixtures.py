@@ -1,4 +1,5 @@
 import time
+from config import get_config
 
 channels = [
     {
@@ -39,7 +40,7 @@ channels = [
     {
         'id': 'C0133272',
         'creator': 'U012742',
-        'name': 'zmeta-new-channels',
+        'name': get_config().announce_channel,
         'purpose': {'value': "New channel annoucements."},
         'created': int(time.time()) - 86400 * 90
     }
