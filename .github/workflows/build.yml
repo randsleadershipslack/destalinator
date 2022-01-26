@@ -29,23 +29,38 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v1
-      if: github.repository_owner == 'randsleadershipslack' && github.ref == 'refs/heads/master' && github.event_name == 'push'
+    # - name: Login to DockerHub
+    #   uses: docker/login-action@v1
+    #   if: github.repository_owner == 'randsleadershipslack' && github.ref == 'refs/heads/master' && github.event_name == 'push'
+    #   with:
+    #     username: ${{ secrets.DOCKER_USERNAME }}
+    #     password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Login to Github package repository
+      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ghcr.io/${{ github.repository }}
+        tags: |
+          latest
+          ${{ github.run_number }}
 
     - name: Build image and push to Docker Hub
       uses: docker/build-push-action@v2
       with:
-        tags: |
-          randsleadershipslack/destalinator:latest
-          ${{format('randsleadershipslack/destalinator:{0}', github.run_number) }}
-        push: ${{ github.repository_owner == 'randsleadershipslack' && github.ref == 'refs/heads/master' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        push: ${{ github.ref == 'refs/heads/master' }}
 
     - name: Create Github Release and Tag
-      if: github.repository_owner == 'randsleadershipslack' && github.ref == 'refs/heads/master' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: |
         git tag v$GITHUB_RUN_NUMBER
         git push origin v$GITHUB_RUN_NUMBER

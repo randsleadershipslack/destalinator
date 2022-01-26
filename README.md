@@ -1,7 +1,20 @@
 # destalinator
 Code for managing Cleanup of Stale Channels
 
-[![Coverage Status](https://coveralls.io/repos/github/randsleadershipslack/destalinator/badge.svg?branch=master)](https://coveralls.io/github/randsleadershipslack/destalinator?branch=master)
+<p align="center">
+    <a href="https://coveralls.io/github/randsleadershipslack/destalinator?branch=master" alt="Coverage Status">
+        <img src="https://coveralls.io/repos/github/randsleadershipslack/destalinator/badge.svg?branch=master">
+    </a>
+    <a href="https://github.com/randsleadershipslack/destalinator/stargazers/" alt="GitHub Stargazers">
+      <img src="https://img.shields.io/github/stars/randsleadershipslack/destalinator.svg?style=social&label=Star&maxAge=2592000">
+    </a>
+    <a href="./LICENSE" alt="apache 2.0 license">
+      <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
+    </a>
+    <a href="https://github.com/randsleadershipslack/destalinator/pkgs/container/destalinator" alt="Build Packages">
+      <img src="https://img.shields.io/badge/Docker%20container-destialinator%3Alatest-blue.svg">
+    </a>
+</p>
 
 # Making it work in your environment
 You'll need to install a few libraries: `pip install -r requirements.txt`
