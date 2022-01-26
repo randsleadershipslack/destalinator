@@ -1,8 +1,6 @@
 # destalinator
 Code for managing Cleanup of Stale Channels
 
-[![Build Status](https://travis-ci.org/randsleadershipslack/destalinator.svg?branch=master)](https://travis-ci.org/randsleadershipslack/destalinator)
-
 [![Coverage Status](https://coveralls.io/repos/github/randsleadershipslack/destalinator/badge.svg?branch=master)](https://coveralls.io/github/randsleadershipslack/destalinator?branch=master)
 
 # Making it work in your environment
