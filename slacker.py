@@ -22,12 +22,13 @@ class Slacker(WithLogger, WithConfig):
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
         self.session = requests.Session()
+        self.session.headers.update({"Authorization": "Bearer " + token})
         if init:
             self.get_users()
             self.get_channels()
 
     def get_emojis(self):
-        url = self.url + "emoji.list?token={}".format(self.token)
+        url = self.url + "emoji.list"
         return self.get_with_retry_to_json(url)
 
     def get_users(self):
@@ -82,7 +83,7 @@ class Slacker(WithLogger, WithConfig):
         messages = []
         done = False
         while not done:
-            murl = self.url + "conversations.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
+            murl = self.url + "conversations.history?oldest={}&channel={}".format(oldest, cid)
             if latest:
                 murl += "&latest={}".format(latest)
             else:
@@ -183,8 +184,8 @@ class Slacker(WithLogger, WithConfig):
         if not member_count:
             return members  # should be an empty set
 
-        url_template = self.url + "conversations.members?token={}&channel={}"
-        url = url_template.format(self.token, cid)
+        url_template = self.url + "conversations.members?channel={}"
+        url = url_template.format(cid)
 
         while True:
             ret = self.get_with_retry_to_json(url)
@@ -198,8 +199,8 @@ class Slacker(WithLogger, WithConfig):
 
             # once through the loop once, update the url to call to include the cursor
             if ret['response_metadata']['next_cursor']:
-                url_template = self.url + "conversations.members?token={}&channel={}&cursor={}"
-                url = url_template.format(self.token, cid, ret['response_metadata']['next_cursor'])
+                url_template = self.url + "conversations.members?channel={}&cursor={}"
+                url = url_template.format(cid, ret['response_metadata']['next_cursor'])
             # no more members to iterate over
             else:
                 break
@@ -231,10 +232,10 @@ class Slacker(WithLogger, WithConfig):
         returns JSON with channel information.  Adds 'age' in seconds to JSON
         """
         # ensure include_num_members is available for get_channel_member_count()
-        url_template = self.url + "conversations.info?token={}&channel={}&include_num_members=true"
+        url_template = self.url + "conversations.info?channel={}&include_num_members=true"
         cid = self.get_channelid(channel_name)
         now = int(time.time())
-        url = url_template.format(self.token, cid)
+        url = url_template.format(cid)
         ret = self.get_with_retry_to_json(url)
         if ret['ok'] is not True:
             m = "Attempted get_channel_info() for {}, but return was {}"
@@ -259,8 +260,8 @@ class Slacker(WithLogger, WithConfig):
         else:
             exclude_archived = 0
 
-        url_template = self.url + "conversations.list?exclude_archived={}&token={}"
-        url = url_template.format(exclude_archived, self.token)
+        url_template = self.url + "conversations.list?exclude_archived={}"
+        url = url_template.format(exclude_archived)
 
         while True:
             ret = self.get_with_retry_to_json(url)
@@ -274,8 +275,8 @@ class Slacker(WithLogger, WithConfig):
             # after going through the loop once, update the url to call to
             #   include the pagination cursor
             if ret['response_metadata']['next_cursor']:
-                url_template = self.url + "conversations.list?exclude_archived={}&token={}&cursor={}"
-                url = url_template.format(exclude_archived, self.token, ret['response_metadata']['next_cursor'])
+                url_template = self.url + "conversations.list?exclude_archived={}&cursor={}"
+                url = url_template.format(exclude_archived, ret['response_metadata']['next_cursor'])
 
             # no more channels to iterate over
             else:
@@ -284,7 +285,7 @@ class Slacker(WithLogger, WithConfig):
         return channels
 
     def get_all_user_objects(self):
-        url = self.url + "users.list?token=" + self.token
+        url = self.url + "users.list"
         response = self.get_with_retry_to_json(url)
         try:
             return response['members']
@@ -293,9 +294,9 @@ class Slacker(WithLogger, WithConfig):
             raise e
 
     def archive(self, channel_name):
-        url_template = self.url + "conversations.archive?token={}&channel={}"
+        url_template = self.url + "conversations.archive?channel={}"
         cid = self.get_channelid(channel_name)
-        url = url_template.format(self.token, cid)
+        url = url_template.format(cid)
         request = self.session.post(url)
         payload = request.json()
         return payload
@@ -312,7 +313,6 @@ class Slacker(WithLogger, WithConfig):
             channel = channel[1:]
 
         post_data = {
-            'token': self.token,
             'channel': channel,
             'text': message.encode('utf-8')
         }
