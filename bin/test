@@ -8,7 +8,4 @@ vulture . --ignore-names=destalinate_lambda
 
 coverage run --branch --source=. -m unittest discover -f
 coverage report -m --skip-covered --fail-under=60
-
-if [ ${TRAVIS:-false} = 'true' ]; then
-  coveralls
-fi
+coverage lcov -o .coverage.lcov
