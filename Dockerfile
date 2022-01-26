@@ -1,9 +1,8 @@
 FROM python:2.7
 WORKDIR /destalinator
-ADD bin/install bin/
 ADD build-requirements.txt .
 ADD requirements.txt .
-RUN ./bin/install
+RUN pip install -r requirements.txt
 ADD *.py ./
 ADD *.txt ./
 ADD *.md ./
