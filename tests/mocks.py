@@ -11,12 +11,14 @@ def mocked_slackbot_object():
     return obj
 
 
-def mocked_slacker_object(channels_list=None, messages_list=None, emoji_list=None):
+def mocked_slacker_object(channels_list=None, users_list=None, messages_list=None, emoji_list=None):
     slacker_obj = slacker.Slacker(get_config().slack_name, token='token', init=False)
 
     slacker_obj.get_all_channel_objects = mock.MagicMock(return_value=channels_list or [])
     slacker_obj.get_channels()
 
+    users_list = []
+    users_list.append("foo")
     # slacker_obj.get_all_user_objects = mock.MagicMock(return_value=users_list or [])
     # slacker_obj.get_users()
 
