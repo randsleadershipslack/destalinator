@@ -228,7 +228,6 @@ class Slacker(WithLogger, WithConfig):
         channels = self.paginated_lister(
             "conversations.list?exclude_archived={}&types={types}".format(exclude_archived, types=types_param), limit=1000)
 
-        ccount = len(channels)
         channels.sort(key=lambda x: x['id'])
         return channels
 
