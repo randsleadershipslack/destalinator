@@ -231,7 +231,6 @@ class Slacker(WithLogger, WithConfig):
         channels.sort(key=lambda x: x['id'])
         return channels
 
-
     def get_all_channel_objects_old(self, exclude_archived=True):
         """
         return all channels
@@ -327,7 +326,6 @@ class Slacker(WithLogger, WithConfig):
         In that case, we'll only return the latest set of results
         """
         element_name = None
-        start = time.time()
         done = False
         cursor = None
         results = []
@@ -353,8 +351,6 @@ class Slacker(WithLogger, WithConfig):
                 "next_cursor", "")
             if not cursor:
                 done = True
-        end = time.time()
-        diff = end - start
         return results
 
     def use_separator(self, url):
@@ -439,4 +435,3 @@ class Slacker(WithLogger, WithConfig):
             raise RuntimeError(
                 "Multiple response objects corresponding to lists found: {}".format(lists))
         return lists[0]
-
