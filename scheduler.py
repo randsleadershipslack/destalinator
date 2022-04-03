@@ -3,10 +3,7 @@ import logging
 from apscheduler.schedulers.blocking import BlockingScheduler
 from raven.base import Client as RavenClient
 
-import warner
-import archiver
 import announcer
-import flagger
 from config import get_config
 
 
@@ -35,10 +32,7 @@ def destalinate_job():
                       "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_API_TOKEN.")
     else:
         try:
-            archiver.Archiver().archive()
-            warner.Warner().warn()
             announcer.Announcer().announce()
-            flagger.Flagger().flag()
             logging.info("OK: destalinated")
         except Exception as e:  # pylint: disable=W0703
             raven_client.captureException()

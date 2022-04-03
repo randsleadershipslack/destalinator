@@ -17,8 +17,10 @@ def mocked_slacker_object(channels_list=None, users_list=None, messages_list=Non
     slacker_obj.get_all_channel_objects = mock.MagicMock(return_value=channels_list or [])
     slacker_obj.get_channels()
 
-    slacker_obj.get_all_user_objects = mock.MagicMock(return_value=users_list or [])
-    slacker_obj.get_users()
+    users_list = []
+    users_list.append("foo")
+    # slacker_obj.get_all_user_objects = mock.MagicMock(return_value=users_list or [])
+    # slacker_obj.get_users()
 
     slacker_obj.get_messages_in_time_range = mock.MagicMock(return_value=messages_list or [])
     slacker_obj.get_emojis = mock.MagicMock(return_value=emoji_list or [])

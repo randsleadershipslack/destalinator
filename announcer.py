@@ -19,7 +19,7 @@ class Announcer(executor.Executor):
         for new_channel in new_channels:
             purpose = self.slacker.asciify(new_channel['purpose']['value'])
             creator = new_channel['creator']
-            friendly = self.slacker.asciify(self.slacker.users_by_id[creator])
+            friendly = self.slacker.asciify(creator)
             name = self.slacker.asciify(new_channel['name'])
             new.append((name, friendly, purpose))
         return new
