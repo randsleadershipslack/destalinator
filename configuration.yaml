@@ -5,7 +5,7 @@ slack_name: rands-leadership
 # actually do things to a live slack. Without this environment variable,
 # everything will output in a "dry run" fashion (debug messages should take place,
 # but no changes or messages should affect a live Slack).
-activated: true
+activated: false 
 
 # What should the bot's name be when it posts?
 bot_name: "destalinator"
