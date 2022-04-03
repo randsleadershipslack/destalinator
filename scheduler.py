@@ -19,7 +19,7 @@ def schedule_job():
     sched.start()
 
 
-def destalinate_lambda(event, context):
+def destalinate_lambda(_event, _context):
     destalinate_job()
 
 
@@ -28,10 +28,8 @@ def destalinate_job():
 
     logging.info("Destalinating")
     if not get_config().sb_token or not get_config().api_token:
-        logging.error(
-            "Missing at least one required Slack environment variable.\n"
-            "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_API_TOKEN."
-        )
+        logging.error("Missing at least one required Slack environment variable.\n"
+                      "Make sure to set DESTALINATOR_SB_TOKEN and DESTALINATOR_API_TOKEN.")
     else:
         try:
             announcer.Announcer().announce()

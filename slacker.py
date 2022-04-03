@@ -163,16 +163,14 @@ class Slacker(WithLogger, WithConfig):
         except KeyError:  # channel not found
             return None
 
-    def get_channel_members_ids(self, channel_name):
+    def get_channel_member_count(self, channel_name):
         """
-        returns an array of member IDs for channel_name
+        returns the number of members on a channel
         """
-        cid = self.channels_by_name[channel_name]
-        return self.get_users_for_channel(cid)
-
-    def get_users_for_channel(self, cid):
-        response = self.paginated_lister("conversations.members?channel={}".format(cid))
-        return response
+        channel_info = self.get_channel_info(channel_name)
+        if not channel_info:
+            return 0
+        return channel_info.get("num_members", 0)
 
     def channel_has_only_restricted_members(self, channel_name):
         """
@@ -189,19 +187,23 @@ class Slacker(WithLogger, WithConfig):
         returns an array of ["@member"] for members of the channel
         """
         members = self.get_channel_members_ids(channel_name)
-        return ["@" + self.users_by_id[x] for x in members]
+        # Need to check if user is in users_by_id because a channel may be shared
+        # across Slack teams and the other Slack team's members would not be in
+        # this Slack team's user/member list.
+        return ["@" + self.users_by_id[x] for x in members if x in self.users_by_id]
 
     def get_channel_info(self, channel_name):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
         """
-        url_template = self.url + "conversations.info?token={}&channel={}"
+        # ensure include_num_members is available for get_channel_member_count()
+        url_template = self.url + "conversations.info?token={}&channel={}&include_num_members=true"
         cid = self.get_channelid(channel_name)
         now = int(time.time())
         url = url_template.format(self.token, cid)
         ret = self.get_with_retry_to_json(url)
         if ret['ok'] is not True:
-            m = "Attempted to get channel info for {}, but return was {}"
+            m = "Attempted get_channel_info() for {}, but return was {}"
             m = m.format(channel_name, ret)
             raise RuntimeError(m)
         created = ret['channel']['created']
@@ -237,22 +239,49 @@ class Slacker(WithLogger, WithConfig):
         if exclude_archived (default: True), only shows non-archived channels
         """
 
-        url_template = self.url + "channels.list?exclude_archived={}&token={}"
+        # will hold all channels across pagination
+        channels = []
+
         if exclude_archived:
             exclude_archived = 1
         else:
             exclude_archived = 0
+
+        url_template = self.url + "conversations.list?exclude_archived={}&token={}"
         url = url_template.format(exclude_archived, self.token)
-        payload = self.get_with_retry_to_json(url)
-        assert 'channels' in payload
-        return payload['channels']
+
+        while True:
+            ret = self.get_with_retry_to_json(url)
+            if ret['ok'] is not True:
+                m = "Attempted get_all_channel_objects(), but return was {}"
+                m = m.format(ret)
+                raise RuntimeError(m)
+
+            channels += ret['channels']
+
+            # after going through the loop once, update the url to call to
+            #   include the pagination cursor
+            if ret['response_metadata']['next_cursor']:
+                url_template = self.url + "conversations.list?exclude_archived={}&token={}&cursor={}"
+                url = url_template.format(exclude_archived, self.token, ret['response_metadata']['next_cursor'])
+
+            # no more channels to iterate over
+            else:
+                break
+
+        return channels
 
     def get_all_user_objects(self):
         url = self.url + "users.list?token=" + self.token
-        return self.get_with_retry_to_json(url)['members']
+        response = self.get_with_retry_to_json(url)
+        try:
+            return response['members']
+        except KeyError as e:
+            self.logger.debug(response)
+            raise e
 
     def archive(self, channel_name):
-        url_template = self.url + "channels.archive?token={}&channel={}"
+        url_template = self.url + "conversations.archive?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         url = url_template.format(self.token, cid)
         request = self.session.post(url)
