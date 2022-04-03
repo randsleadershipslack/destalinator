@@ -22,8 +22,6 @@ class Slacker(WithLogger, WithConfig):
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
         self.session = requests.Session()
-        self.api_calls = 0
-        self.api_wait = 0
 
         if init:
             self.get_users()
@@ -163,15 +161,6 @@ class Slacker(WithLogger, WithConfig):
         except KeyError:  # channel not found
             return None
 
-    def get_channel_member_count(self, channel_name):
-        """
-        returns the number of members on a channel
-        """
-        channel_info = self.get_channel_info(channel_name)
-        if not channel_info:
-            return 0
-        return channel_info.get("num_members", 0)
-
     def channel_has_only_restricted_members(self, channel_name):
         """
         returns True if the channel only has restricted/ultra_restricted
@@ -230,53 +219,6 @@ class Slacker(WithLogger, WithConfig):
 
         channels.sort(key=lambda x: x['id'])
         return channels
-
-    def get_all_channel_objects_old(self, exclude_archived=True):
-        """
-        return all channels
-        if exclude_archived (default: True), only shows non-archived channels
-        """
-
-        # will hold all channels across pagination
-        channels = []
-
-        if exclude_archived:
-            exclude_archived = 1
-        else:
-            exclude_archived = 0
-
-        url_template = self.url + "conversations.list?exclude_archived={}&token={}"
-        url = url_template.format(exclude_archived, self.token)
-
-        while True:
-            ret = self.get_with_retry_to_json(url)
-            if ret['ok'] is not True:
-                m = "Attempted get_all_channel_objects(), but return was {}"
-                m = m.format(ret)
-                raise RuntimeError(m)
-
-            channels += ret['channels']
-
-            # after going through the loop once, update the url to call to
-            #   include the pagination cursor
-            if ret['response_metadata']['next_cursor']:
-                url_template = self.url + "conversations.list?exclude_archived={}&token={}&cursor={}"
-                url = url_template.format(exclude_archived, self.token, ret['response_metadata']['next_cursor'])
-
-            # no more channels to iterate over
-            else:
-                break
-
-        return channels
-
-    def get_all_user_objects(self):
-        url = self.url + "users.list?token=" + self.token
-        response = self.get_with_retry_to_json(url)
-        try:
-            return response['members']
-        except KeyError as e:
-            self.logger.debug(response)
-            raise e
 
     def archive(self, channel_name):
         url_template = self.url + "conversations.archive?token={}&channel={}"
@@ -405,12 +347,7 @@ class Slacker(WithLogger, WithConfig):
             max_delay=120):
         while True:
             try:
-                start = time.time()
                 payload = method(url, json=json, headers=headers)
-                end = time.time()
-                diff = end - start
-                self.api_calls += 1
-                self.api_wait += diff
                 return payload
             except Exception as es:
                 print(
