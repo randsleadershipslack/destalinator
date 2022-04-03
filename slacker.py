@@ -22,6 +22,9 @@ class Slacker(WithLogger, WithConfig):
         assert self.token, "Token should not be blank"
         self.url = self.api_url()
         self.session = requests.Session()
+        self.api_calls = 0
+        self.api_wait = 0
+
         if init:
             self.get_users()
             self.get_channels()
@@ -31,7 +34,7 @@ class Slacker(WithLogger, WithConfig):
         return self.get_with_retry_to_json(url)
 
     def get_users(self):
-        users = self.get_all_user_objects()
+        users = self.paginated_lister("users.list")
         self.users_by_id = {x['id']: x['name'] for x in users}
         self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
@@ -82,7 +85,7 @@ class Slacker(WithLogger, WithConfig):
         messages = []
         done = False
         while not done:
-            murl = self.url + "channels.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
+            murl = self.url + "conversations.history?oldest={}&token={}&channel={}".format(oldest, self.token, cid)
             if latest:
                 murl += "&latest={}".format(latest)
             else:
@@ -164,7 +167,12 @@ class Slacker(WithLogger, WithConfig):
         """
         returns an array of member IDs for channel_name
         """
-        return self.get_channel_info(channel_name)['members']
+        cid = self.channels_by_name[channel_name]
+        return self.get_users_for_channel(cid)
+
+    def get_users_for_channel(self, cid):
+        response = self.paginated_lister("conversations.members?channel={}".format(cid))
+        return response
 
     def channel_has_only_restricted_members(self, channel_name):
         """
@@ -187,7 +195,7 @@ class Slacker(WithLogger, WithConfig):
         """
         returns JSON with channel information.  Adds 'age' in seconds to JSON
         """
-        url_template = self.url + "channels.info?token={}&channel={}"
+        url_template = self.url + "conversations.info?token={}&channel={}"
         cid = self.get_channelid(channel_name)
         now = int(time.time())
         url = url_template.format(self.token, cid)
@@ -201,7 +209,29 @@ class Slacker(WithLogger, WithConfig):
         ret['channel']['age'] = age
         return ret['channel']
 
-    def get_all_channel_objects(self, exclude_archived=True):
+    def get_all_channel_objects(self, types=[], exclude_archived=True):
+        if len(types) == 0:
+            # Always default to public channels only
+            types = ['public_channel']
+        elif type(types) is list:
+            if any([conversation_type for conversation_type in types
+                    if conversation_type not in self.CONVERSATIONS_LIST_TYPES]):
+                raise ValueError('Invalid conversation type')
+        types_param = ','.join(types)
+
+        if exclude_archived:
+            exclude_archived = 1
+        else:
+            exclude_archived = 0
+        channels = self.paginated_lister(
+            "conversations.list?exclude_archived={}&types={types}".format(exclude_archived, types=types_param), limit=1000)
+
+        ccount = len(channels)
+        channels.sort(key=lambda x: x['id'])
+        return channels
+
+
+    def get_all_channel_objects_old(self, exclude_archived=True):
         """
         return all channels
         if exclude_archived (default: True), only shows non-archived channels
@@ -260,3 +290,125 @@ class Slacker(WithLogger, WithConfig):
 
         p = self.session.post(self.url + "chat.postMessage", data=post_data)
         return p.json()
+
+    def paginated_lister(self, api_call, limit=200, callback=None):
+        """
+        if callback is defined, we'll call that method on each element we retrieve
+        and not keep track of the total set of elements we retrieve.  That way, we can
+        get an arbitrary large set of elements without running out of memory
+        In that case, we'll only return the latest set of results
+        """
+        element_name = None
+        start = time.time()
+        done = False
+        cursor = None
+        results = []
+        separator = self.use_separator(api_call)
+        api_call = api_call + separator + "limit={}".format(limit)
+        while not done:
+            interim_api_call = api_call
+            if cursor:
+                interim_api_call += "&cursor={}".format(cursor)
+            interim_results = self.api_call(interim_api_call, header_for_token=True)
+            if not element_name:
+                element_name = Slacker.discover_element_name(interim_results)
+            if callback:
+                for element in interim_results[element_name]:
+                    callback(element)
+                results = interim_results[element_name]
+            else:
+                results += interim_results[element_name]
+            if len(interim_results[element_name]) == 2:
+                print(json.dumps(interim_results, indent=4))
+            cursor = interim_results.get(
+                "response_metadata", {}).get(
+                "next_cursor", "")
+            if not cursor:
+                done = True
+        end = time.time()
+        diff = end - start
+        return results
+
+    def use_separator(self, url):
+        """
+        if url already has '?', use &; otherwise, use '?'
+        """
+        separator = "?"
+        if '?' in url:
+            separator = "&"
+        return separator
+
+    def api_call(
+            self,
+            api_endpoint,
+            method=requests.get,
+            json=None,
+            header_for_token=False):
+        url = "https://{}.slack.com/api/{}".format(self.slack_name, api_endpoint)
+        headers = {}
+        if header_for_token:
+            headers['Authorization'] = "Bearer {}".format(self.token)
+        else:
+            separator = self.use_separator(url)
+            url += "{}token={}".format(separator, self.token)
+        if json:
+            headers['Content-Type'] = "application/json"
+        done = False
+        while not done:
+            response = self.retry_api_call(
+                method, url, json=json, headers=headers)
+            if response.status_code == 200:
+                done = True
+            if response.status_code == 429:
+                if 'Retry-After' in response:
+                    retry_after = int(response['Retry-After']) + 1
+                else:
+                    retry_after = 5
+                time.sleep(retry_after)
+            if response.status_code == 403:
+                raise Exception('API returning status code 403')
+        payload = response.json()
+        return payload
+
+    def retry_api_call(
+            self,
+            method,
+            url,
+            json,
+            headers,
+            delay=1,
+            increment=2,
+            max_delay=120):
+        while True:
+            try:
+                start = time.time()
+                payload = method(url, json=json, headers=headers)
+                end = time.time()
+                diff = end - start
+                self.api_calls += 1
+                self.api_wait += diff
+                return payload
+            except Exception as es:
+                print(
+                    "Failed to retrieve {} : {}.  Sleeping {} seconds".format(
+                        url, es, delay))
+                time.sleep(delay)
+                if delay < max_delay:
+                    delay += increment
+                    # print "Incrementing delay to {}".format(delay)
+
+    @staticmethod
+    def discover_element_name(response):
+        """
+        Figure out which part of the response from a paginated lister is the list of elements
+        the logic is pretty simple -- in the dict response, find the one key that has a list value
+        or raise an error if more than one exists
+        """
+        lists = [k for k in response if isinstance(response[k], list)]
+        if len(lists) == 0:
+            raise RuntimeError("No list of objects found")
+        if len(lists) > 1:
+            raise RuntimeError(
+                "Multiple response objects corresponding to lists found: {}".format(lists))
+        return lists[0]
+
