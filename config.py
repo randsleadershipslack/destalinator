@@ -14,7 +14,8 @@ class Config(WithLogger):
         fo = open(config_fname, "r")
         blob = fo.read()
         fo.close()
-        self.config = yaml.safe_load(blob)
+        yaml = YAML(typ='safe')
+        self.config = yaml.load(blob)
 
     def __getattr__(self, attrname):
 
