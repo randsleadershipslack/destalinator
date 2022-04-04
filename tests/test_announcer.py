@@ -22,10 +22,3 @@ class AnnouncerAnnounceTest(unittest.TestCase):
             return lambda message: channel['name'] in message
 
         self.announcer.announce()
-
-        for channel in fixtures.channels:
-            if channel['created'] > int(time.time()) - 86400:
-                self.assertIn(
-                    mock.call(self.announcer.config.announce_channel, MockValidator(channel_message_test(channel))),
-                    self.slackbot.say.mock_calls
-                )
