@@ -45,64 +45,6 @@ channels = [
     }
 ]
 
-
-emoji = {
-    "ok": True,
-    "emoji": {
-        "floppy_disk": "http://example.com/example.png"
-    }
-}
-
-
-messages = [
-    {
-        "type": "message",
-        "user": "U01974322",
-        "text": "flag content rule saver &gt;1 :floppy_disk: <#C0932792|gorbavites>",
-        "ts": "1498076539.987000",
-        "channel": "trotskyists"
-    },
-    {
-        "type": "message",
-        "user": "U012742",
-        "text": "Hi",
-        "ts": "1498076715.048882",
-        "channel": "trotskyists"
-    },
-    {
-        "type": "message",
-        "user": "U012742",
-        "text": "Hi",
-        "ts": "1498076748.060328",
-        "channel": "trotskyists"
-    },
-    {
-        "type": "message",
-        "user": "U0384230",
-        "text": "Flag me, please.",
-        "ts": "1498077206.225653",
-        "channel": "trotskyists",
-        "reactions": [
-            {
-                "name": "floppy_disk",
-                "users": [
-                    "U023BECGF",
-                    "U012742"
-                ],
-                "count": 2
-            }
-        ]
-    },
-    {
-        "type": "message",
-        "user": "U023BECGF",
-        "text": "Hi.",
-        "ts": "1498079094.888214",
-        "channel": "trotskyists"
-    }
-]
-
-
 users = [
     {
         "id": "U023BECGF",
