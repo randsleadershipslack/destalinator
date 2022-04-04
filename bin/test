@@ -7,5 +7,5 @@ flake8 --ignore=E501
 vulture . --ignore-names=destalinate_lambda
 
 coverage run --branch --source=. -m unittest discover -f
-coverage report -m --skip-covered --fail-under=40
+coverage report -m --skip-covered --fail-under=30
 coverage lcov -o .coverage.lcov

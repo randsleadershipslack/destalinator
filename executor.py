@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 from config import WithConfig
-import destalinator
 import slackbot
 import slacker
 
@@ -18,7 +17,3 @@ class Executor(WithLogger, WithConfig):
         self.logger.debug("activated is %s", self.config.activated)
 
         self.slacker = slacker_injected or slacker.Slacker(self.config.slack_name, token=self.config.api_token)
-
-        self.ds = destalinator.Destalinator(slacker=self.slacker,
-                                            slackbot=self.slackbot,
-                                            activated=self.config.activated)
