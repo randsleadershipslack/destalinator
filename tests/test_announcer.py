@@ -4,7 +4,6 @@ import unittest
 import mock
 
 import announcer
-from tests.test_destalinator import MockValidator
 import tests.fixtures as fixtures
 import tests.mocks as mocks
 
