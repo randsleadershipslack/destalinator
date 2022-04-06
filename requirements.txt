@@ -2,4 +2,4 @@ APScheduler>=3.0.5
 raven>=6.1.0
 requests>=2.20.0
 ruamel.yaml>=0.6.12
-slack-sdk==3.4.0
+slack_sdk>=3.4.0
