@@ -5,7 +5,7 @@ slack_name: rands-leadership
 # actually do things to a live slack. Without this environment variable,
 # everything will output in a "dry run" fashion (debug messages should take place,
 # but no changes or messages should affect a live Slack).
-activated: false 
+activated: true
 
 # What should the bot's name be when it posts?
 bot_name: "destalinator"
@@ -23,7 +23,7 @@ archive_threshold: 60
 general_message_channel: "stale-channels"
 
 # Where should we announce new channels?
-announce_channel: "zmeta-new-channels"
+announce_channel: "zmeta-test"
 
 # Where do we send control messages?
 control_channel: "zmeta-control"
