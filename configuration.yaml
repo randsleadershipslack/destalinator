@@ -23,7 +23,7 @@ archive_threshold: 60
 general_message_channel: "stale-channels"
 
 # Where should we announce new channels?
-announce_channel: "zmeta-test"
+announce_channel: "zmeta-new-channels"
 
 # Where do we send control messages?
 control_channel: "zmeta-control"
