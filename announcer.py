@@ -35,7 +35,7 @@ class Announcer(executor.Executor):
             m = "Channel <#{}> was created by <@{}> with purpose: {}".format(cid, creator, purpose)
             if self.config.activated:
                 if self.slacker.channel_exists(self.config.announce_channel):
-                    response = client.chat_postMessage(channel=self.config.announce_channel, text=m)
+                    client.chat_postMessage(channel=self.config.announce_channel, text=m)
                 else:
                     self.logger.warning("Attempted to announce in %s, but channel does not exist.", self.config.announce_channel)
             self.logger.info("ANNOUNCE: %s", m)
