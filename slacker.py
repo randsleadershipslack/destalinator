@@ -26,7 +26,7 @@ class Slacker(WithLogger, WithConfig):
             self.get_channels()
 
     def get_users(self):
-        users = self.paginated_lister("users.list")
+        users = self.paginated_lister("users.list", limit=800)
         self.users_by_id = {x['id']: x['name'] for x in users}
         self.restricted_users = [x['id'] for x in users if x.get('is_restricted')]
         self.ultra_restricted_users = [x['id'] for x in users if x.get('is_ultra_restricted')]
